@@ -25,6 +25,7 @@ local singletons = require "motan.singletons"
 local motan_consul = require "motan.registry.consul"
 local url = require "motan.url"
 local consts = require "motan.consts"
+local utils = require "motan.utils"
 
 local _to_register = function(registry_info, service_url_obj)
     local c_obj = motan_consul:new{
@@ -92,7 +93,14 @@ function Motan.init(path, sys_conf_files)
     local refhandler = require "motan.core.refhandler"
 	singletons.config = gctx_obj
 	local service_obj = refhandler:new(gctx_obj)
-	local service_map = service_obj:get_section_map("service_urls")
+	local service_map_tmp = service_obj:get_section_map("service_urls")
+	local service_map = {}
+	local service_key = ""
+	for _, info in pairs(service_map_tmp) do
+        service_key = utils.build_service_key(info.group, info.params["version"],
+            info.protocol, info.path)
+        service_map[service_key] = info
+	end
 	share_motan:set(consts.MOTAN_LUA_SERVICES_SHARE_KEY, json.encode(service_map))
 end
 

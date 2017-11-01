@@ -49,18 +49,15 @@ end
 function _M.get_section_map(self, conf_section)
     local service_map = {}
     local service_url_obj = {}
-    local service_key = ""
     for k, conf_info in pairs(self.motan_conf[conf_section]) do
         local service_url_obj, err = _build_url(conf_info, conf_section)
         if not service_url_obj then
             ngx.log(ngx.ERR, err)
             goto continue
         end
-        service_key = utils.build_service_key(service_url_obj.group, service_url_obj.params["version"],
-            service_url_obj.protocol, service_url_obj.path)
-        service_map[service_key] = service_url_obj
-        ngx.log(ngx.ERR, "\n-------" .. conf_section .. "--------" .. service_key .. "\n")
-        ngx.log(ngx.ERR, "\n---------------" .. sprint_r(service_url_obj) .. "\n")
+        service_map[k] = service_url_obj
+        -- ngx.log(ngx.ERR, "\n-------" .. conf_section .. "--------" .. k .. "\n")
+        -- ngx.log(ngx.ERR, "\n---------------" .. sprint_r(service_url_obj) .. "\n")
         ::continue::
     end
     return service_map
