@@ -41,6 +41,7 @@ end
 function _M.encode(self)
     local buffer = self.header:pack_header()
     if not self.metadata['M_p'] or not self.metadata['M_m'] then
+        -- @TODO heartbeat
     	if not self.header:is_heartbeat() then
             -- error('None Service Or Method get')
         end

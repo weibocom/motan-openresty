@@ -3,6 +3,7 @@
 
 local consts = require "motan.consts"
 local utils = require "motan.utils"
+local url = require "motan.url"
 local consul_lib = require "resty.consul"
 local consul_service = require "motan.registry.consul_service"
 local json = require 'cjson'
@@ -27,7 +28,8 @@ function _M.new(self, opts)
     }
     local consul = {
 	    url = opts.url or {},
-	    client = consul_client
+	    client = consul_client,
+	    subscribe_map = {},
 	}
     return setmetatable(consul, mt)
 end
@@ -68,7 +70,7 @@ _register_service = function(client, url)
 	local service = _build_service(url)
 	local ok, res_or_err = client:put("/agent/service/register", json.encode(service))
 	if not ok then
-		print_r(res_or_err)
+		ngx.log(ngx.ERR, "Consul _register_service error: \n" .. sprint_r(res_or_err) .. "\n")
 	end
 end
 
@@ -90,11 +92,76 @@ function _M.get(self, ...)
 	return self.client:get(...)
 end
 
+local _get_sub_key
+_get_sub_key = function(url)
+	return url.group .. "/" .. url.path
+end
+
+local function _check_need_notify()
+	return true
+end
+
+local _lookup_service_update
+_lookup_service_update = function(premature, registry, url, listener_map)
+	if not premature then
+		local node_info = registry:do_discover(url)
+		local need_notify = _check_need_notify()
+		if need_notify then
+			for k, listener in pairs(listener_map) do
+				listener:_notify(url, node_info)
+			end
+		end
+		local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD, _lookup_service_update, registry, url, listener_map)
+		if not ok then
+			ngx.log(ngx.ERR, "failed to create the _do_register timer: ", err)
+			return
+		end
+
+	end
+end
+
+function _M.subscribe(self, url, listener)
+	-- @TODO check lock
+    -- @check why subkey have many listener
+	local sub_key = _get_sub_key(url)
+	local listener_map = self.subscribe_map[sub_key]
+	local listener_idt = listener.url:get_identity()
+	if not utils.is_empty(listener_map) then
+		local lstn = listener_map[listener_idt] or {}
+		if utils.is_empty(lstn) then
+			listener_map[listener_idt] = listener
+		end
+	else
+		listener_map = listener_map or {}
+		listener_map[listener_idt] = listener
+		self.subscribe_map[sub_key] = listener_map
+		
+		ngx.timer.at(0, _lookup_service_update, self, url, self.subscribe_map[sub_key])
+	end
+end
+
 function _M.do_discover(self, url)
-	local group = url.group or ""
-	local service_name = consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE .. group
-	local path = "/v1/health/service/" .. service_name
+	local res = {}
+	local group = url.group
+	local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE .. group, "Do_discover at wrong server.")
 	local params = "?passing&wait=600s&index=0"
+    local key = "/health/service/" .. service_name .. params
+    local services, ok = self.client:get(key)
+    if not ok[1]  then
+    	ngx.log(ngx.ERR, "Consul do_discover error: \n" .. sprint_r(err_or_info) .. "\n")
+    end
+    for k, service_info in pairs(services) do
+    	local service = url:new{
+            protocol = url.protocol,
+            host = service_info["Service"]["Address"],
+            port = service_info["Service"]["Port"],
+            path = url.path,
+            group = url.group,
+            params = url.params,
+	    }
+    	tab_insert(res, service)
+    end
+    return res
 end
 
 return _M

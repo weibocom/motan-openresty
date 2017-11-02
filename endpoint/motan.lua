@@ -1,15 +1,22 @@
 -- Copyright (C) idevz (idevz.org)
 
 
+local sub = string.sub
+local byte = string.byte
+local tcp = ngx.socket.tcp
+local null = ngx.null
+local type = type
+local pairs = pairs
+local unpack = unpack
+local setmetatable = setmetatable
+local tonumber = tonumber
+local tostring = tostring
+local rawget = rawget
+local error = error
 local consts = require "motan.consts"
 local header = require "motan.protocol.m2header"
 local message = require "motan.protocol.message"
 local utils = require "motan.utils"
-local null = ngx.null
-local escape_uri = ngx.escape_uri
-local setmetatable = setmetatable
-local tab_concat = table.concatc
-local tab_insert = table.insert
 local bit = require "bit"
 local lshift = bit.lshift
 local bor = bit.bor
@@ -22,88 +29,36 @@ local _M = {
 local mt = { __index = _M }
 
 function _M.new(self, opts)
-    local opts = opts or {}
-    local m2codec = {
-        msg_type = nil,
-        proxy = opts.proxy or false,
+    local sock, err = tcp()
+    if not sock then
+        return nil, err
+    end
+    local motan_ep = {
+        url = opts.url or {},
+        _sock = sock,
     }
-    return setmetatable(m2codec, mt)
+    return setmetatable(motan_ep, mt)
 end
 
-function _M.buildHeader(self, msg_type, proxy, serialize, request_id, msg_status)
-    local m_type = 0x00
-    if proxy then
-        m_type = bor(m_type, 0x02)
-    end
-    if msg_type == consts.MOTAN_MSG_TYPE_REQUEST then
-        m_type = band(m_type, 0xfe)
-    else
-        m_type = bor(m_type, 0x01)
+function _M.set_timeout(self, timeout)
+    local sock = rawget(self, "_sock")
+    if not sock then
+        return nil, "not initialized"
     end
 
-    local status = bor(0x08, band(msg_status, 0x07))
-    local serial = bor(0x00, lshift(serialize, 3))
-    return header:new{
-        msg_type = m_type,
-        version_status = status,
-        serialize = serial,
-        request_id = request_id,
-    }
+    return sock:settimeout(timeout)
 end
 
-function _M.set_msg_type(self, msg_type)
-    if msg_type and msg_type ~= consts.MOTAN_MSG_TYPE_REQUEST 
-            and msg_type ~= consts.MOTAN_MSG_TYPE_RESPONSE then
-        return nil, "Didn't support this msg_type" .. msg_type
+
+function _M.connect(self, ...)
+    local sock = rawget(self, "_sock")
+    if not sock then
+        return nil, "not initialized"
     end
-    self.msg_type = msg_type
+    return sock:connect(self.url.host, self.url.port)
 end
 
-function _M.reset_msg_type(self)
-    self.msg_type = nil
-end
-
-function _M.buildRequestHeader(self, request_id)
-    return self:buildHeader(consts.MOTAN_MSG_TYPE_REQUEST, false, consts.MOTAN_SERIALIZE_SIMPLE, request_id, consts.MOTAN_MSG_STATUS_NORMAL)
-end
-
-function _M.buildResponseHeader(self, request_id, msg_status)
-    return self:buildHeader(consts.MOTAN_MSG_TYPE_RESPONSE, false, consts.MOTAN_SERIALIZE_SIMPLE, request_id, msg_status)
-end
-
-function _M.encode_heartbeat(self, heartbeat)
-    local heartbeat_obj = header:new{
-        msg_type = heartbeat.msg_type,
-        version_status = heartbeat.version_status,
-        serialize = heartbeat.serialize,
-        request_id = heartbeat.request_id,
-    }
-    self:reset_msg_type()
-    return heartbeat_obj:pack_header()
-end
-
-function _M.encode(self, request_id, req_obj, metadata)
-    local msg_type = self.msg_type
-    if msg_type and msg_type ~= consts.MOTAN_MSG_TYPE_REQUEST 
-            and msg_type ~= consts.MOTAN_MSG_TYPE_RESPONSE then
-        return nil, "Msg_type is empty or didn't support."
-    end
-    -- local bheader = self:buildRequestHeader(request_id)
-    local bheader = self:buildHeader(msg_type, self.proxy, consts.MOTAN_SERIALIZE_SIMPLE, request_id, consts.MOTAN_MSG_STATUS_NORMAL)
-    -- @TODO other serialization
-    -- if metadata['SERIALIZATION'] ~= nil then
-        bheader:set_serialize(6)
-    -- end
-    local msg = message:new{
-        header = bheader,
-        metadata = metadata,
-        body = req_obj,
-    }
-    self:reset_msg_type()
-    return msg:encode()
-end
-
-function _M.decode(self, sock)
+local function _read_reply(self, sock)
     local magic_buffer, err = sock:receive(consts.MOTAN_HEADER_MAGIC_NUM_BYTE)
     if not magic_buffer then
         ngx.log(ngx.ERR, err)
@@ -139,7 +94,6 @@ function _M.decode(self, sock)
     end
 
     local request_id = utils.msb_stringtonumber(request_id_buf)
-    -- local request_id = request_id_buf
 
     local header_obj = header:new{
         msg_type = msg_type,
@@ -194,8 +148,30 @@ function _M.decode(self, sock)
         metadata = metadata,
         body = body_buffer,
     }
-    self:reset_msg_type()
     return msg
+end
+
+function _M.call(self, req)
+    local req_buf = req:encode()
+    local sock = rawget(self, "_sock")
+    local ok, err = self:connect()
+    if ok then
+        local bytes, err = sock:send(req_buf)
+        if not bytes then
+            ngx.log(ngx.ERR, "motan endpoint send RPC Call err: ", err)
+            return nil, err
+        end
+        local resp_ok, resp_err = _read_reply(self, sock)
+        if not resp_ok then
+            ngx.log(ngx.ERR, "motan endpoint receive RPC resp err: ", resp_err)
+            return nil, err
+        end
+        sock:setkeepalive(5000, 100)
+        return resp_ok
+    else
+        ngx.log(ngx.ERR, "motan endpoint failed connect to peer: ", err)
+        return nil, err
+    end
 end
 
 return _M

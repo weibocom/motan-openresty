@@ -56,8 +56,6 @@ function _M.get_section_map(self, conf_section)
             goto continue
         end
         service_map[k] = service_url_obj
-        -- ngx.log(ngx.ERR, "\n-------" .. conf_section .. "--------" .. k .. "\n")
-        -- ngx.log(ngx.ERR, "\n---------------" .. sprint_r(service_url_obj) .. "\n")
         ::continue::
     end
     return service_map

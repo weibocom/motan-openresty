@@ -38,7 +38,6 @@ function _M.error_resp(self, err)
         M_pp = "motan2",
         SERIALIZATION = "simple",
         })
-    -- ngx.log(ngx.ERR, "--------------error_resp--------------------->" )
     return req
 end
 
@@ -49,7 +48,6 @@ function _M.resp(self, request_id, metadata, resp_body)
     local request_id = request_id or ngx.now()
     local resp_body = simple.serialize(resp_body)
     local resp = self._codec:encode(request_id, resp_body,metadata)
-    ngx.log(ngx.ERR, "--------------resp----------x----------->" .. sprint_r("") )
     return resp
 end
 
@@ -61,11 +59,10 @@ function _M.heartbeat_resp(self, req)
     return req
 end
 
--- MOTAN_MSG_TYPE_REQUEST = 0;
--- MOTAN_MSG_TYPE_RESPONSE = 1;
 function _M.invoker(self)
 	local msg, err = self._codec:decode(self._sock)
     if not msg then
+        ngx.log(ngx.ERR, "\nServer handler invoker err:\n", sprint_r(err))
         return nil, err
     end
     if msg.header:is_heartbeat() then
@@ -91,10 +88,8 @@ function _M.invoker(self)
         local method = msg.metadata["M_m"]
         local req_obj = simple.deserialize(msg:get_body())
         local ok, resp_obj = pcall(service_instance[method], service_instance, req_obj)
-    -- ngx.log(ngx.ERR, "--------------xxxxxaaaaaaa--------------------->" .. sprint_r(msg))
         return self:resp(msg.header.request_id, msg.metadata, resp_obj)
     end
-    -- ngx.log(ngx.ERR, "Service didn't exist.------------------>\n" .. sprint_r(service_key) .. sprint_r(msg))
     return self:error_resp("Service didn't exist." .. sprint_r(service_key) .. sprint_r(msg))
 end
 
