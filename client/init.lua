@@ -74,10 +74,13 @@ end
 function Motan.content()
     local serialize = require "motan.serialize.simple"
     local client_map = lrucache:get(consts.MOTAN_LUA_CLIENTS_LRU_KEY)
-    local client = client_map['rpc_zk_test']
+    local client = client_map["rpc_test"]
     local res = client:show_batch({name="idevz"})
     print_r("<pre/>------------")
     print_r(serialize.deserialize(res.body))
+    local client2 = client_map["rpc_test_java"]
+    local res2 = client2:hello("<-----Motan")
+    print_r(serialize.deserialize(res2.body))
 end
 
 return Motan
