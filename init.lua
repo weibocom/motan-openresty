@@ -51,6 +51,10 @@ function Motan.init(sys_conf)
 end
 
 function Motan.init_worker_motan_server()
+	if ngx.config.subsystem ~= "stream" then
+		ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+		return
+	end
 	local service_map = singletons.service_map
 	local server_regstry = singletons.server_regstry
 	local exporter = require "motan.server.exporter"
@@ -81,11 +85,19 @@ function Motan.init_worker_motan_client()
 end
 
 function Motan.preread()
+	if ngx.config.subsystem ~= "stream" then
+		ngx.log(ngx.ERR, "Caution: preread Could only use under stream subsystem.")
+		return
+	end
 	-- local ctx = ngx.ctx
 	-- body
 end
 
 function Motan.content_motan_server()
+	if ngx.config.subsystem ~= "stream" then
+		ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+		return
+	end
 	local err_count = 1
 	local byte = string.byte
 	local m2codec = require "motan.protocol.m2codec"

@@ -90,7 +90,7 @@ _build_url = function(conf_info, conf_section)
         -- @TODO host is didn't need be configed
         or not conf_info.host
         or not conf_info.port then
-            return nil, "_build_url Err: service need host, port, path and protocol info."
+            return nil, "_build_url Err: service need host, port, path and protocol info.\n" .. sprint_r(conf_info)
         end
     end
     local service_url = url:new(conf_info)
