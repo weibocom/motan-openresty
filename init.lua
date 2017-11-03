@@ -31,11 +31,14 @@ function Motan.init(sys_conf)
     local service = require "motan.server.service"
     local conf_obj = conf:new(sys_conf)
     singletons.config = conf_obj
+
     local referer_map, client_regstry = conf_obj:get_client_conf()
     singletons.referer_map = referer_map
     singletons.client_regstry = client_regstry
+
     local service_map_tmp, server_regstry = conf_obj:get_server_conf()
     singletons.server_regstry = server_regstry
+    
     -- @TODO newtab()
 	local service_map = {}
 	local service_key = ""
@@ -47,7 +50,7 @@ function Motan.init(sys_conf)
     singletons.service_map = service_map
 end
 
-function Motan.init_worker()
+function Motan.init_worker_motan_server()
 	local service_map = singletons.service_map
 	local server_regstry = singletons.server_regstry
 	local exporter = require "motan.server.exporter"
@@ -55,12 +58,34 @@ function Motan.init_worker()
 	exporter_obj:export()
 end
 
+function Motan.init_worker_motan_client()
+    local cluster = require "motan.cluster"
+    local client = require "motan.client.handler"
+    local referer_map = singletons.referer_map
+    local client_map =  {}
+    for k, ref_url_obj in pairs(referer_map) do
+        local cluster_obj = {}
+        local registry_key = ref_url_obj.params[consts.MOTAN_REGISTRY_KEY]
+        local registry_info = assert(singletons.client_regstry[registry_key]
+            , "Empty registry config: " .. registry_key)
+        cluster_obj = cluster:new{
+            url=ref_url_obj,
+            registry_info = registry_info,
+        }
+        client_map[k] = client:new{
+            url = ref_url_obj,
+            cluster = cluster_obj,
+        }
+    end
+    singletons.client_map = client_map
+end
+
 function Motan.preread()
 	-- local ctx = ngx.ctx
 	-- body
 end
 
-function Motan.content()
+function Motan.content_motan_server()
 	local err_count = 1
 	local byte = string.byte
 	local m2codec = require "motan.protocol.m2codec"
@@ -89,6 +114,22 @@ function Motan.content()
 			break
 		end
 	end
+end
+
+function Motan.access()
+    -- body
+end
+
+function Motan.content_motan_client()
+    local serialize = require "motan.serialize.simple"
+    local client_map = singletons.client_map
+    local client = client_map["rpc_test"]
+    local res = client:show_batch({name="idevz"})
+    print_r("<pre/>------------")
+    print_r(serialize.deserialize(res.body))
+    local client2 = client_map["rpc_test_java"]
+    local res2 = client2:hello("<-----Motan")
+    print_r(serialize.deserialize(res2.body))
 end
 
 return Motan
