@@ -122,18 +122,22 @@ _get_section = function(self, conf_file)
     local tmp_section_urls = {}
     local section_urls = {}
     local registry_urls = {}
+    local conf_section = ""
     if conf_file == self.conf_set.MOTAN_SERVER_CONF_FILE then
         local server_conf = assert(self.conf_arr[conf_file], "Get server config arr err, Check if have this file: " .. conf_file)
         registry_urls = _parse_conf_by_key(server_conf,consts.MOTAN_REGISTRY_PREFIX)
         local service_urls = _parse_conf_by_key(server_conf,consts.MOTAN_SERVICES_PREFIX)
         local basic_services = _parse_conf_by_key(server_conf,consts.MOTAN_BASIC_SERVICES_PREFIX)
         tmp_section_urls = _parse_basic(service_urls, basic_services, consts.MOTAN_BASIC_REF_KEY)
+        -- @TODO rm conf_section
+        conf_section = "service_urls"
     elseif conf_file == self.conf_set.MOTAN_CLIENT_CONF_FILE then
         local client_conf = assert(self.conf_arr[conf_file], "Get client config arr err, Check if have this file: " .. conf_file)
         registry_urls = _parse_conf_by_key(client_conf,consts.MOTAN_REGISTRY_PREFIX)
         local referer_urls = _parse_conf_by_key(client_conf,consts.MOTAN_REFS_PREFIX)
         local basic_refs = _parse_conf_by_key(client_conf,consts.MOTAN_BASIC_REFS_PREFIX)
         tmp_section_urls = _parse_basic(referer_urls, basic_refs, consts.MOTAN_BASIC_REF_KEY)
+        conf_section = "referer_urls"
     end
     local section_urls_obj = {}
     for k, conf_info in pairs(tmp_section_urls) do

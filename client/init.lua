@@ -41,7 +41,8 @@ function Motan.init_worker()
     for k, ref_url_obj in pairs(referer_map) do
         local cluster_obj = {}
         local registry_key = ref_url_obj.params[consts.MOTAN_REGISTRY_KEY]
-        local registry_info = assert(singletons.client_regstry[registry_key], "Empty registry config.")
+        local registry_info = assert(singletons.client_regstry[registry_key]
+            , "Empty registry config: " .. registry_key)
         cluster_obj = cluster:new{
             url=ref_url_obj,
             registry_info = registry_info,
@@ -61,10 +62,10 @@ end
 function Motan.content()
     local serialize = require "motan.serialize.simple"
     local client_map = singletons.client_map
-    -- local client = client_map["rpc_test"]
-    -- local res = client:show_batch({name="idevz"})
-    -- print_r("<pre/>------------")
-    -- print_r(serialize.deserialize(res.body))
+    local client = client_map["rpc_test"]
+    local res = client:show_batch({name="idevz"})
+    print_r("<pre/>------------")
+    print_r(serialize.deserialize(res.body))
     local client2 = client_map["rpc_test_java"]
     local res2 = client2:hello("<-----Motan")
     print_r(serialize.deserialize(res2.body))

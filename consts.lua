@@ -157,7 +157,7 @@ MOTAN_CONSUL_TAG_MOTAN_URL = "URL_";
 -- * motan rpc 在consul中存储command的目录
 MOTAN_CONSUL_MOTAN_COMMAND = "motan/command/"
 -- * 默认consul agent的ip
-MOTAN_CONSUL_DEFAULT_HOST = "localhost"
+MOTAN_CONSUL_DEFAULT_HOST = "127.0.0.1"
 -- * 默认consul agent的端口
 MOTAN_CONSUL_DEFAULT_PORT = 8500
 -- * service 最长存活周期（Time To Live），单位秒。 每个service会注册一个ttl类型的check，在最长TTL秒不发送心跳

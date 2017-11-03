@@ -69,8 +69,9 @@ _do_register = function(premature, service_map)
     	service_url_obj = url:new(service_url_info)
         local registry_key = service_url_obj.params.registry or ""
         if registry_key ~= "" then
-            local registry_info = singletons.config.registry_urls[registry_key] or {}
-            if registry_info ~= {} then
+            local registry_info = assert(singletons.server_regstry[registry_key]
+            	, "Empty registry config: " .. registry_key)
+            if not utils.is_empty(registry_info) then
                 _to_register(registry_info, service_url_obj)
                 heartbeat_map[service_key] = {
                 	registry_info = registry_info,
@@ -89,13 +90,16 @@ end
 
 local Motan = {}
 
-function Motan.init(path, sys_conf_files)
-	local gctx = require "motan.core.gctx"
-	local gctx_obj = assert(gctx:new(path, sys_conf_files), "Error to init gctx Conf.")
-    local refhandler = require "motan.core.refhandler"
-	singletons.config = gctx_obj
-	local service_obj = refhandler:new(gctx_obj)
-	local service_map_tmp = service_obj:get_section_map("service_urls")
+function Motan.init(sys_conf)
+    local conf = require "motan.core.sysconf"
+    local conf_obj = conf:new(sys_conf)
+    singletons.config = conf_obj
+    local referer_map, client_regstry = conf_obj:get_client_conf()
+    singletons.referer_map = referer_map
+    singletons.client_regstry = client_regstry
+    local service_map_tmp, server_regstry = conf_obj:get_server_conf()
+    singletons.service_map = service_map_tmp
+    singletons.server_regstry = server_regstry
 	local service_map = {}
 	local service_key = ""
 	for _, info in pairs(service_map_tmp) do

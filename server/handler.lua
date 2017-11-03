@@ -76,10 +76,10 @@ function _M.invoker(self)
     local path = msg.metadata["M_p"]
     local service_key = utils.build_service_key(group, version, protocol, path)
     local called_service = service_map[service_key]
-    
     if not utils.is_empty(called_service) then
         local resp_obj = {}
         local service_package = called_service.params[consts.MOTAN_LUA_SERVICE_PACKAGE]
+
         local ok, service_lib_or_error = pcall(require, service_package)
         if not ok then
             return self:error_resp(service_lib_or_error)

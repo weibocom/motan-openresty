@@ -3,6 +3,8 @@ local _M = {
   referer_map = {},
   client_map = {},
   client_regstry = {},
+  service_map = {},
+  server_regstry = {},
 }
 
 return _M
