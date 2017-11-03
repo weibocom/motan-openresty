@@ -1,7 +1,6 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-IDEVZ_DEBUG_ON = false
 local helpers = require "motan.utils"
 
 function sprint_r( ... )
@@ -20,9 +19,7 @@ end
 
 local ngx = ngx
 local assert = assert
-local share_motan = ngx.shared.motan_client
 local json = require "cjson"
-local resty_lrucache = require "resty.lrucache"
 
 local singletons = require "motan.singletons"
 local motan_consul = require "motan.registry.consul"
@@ -30,7 +27,6 @@ local url = require "motan.url"
 local consts = require "motan.consts"
 local cluster = require "motan.cluster"
 local client = require "motan.client.handler"
-local lrucache = assert(resty_lrucache.new(consts.MOTAN_LRU_MAX_REFERERS))
 
 local Motan = {}
 
@@ -41,15 +37,11 @@ function Motan.init(path, sys_conf_files)
     singletons.config = gctx_obj
     local refhd_obj = refhandler:new(gctx_obj)
     local referer_map = refhd_obj:get_section_map("referer_urls")
-    -- @TODO lrucache items number
-    lrucache:set(consts.MOTAN_LUA_REFERERS_LRU_KEY, referer_map)
-    if IDEVZ_DEBUG_ON then
-        Motan.init_worker()
-    end
+    singletons.referer_map = referer_map
 end
 
 function Motan.init_worker()
-    local referer_map = lrucache:get(consts.MOTAN_LUA_REFERERS_LRU_KEY)
+    local referer_map = singletons.referer_map
     local client_map =  {}
     for k, ref_url_obj in pairs(referer_map) do
         local cluster_obj = {}
@@ -64,7 +56,7 @@ function Motan.init_worker()
             cluster = cluster_obj,
         }
     end
-    lrucache:set(consts.MOTAN_LUA_CLIENTS_LRU_KEY, client_map)
+    singletons.client_map = client_map
 end
 
 function Motan.access()
@@ -73,7 +65,7 @@ end
 
 function Motan.content()
     local serialize = require "motan.serialize.simple"
-    local client_map = lrucache:get(consts.MOTAN_LUA_CLIENTS_LRU_KEY)
+    local client_map = singletons.client_map
     local client = client_map["rpc_test"]
     local res = client:show_batch({name="idevz"})
     print_r("<pre/>------------")
