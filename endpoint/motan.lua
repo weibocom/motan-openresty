@@ -1,7 +1,6 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local sub = string.sub
 local byte = string.byte
 local tcp = ngx.socket.tcp
 local null = ngx.null

@@ -77,7 +77,6 @@ _parse_conf = function(sys_conf)
         for _,v in pairs(conf_files) do
             conf_res[v] = config_handle_obj:get('sys/' .. v)
         end
-
         return conf_res
     end
     return nil

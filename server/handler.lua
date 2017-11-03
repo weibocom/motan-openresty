@@ -4,14 +4,7 @@
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 local simple = require "motan.serialize.simple"
-local null = ngx.null
-local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
-local tab_concat = table.concat
-local tab_insert = table.insert
-local json = require 'cjson'
-local share_motan = ngx.shared.motan
-local require = require
 
 local _M = {
     _VERSION = '0.0.1'
@@ -23,6 +16,7 @@ function _M.new(self, opts)
     local handler = {
 	    _sock = opts.sock or {},
 	    _codec = opts.codec or {},
+        service_map = opts.service_map
 	}
     return setmetatable(handler, mt)
 end
@@ -69,25 +63,18 @@ function _M.invoker(self)
         ngx.log(ngx.INFO, "----------------<<heartbeat>>----------------")
         return self:heartbeat_resp(msg)
     end
-    local service_map = json.decode(share_motan:get(consts.MOTAN_LUA_SERVICES_SHARE_KEY))
     local group = msg.metadata["M_g"]
     local version = msg.header:get_version()
     local protocol = msg.metadata["M_pp"]
     local path = msg.metadata["M_p"]
     local service_key = utils.build_service_key(group, version, protocol, path)
-    local called_service = service_map[service_key]
-    if not utils.is_empty(called_service) then
+    local service = self.service_map[service_key]
+    if not utils.is_empty(service) then
+        local service_obj = service.service_obj
         local resp_obj = {}
-        local service_package = called_service.params[consts.MOTAN_LUA_SERVICE_PACKAGE]
-
-        local ok, service_lib_or_error = pcall(require, service_package)
-        if not ok then
-            return self:error_resp(service_lib_or_error)
-        end
-        local service_instance = service_lib_or_error:new()
         local method = msg.metadata["M_m"]
         local req_obj = simple.deserialize(msg:get_body())
-        local ok, resp_obj = pcall(service_instance[method], service_instance, req_obj)
+        local ok, resp_obj = pcall(service_obj[method], service_obj, req_obj)
         return self:resp(msg.header.request_id, msg.metadata, resp_obj)
     end
     return self:error_resp("Service didn't exist." .. sprint_r(service_key) .. sprint_r(msg))

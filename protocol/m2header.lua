@@ -2,12 +2,7 @@
 
 
 local consts = require "motan.consts"
-local null = ngx.null
-local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
-local tab_concat = table.concat
-local tab_insert = table.insert
-
 local utils = require "motan.utils"
 
 local bit = require "bit"
@@ -43,6 +38,7 @@ function _M.pack_header(self)
 	header_buffer = header_buffer .. utils.msb_numbertobytes(self.msg_type, 1)
 	header_buffer = header_buffer .. utils.msb_numbertobytes(self.version_status, 1)
 	header_buffer = header_buffer .. utils.msb_numbertobytes(self.serialize, 1)
+    -- @TODO big num
     header_buffer = header_buffer .. utils.msb_numbertobytes(self.request_id, 8)
 	-- header_buffer = header_buffer .. self.request_id
 	-- local upper, lower = utils.split2int(self.request_id)

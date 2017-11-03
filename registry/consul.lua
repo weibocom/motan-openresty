@@ -7,7 +7,6 @@ local url = require "motan.url"
 local consul_lib = require "resty.consul"
 local consul_service = require "motan.registry.consul_service"
 local json = require 'cjson'
-local null = ngx.null
 local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
 local tab_concat = table.concat

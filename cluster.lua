@@ -1,15 +1,10 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local consts = require "motan.consts"
 local utils = require "motan.utils"
 local endpoint = require "motan.endpoint.motan"
 local motan_consul = require "motan.registry.consul"
-local null = ngx.null
-local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
-local tab_concat = table.concat
-local tab_insert = table.insert
 
 local is_empty = function(t)
     return _G.next(t) == nil
