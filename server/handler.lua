@@ -4,6 +4,7 @@
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 local simple = require "motan.serialize.simple"
+local m2codec = require "motan.protocol.m2codec"
 local setmetatable = setmetatable
 
 local _M = {
@@ -13,9 +14,10 @@ local _M = {
 local mt = { __index = _M }
 
 function _M.new(self, opts)
+    local m2codec_obj = m2codec:new()
     local handler = {
 	    _sock = opts.sock or {},
-	    _codec = opts.codec or {},
+	    _codec = m2codec_obj,
         service_map = opts.service_map
 	}
     return setmetatable(handler, mt)
@@ -24,14 +26,7 @@ end
 function _M.error_resp(self, err)
     self._codec:set_msg_type(consts.MOTAN_MSG_TYPE_RESPONSE)
     local req_obj = simple.serialize(err)
-    local req = self._codec:encode(1121331, req_obj,{
-        M_p = "com.weibo.idevz.mt.IService",
-        -- M_m = "hello",
-        M_m = "helloMap",
-        M_g = "idevz-test-static",
-        M_pp = "motan2",
-        SERIALIZATION = "simple",
-        })
+    local req = self._codec:encode(1121331, req_obj,{})
     return req
 end
 

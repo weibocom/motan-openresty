@@ -20,7 +20,6 @@ end
 local ngx = ngx
 local assert = assert
 local singletons = require "motan.singletons"
-local motan_consul = require "motan.registry.consul"
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 
@@ -99,14 +98,10 @@ function Motan.content_motan_server()
 		return
 	end
 	local err_count = 1
-	local byte = string.byte
-	local m2codec = require "motan.protocol.m2codec"
 	local handler = require "motan.server.handler"
 	local service_map = singletons.service_map
 	local sock = assert(ngx.req.socket(true))
-	local m2codec_obj = m2codec:new()
 	local handler_obj = handler:new{
-		codec = m2codec_obj,
 		sock = sock,
 		service_map = service_map
 	}
@@ -132,12 +127,12 @@ function Motan.access()
     -- body
 end
 
-function Motan.content_motan_client()
+function Motan.content_motan_client_test()
     local serialize = require "motan.serialize.simple"
     local client_map = singletons.client_map
     local client = client_map["rpc_test"]
     local res = client:show_batch({name="idevz"})
-    print_r("<pre/>------------")
+    print_r("<pre/>")
     print_r(serialize.deserialize(res.body))
     local client2 = client_map["rpc_test_java"]
     local res2 = client2:hello("<-----Motan")
