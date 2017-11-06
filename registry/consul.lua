@@ -98,17 +98,18 @@ _get_sub_key = function(url)
 end
 
 local function _check_need_notify()
+	-- @TODO check if is need to notify
 	return true
 end
 
 local _lookup_service_update
 _lookup_service_update = function(premature, registry, url, listener_map)
 	if not premature then
-		local node_info = registry:do_discover(url)
+		local ref_url_objs = registry:do_discover(url)
 		local need_notify = _check_need_notify()
 		if need_notify then
 			for k, listener in pairs(listener_map) do
-				listener:_notify(url, node_info)
+				listener:_notify(url, ref_url_objs)
 			end
 		end
 		local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD, _lookup_service_update, registry, url, listener_map)

@@ -25,7 +25,7 @@ local utils = require "motan.utils"
 
 local Motan = {}
 
-function Motan.init(sys_conf)
+function Motan.init(sys_conf, motan_ext_set)
     local conf = require "motan.core.sysconf"
     local service = require "motan.server.service"
     local conf_obj = conf:new(sys_conf)
@@ -34,6 +34,14 @@ function Motan.init(sys_conf)
     local motan_var = {}
     motan_var["LOCAL_IP"] = utils.get_local_ip()
     singletons.var = motan_var
+
+    local motan_ext = {}
+    if utils.is_empty(motan_ext_set) then
+        motan_ext = require("motan.motan_ext").get_default_ext_factory()
+    else
+        motan_ext = motan_ext_set
+    end
+    singletons.motan_ext = motan_ext
 
     local referer_map, client_regstry = conf_obj:get_client_conf()
     singletons.referer_map = referer_map
@@ -51,6 +59,7 @@ function Motan.init(sys_conf)
         service_map[service_key] = service:new(info)
 	end
     singletons.service_map = service_map
+    -- ngx.log(ngx.ERR, sprint_r(singletons.client_regstry["consul-test-motan2"]:get_identity()))
 end
 
 function Motan.init_worker_motan_server()
@@ -73,11 +82,11 @@ function Motan.init_worker_motan_client()
     for k, ref_url_obj in pairs(referer_map) do
         local cluster_obj = {}
         local registry_key = ref_url_obj.params[consts.MOTAN_REGISTRY_KEY]
-        local registry_info = assert(singletons.client_regstry[registry_key]
+        local registry_url_obj = assert(singletons.client_regstry[registry_key]
             , "Empty registry config: " .. registry_key)
         cluster_obj = cluster:new{
             url=ref_url_obj,
-            registry_info = registry_info,
+            registry_url_obj = registry_url_obj,
         }
         client_map[k] = client:new{
             url = ref_url_obj,

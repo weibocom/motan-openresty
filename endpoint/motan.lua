@@ -27,13 +27,13 @@ local _M = {
 
 local mt = { __index = _M }
 
-function _M.new(self, opts)
+function _M.new(self, url)
     local sock, err = tcp()
     if not sock then
         return nil, err
     end
     local motan_ep = {
-        url = opts.url or {},
+        url = url,
         _sock = sock,
     }
     return setmetatable(motan_ep, mt)

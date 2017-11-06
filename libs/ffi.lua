@@ -37,4 +37,10 @@ local local_ip = motan_tools.get_local_ip(eth0, ip)
 print(ffi.string(eth0))
 print(ffi.string(ip))
 
-print(package.path)
+-- print(package.path)
+
+local ext = require("motan.motan_ext").get_default_ext_factory()
+
+lprint_r(ext)
+
+lprint_r(ext:getEndpoint("Motan2"))

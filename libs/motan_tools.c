@@ -3,7 +3,7 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <string.h>
-
+// gcc -g -o libmotan_tools.so -fpic -shared motan_tools.c
 int get_local_ip(char * ifname, char * ip)
 {
     char *temp = NULL;

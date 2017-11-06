@@ -87,10 +87,8 @@ _build_url = function(conf_info, conf_section)
     if conf_section == "service_urls" then
         if not conf_info.path 
         or not conf_info.protocol
-        -- @TODO host is didn't need be configed
-        or not conf_info.host
         or not conf_info.port then
-            return nil, "_build_url Err: service need host, port, path and protocol info.\n" .. sprint_r(conf_info)
+            return nil, "_build_url Err: service need port, path and protocol info.\n" .. sprint_r(conf_info)
         end
     end
     local service_url = url:new(conf_info)
@@ -116,28 +114,9 @@ _build_url = function(conf_info, conf_section)
     return service_url
 end
 
-local _get_section
-_get_section = function(self, conf_file)
-    local tmp_section_urls = {}
+local _build_section_url
+_build_section_url = function(tmp_section_urls, conf_section)
     local section_urls = {}
-    local registry_urls = {}
-    local conf_section = ""
-    if conf_file == self.conf_set.MOTAN_SERVER_CONF_FILE then
-        local server_conf = assert(self.conf_arr[conf_file], "Get server config arr err, Check if have this file: " .. conf_file)
-        registry_urls = _parse_conf_by_key(server_conf,consts.MOTAN_REGISTRY_PREFIX)
-        local service_urls = _parse_conf_by_key(server_conf,consts.MOTAN_SERVICES_PREFIX)
-        local basic_services = _parse_conf_by_key(server_conf,consts.MOTAN_BASIC_SERVICES_PREFIX)
-        tmp_section_urls = _parse_basic(service_urls, basic_services, consts.MOTAN_BASIC_REF_KEY)
-        -- @TODO rm conf_section
-        conf_section = "service_urls"
-    elseif conf_file == self.conf_set.MOTAN_CLIENT_CONF_FILE then
-        local client_conf = assert(self.conf_arr[conf_file], "Get client config arr err, Check if have this file: " .. conf_file)
-        registry_urls = _parse_conf_by_key(client_conf,consts.MOTAN_REGISTRY_PREFIX)
-        local referer_urls = _parse_conf_by_key(client_conf,consts.MOTAN_REFS_PREFIX)
-        local basic_refs = _parse_conf_by_key(client_conf,consts.MOTAN_BASIC_REFS_PREFIX)
-        tmp_section_urls = _parse_basic(referer_urls, basic_refs, consts.MOTAN_BASIC_REF_KEY)
-        conf_section = "referer_urls"
-    end
     local section_urls_obj = {}
     for k, conf_info in pairs(tmp_section_urls) do
         local section_urls_obj, err = _build_url(conf_info, conf_section)
@@ -148,6 +127,32 @@ _get_section = function(self, conf_file)
         section_urls[k] = section_urls_obj
         ::continue::
     end
+    return section_urls
+end
+
+local _get_section
+_get_section = function(self, conf_file)
+    local tmp_section_urls = {}
+    local registry_urls_arr = {}
+    local conf_section = ""
+    if conf_file == self.conf_set.MOTAN_SERVER_CONF_FILE then
+        local server_conf = assert(self.conf_arr[conf_file], "Get server config arr err, Check if have this file: " .. conf_file)
+        registry_urls_arr = _parse_conf_by_key(server_conf,consts.MOTAN_REGISTRY_PREFIX)
+        local service_urls = _parse_conf_by_key(server_conf,consts.MOTAN_SERVICES_PREFIX)
+        local basic_services = _parse_conf_by_key(server_conf,consts.MOTAN_BASIC_SERVICES_PREFIX)
+        tmp_section_urls = _parse_basic(service_urls, basic_services, consts.MOTAN_BASIC_REF_KEY)
+        -- @TODO rm conf_section
+        conf_section = "service_urls"
+    elseif conf_file == self.conf_set.MOTAN_CLIENT_CONF_FILE then
+        local client_conf = assert(self.conf_arr[conf_file], "Get client config arr err, Check if have this file: " .. conf_file)
+        registry_urls_arr = _parse_conf_by_key(client_conf,consts.MOTAN_REGISTRY_PREFIX)
+        local referer_urls = _parse_conf_by_key(client_conf,consts.MOTAN_REFS_PREFIX)
+        local basic_refs = _parse_conf_by_key(client_conf,consts.MOTAN_BASIC_REFS_PREFIX)
+        tmp_section_urls = _parse_basic(referer_urls, basic_refs, consts.MOTAN_BASIC_REF_KEY)
+        conf_section = "referer_urls"
+    end
+    local section_urls = _build_section_url(tmp_section_urls, conf_section)
+    local registry_urls = _build_section_url(registry_urls_arr)
     return section_urls, registry_urls
 end
 

@@ -2,6 +2,7 @@
 
 
 local utils = require "motan.utils"
+local singletons = require "motan.singletons"
 local endpoint = require "motan.endpoint.motan"
 local motan_consul = require "motan.registry.consul"
 local setmetatable = setmetatable
@@ -20,37 +21,34 @@ function _M._init(self)
     self:_parse_registry()
 end
 
--- @TODO registry url
-function _M._notify(self, registry, urls)
-    if not utils.is_empty(urls) then
-        for _, url in pairs(urls) do
-            local ep = endpoint:new{
-                url = url,
-            }
+function _M.refresh(self)
+    local refers = {}
+    for k, ref_url_obj in pairs(self.registry_refers) do
+        table.insert(refers, ref_url_obj)
+    end
+    self.refers = refers
+    -- self.lb.onfresh
+end
+
+function _M._notify(self, registry, ref_url_objs)
+    if not utils.is_empty(ref_url_objs) then
+        for _, url in pairs(ref_url_objs) do
             local key = registry:get_identity()
-            self.endpoint_map[1] = ep
+            self.registry_refers[key] = url
         end
+        self:refresh()
     end
 end
 
 function _M.call(self, req)
-    local ep = self.endpoint_map[1]
+    local ep = self.ext:get_endpoint(self.refers[1])
     if not utils.is_empty(ep) then
         return ep:call(req)
     end
 end
 
-
-local _get_consul_obj
-_get_consul_obj = function(registry_info)
-    return motan_consul:new{
-        host = registry_info.host,
-        port = registry_info.port,
-    }
-end
-
 function _M._parse_registry(self)
-    local c_obj = _get_consul_obj(self.registry_info)
+    local c_obj = self.ext:get_registry(self.registry_url_obj)
     c_obj:subscribe(self.url, self)
     -- local gctx_obj = gctx:new()
     -- split(registries_conf,",")
@@ -59,13 +57,13 @@ function _M._parse_registry(self)
     -- registry:subscribe(self.url, _notify)
     -- urls = registry:discover(self.url)
     -- self:_notify(registry_url, urls)
-    -- ngx.log(ngx.ERR, "\n---------------" .. sprint_r(registry_info) .. "\n")
+    -- ngx.log(ngx.ERR, "\n---------------" .. sprint_r(registry_url_obj) .. "\n")
 end
 
 function _M.new(self, opts)
     local self = {
         url = opts.url,
-        registry_info = opts.registry_info,
+        registry_url_obj = opts.registry_url_obj,
         registries = {},
         ha = {},
         lb = {},
@@ -73,7 +71,7 @@ function _M.new(self, opts)
         -- @TODO
         filters = {},
         cluster_filters = {},
-        ext_factory = {},
+        ext = singletons.motan_ext,
         registry_refers = {},
         available = ture,
         endpoint_map = {},
