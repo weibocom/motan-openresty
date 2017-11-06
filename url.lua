@@ -1,8 +1,9 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local consts = require "motan.consts"
 local utils = require "motan.utils"
+local consts = require "motan.consts"
+local singletons = require "motan.singletons"
 local setmetatable = setmetatable
 local tab_concat = table.concat
 local tab_insert = table.insert
@@ -19,7 +20,7 @@ function _M.new(self, opts)
     if opt_type == "table" and not utils.is_empty(opts) then
         url = {
             protocol = opts.protocol or "",
-            host = opts.host or "127.0.0.1",
+            host = opts.host or singletons.var.LOCAL_IP,
             port = opts.port or 0,
             path = opts.path or "",
             group = opts.group or "",

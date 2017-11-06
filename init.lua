@@ -31,6 +31,10 @@ function Motan.init(sys_conf)
     local conf_obj = conf:new(sys_conf)
     singletons.config = conf_obj
 
+    local motan_var = {}
+    motan_var["LOCAL_IP"] = utils.get_local_ip()
+    singletons.var = motan_var
+
     local referer_map, client_regstry = conf_obj:get_client_conf()
     singletons.referer_map = referer_map
     singletons.client_regstry = client_regstry
@@ -47,10 +51,6 @@ function Motan.init(sys_conf)
         service_map[service_key] = service:new(info)
 	end
     singletons.service_map = service_map
-
-    local motan_var = {}
-    motan_var["LOCAL_IP"] = utils.get_local_ip()
-    singletons.var = motan_var
 end
 
 function Motan.init_worker_motan_server()
