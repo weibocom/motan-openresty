@@ -47,6 +47,10 @@ function Motan.init(sys_conf)
         service_map[service_key] = service:new(info)
 	end
     singletons.service_map = service_map
+
+    local motan_var = {}
+    motan_var["LOCAL_IP"] = utils.get_local_ip()
+    singletons.var = motan_var
 end
 
 function Motan.init_worker_motan_server()

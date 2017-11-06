@@ -1,12 +1,13 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local consts = require "motan.consts"
-local utils = require "motan.utils"
-local url = require "motan.url"
-local consul_lib = require "resty.consul"
-local consul_service = require "motan.registry.consul_service"
 local json = require 'cjson'
+local consul_lib = require "resty.consul"
+local url = require "motan.url"
+local utils = require "motan.utils"
+local consts = require "motan.consts"
+local singletons = require "motan.singletons"
+local consul_service = require "motan.registry.consul_service"
 local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
 local tab_concat = table.concat
@@ -19,7 +20,7 @@ local _M = {
 local mt = { __index = _M }
 
 function _M.new(self, opts)
-	local consul_host = opts.host or consts.MOTAN_CONSUL_DEFAULT_HOST
+	local consul_host = opts.host or singletons.var.LOCAL_IP
 	local consul_port = opts.port or consts.MOTAN_CONSUL_DEFAULT_PORT
 	local consul_client = consul_lib:new{
 		host            = consul_host,

@@ -2,8 +2,6 @@
 
 
 local consts = require "motan.consts"
-local null = ngx.null
-local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
 local concat = table.concat
 local tab_insert = table.insert
@@ -12,14 +10,28 @@ local sfind = string.find
 local sgsub = string.gsub
 local smatch = string.match
 local ssub = string.sub
-local function tappend(t, v) t[#t+1] = v end
 
+local ffi = require "ffi"
+local motan_tools = ffi.load('motan_tools')
+ffi.cdef[[
+int get_local_ip(char *, char *)
+]]
 
 local BIGINT_DIVIDER = 0xffffffff + 1
 
 local _M = {
     _VERSION = '0.0.1'
 }
+
+function _M.get_local_ip()
+    local c_str_t = ffi.typeof("char[4]")
+    local if_name = ffi.new(c_str_t)
+    ffi.copy(if_name, "eth0")
+
+    local ip = ffi.new("char[32]")
+    local local_ip = motan_tools.get_local_ip(if_name, ip)
+    return ffi.string(ip)
+end
 
 function _M.build_service_key(group, version, protocol, path)
     local group = group or ""

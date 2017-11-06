@@ -5,6 +5,7 @@ local _M = {
   client_regstry = {},
   service_map = {},
   server_regstry = {},
+  var = {}
 }
 
 return _M
