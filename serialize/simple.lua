@@ -1,11 +1,11 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local consts = require "motan.consts"
-local utils = require "motan.utils"
-local setmetatable = setmetatable
 local type = type
 local str_sub = string.sub
+local setmetatable = setmetatable
+local utils = require "motan.utils"
+local consts = require "motan.consts"
 
 local _M = {
     _VERSION = '0.0.1'

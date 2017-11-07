@@ -182,6 +182,11 @@ MOTAN_CONSUL_BLOCK_TIME_MINUTES = 10
 MOTAN_CONSUL_BLOCK_TIME_SECONDS = MOTAN_CONSUL_BLOCK_TIME_MINUTES * 60
 
 
+---------------- motan ext constants -----------------
+
+MOTAN_FILTER_TYPE_CLUSTER = 1
+MOTAN_FILTER_TYPE_ENDPOINT = 2
+
 setmetatable(_M, {
     __newindex = 
     function (self, key, ...)

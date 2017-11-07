@@ -105,7 +105,7 @@ end
 local _lookup_service_update
 _lookup_service_update = function(premature, registry, url, listener_map)
 	if not premature then
-		local ref_url_objs = registry:do_discover(url)
+		local ref_url_objs = registry:discover(url)
 		local need_notify = _check_need_notify()
 		if need_notify then
 			for k, listener in pairs(listener_map) do
@@ -141,15 +141,15 @@ function _M.subscribe(self, url, listener)
 	end
 end
 
-function _M.do_discover(self, url)
+function _M.discover(self, url)
 	local res = {}
 	local group = url.group
-	local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE .. group, "Do_discover at wrong server.")
+	local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE .. group, "discover at wrong server.")
 	local params = "?passing&wait=600s&index=0"
     local key = "/health/service/" .. service_name .. params
     local services, ok = self.client:get(key)
     if not ok[1]  then
-    	ngx.log(ngx.ERR, "Consul do_discover error: \n" .. sprint_r(err_or_info) .. "\n")
+    	ngx.log(ngx.ERR, "Consul discover error: \n" .. sprint_r(err_or_info) .. "\n")
     end
     for k, service_info in pairs(services) do
     	local service = url:new{

@@ -92,8 +92,8 @@ function _M.dirname(str)
     end
 end
 
-function _M.trim (s) 
-  return (string.gsub(s, "^%s*(.-)%s*$", "%1")) 
+function _M.trim(s) 
+    return (string.gsub(s, "^%s*(.-)%s*$", "%1")) 
 end
 
 -- split function
