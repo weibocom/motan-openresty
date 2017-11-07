@@ -19,9 +19,9 @@ end
 
 local ngx = ngx
 local assert = assert
-local singletons = require "motan.singletons"
-local consts = require "motan.consts"
 local utils = require "motan.utils"
+local consts = require "motan.consts"
+local singletons = require "motan.singletons"
 
 local Motan = {}
 
@@ -59,7 +59,6 @@ function Motan.init(sys_conf, motan_ext_set)
         service_map[service_key] = service:new(info)
 	end
     singletons.service_map = service_map
-    -- ngx.log(ngx.ERR, sprint_r(singletons.client_regstry["consul-test-motan2"]:get_identity()))
 end
 
 function Motan.init_worker_motan_server()
@@ -75,23 +74,11 @@ function Motan.init_worker_motan_server()
 end
 
 function Motan.init_worker_motan_client()
-    local cluster = require "motan.cluster"
-    local client = require "motan.client.handler"
+    local client = require "motan.client"
     local referer_map = singletons.referer_map
     local client_map =  {}
     for k, ref_url_obj in pairs(referer_map) do
-        local cluster_obj = {}
-        local registry_key = ref_url_obj.params[consts.MOTAN_REGISTRY_KEY]
-        local registry_url_obj = assert(singletons.client_regstry[registry_key]
-            , "Empty registry config: " .. registry_key)
-        cluster_obj = cluster:new{
-            url=ref_url_obj,
-            registry_url_obj = registry_url_obj,
-        }
-        client_map[k] = client:new{
-            url = ref_url_obj,
-            cluster = cluster_obj,
-        }
+        client_map[k] = client:new(ref_url_obj)
     end
     singletons.client_map = client_map
 end
@@ -101,8 +88,6 @@ function Motan.preread()
 		ngx.log(ngx.ERR, "Caution: preread Could only use under stream subsystem.")
 		return
 	end
-	-- local ctx = ngx.ctx
-	-- body
 end
 
 function Motan.content_motan_server()
@@ -111,17 +96,17 @@ function Motan.content_motan_server()
 		return
 	end
 	local err_count = 1
-	local handler = require "motan.server.handler"
+	local server = require "motan.server"
 	local service_map = singletons.service_map
 	local sock = assert(ngx.req.socket(true))
-	local handler_obj = handler:new{
+	local server_obj = server:new{
 		sock = sock,
 		service_map = service_map
 	}
 	local buf = ""
 
 	while not ngx.worker.exiting() do
-		local buf, err = handler_obj:invoker()
+		local buf, err = server_obj:invoker()
 	    if not buf then
 	    	err_count = err_count + 1
 	        return nil, err
@@ -137,7 +122,6 @@ function Motan.content_motan_server()
 end
 
 function Motan.access()
-    -- body
 end
 
 function Motan.content_motan_client_test()

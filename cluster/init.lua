@@ -2,6 +2,7 @@
 
 
 local utils = require "motan.utils"
+local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 local endpoint = require "motan.endpoint.motan"
 local motan_consul = require "motan.registry.consul"
@@ -48,7 +49,10 @@ function _M.call(self, req)
 end
 
 function _M._parse_registry(self)
-    local c_obj = self.ext:get_registry(self.registry_url_obj)
+    local registry_key = self.url.params[consts.MOTAN_REGISTRY_KEY]
+    local registry_url_obj = assert(singletons.client_regstry[registry_key]
+        , "Empty registry config: " .. registry_key)
+    local c_obj = self.ext:get_registry(registry_url_obj)
     c_obj:subscribe(self.url, self)
     -- local gctx_obj = gctx:new()
     -- split(registries_conf,",")
@@ -60,10 +64,9 @@ function _M._parse_registry(self)
     -- ngx.log(ngx.ERR, "\n---------------" .. sprint_r(registry_url_obj) .. "\n")
 end
 
-function _M.new(self, opts)
+function _M.new(self, ref_url_obj)
     local self = {
-        url = opts.url,
-        registry_url_obj = opts.registry_url_obj,
+        url = ref_url_obj,
         registries = {},
         ha = {},
         lb = {},

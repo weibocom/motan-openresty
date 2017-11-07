@@ -2,10 +2,11 @@
 
 
 local setmetatable = setmetatable
+local consts = require "motan.consts"
+local cluster = require "motan.cluster"
+local simple = require "motan.serialize.simple"
 local message = require "motan.protocol.message"
 local m2codec = require "motan.protocol.m2codec"
-local consts = require "motan.consts"
-local simple = require "motan.serialize.simple"
 
 local _M = {
     _VERSION = '0.0.1'
@@ -13,11 +14,11 @@ local _M = {
 
 local mt = { __index = _M }
 
-function _M.new(self, opts)
+function _M.new(self, ref_url_obj)
+    local cluster_obj = cluster:new(ref_url_obj)
     local client = {
-        url = opts.url or {},
-        cluster = opts.cluster or {},
-        ext_fact = opts.ext or {},
+        url = ref_url_obj,
+        cluster = cluster_obj,
     }
     return setmetatable(client, mt)
 end
