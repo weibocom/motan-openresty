@@ -83,7 +83,7 @@ _parse_conf = function(sys_conf)
 end
 
 local _build_url
-_build_url = function(conf_info, conf_section)
+_build_url = function(conf_info, conf_section, service_path_conf)
     if conf_section == "service_urls" then
         if not conf_info.path 
         or not conf_info.protocol
@@ -105,7 +105,7 @@ _build_url = function(conf_info, conf_section)
         if not s then
             return nil, "_build_url Err: service perfix conf err"
         end
-        local service_path = consts.MOTAN_LUA_SERVICE_PATH .. string.sub(ss, e + 1)
+        local service_path = service_path_conf .. "/" .. string.sub(ss, e + 1)
         service_url.params[consts.MOTAN_LUA_SERVICE_PACKAGE] = service_path
         service_url.params["nodeType"] = consts.MOTAN_NODETYPE_SERVICE
     elseif conf_section == "referer_urls" then
@@ -115,11 +115,11 @@ _build_url = function(conf_info, conf_section)
 end
 
 local _build_section_url
-_build_section_url = function(tmp_section_urls, conf_section)
+_build_section_url = function(tmp_section_urls, conf_section, service_path_conf)
     local section_urls = {}
     local section_urls_obj = {}
     for k, conf_info in pairs(tmp_section_urls) do
-        local section_urls_obj, err = _build_url(conf_info, conf_section)
+        local section_urls_obj, err = _build_url(conf_info, conf_section, service_path_conf)
         if not section_urls_obj then
             ngx.log(ngx.ERR, err)
             goto continue
@@ -151,7 +151,8 @@ _get_section = function(self, conf_file)
         tmp_section_urls = _parse_basic(referer_urls, basic_refs, consts.MOTAN_BASIC_REF_KEY)
         conf_section = "referer_urls"
     end
-    local section_urls = _build_section_url(tmp_section_urls, conf_section)
+    local service_path_conf = self.conf_set["SERVICE_PATH"]
+    local section_urls = _build_section_url(tmp_section_urls, conf_section, service_path_conf)
     local registry_urls = _build_section_url(registry_urls_arr)
     return section_urls, registry_urls
 end

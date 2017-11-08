@@ -30,7 +30,7 @@ local mt = { __index = _M }
 function _M.new(self, url)
     local motan_ep = {
         url = url,
-        _sock = sock,
+        _sock = {},
     }
     return setmetatable(motan_ep, mt)
 end
