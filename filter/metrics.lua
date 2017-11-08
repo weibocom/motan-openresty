@@ -24,13 +24,15 @@ function _M.get_index(self)
 end
 
 function _M.get_name(self)
-    return "metrics"
+    return self.name
 end
 
 function _M.new_filter(self, url)
 end
 
 function _M.filter(self, caller, req)
+	local resp = self:get_next():filter(caller, req)
+	return resp
 end
 
 function _M.has_next(self)

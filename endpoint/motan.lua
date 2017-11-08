@@ -28,15 +28,36 @@ local _M = {
 local mt = { __index = _M }
 
 function _M.new(self, url)
-    local sock, err = tcp()
-    if not sock then
-        return nil, err
-    end
     local motan_ep = {
         url = url,
         _sock = sock,
     }
     return setmetatable(motan_ep, mt)
+end
+
+function _M.initialize(self)
+end
+
+function _M.destroy(self)
+end
+
+function _M.set_proxy(self, proxy)
+end
+
+function _M.set_serialization(self, serialization)
+end
+
+function _M.get_name(self)
+end
+
+function _M.get_url(self)
+    return self.url
+end
+
+function _M.set_url(self, url)
+end
+
+function _M.is_available(self)
 end
 
 function _M.set_timeout(self, timeout)
@@ -151,8 +172,12 @@ local function _read_reply(self, sock)
 end
 
 function _M.call(self, req)
+    local sock, err = tcp()
+    if not sock then
+        return nil, err
+    end
+    rawset(self, "_sock", sock)
     local req_buf = req:encode()
-    local sock = rawget(self, "_sock")
     local ok, err = self:connect()
     if ok then
         local bytes, err = sock:send(req_buf)

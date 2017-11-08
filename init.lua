@@ -131,9 +131,9 @@ function Motan.content_motan_client_test()
     local res = client:show_batch({name="idevz"})
     print_r("<pre/>")
     print_r(serialize.deserialize(res.body))
-    local client2 = client_map["rpc_test_java"]
-    local res2 = client2:hello("<-----Motan")
-    print_r(serialize.deserialize(res2.body))
+    -- local client2 = client_map["rpc_test_java"]
+    -- local res2 = client2:hello("<-----Motan")
+    -- print_r(serialize.deserialize(res2.body))
 end
 
 return Motan

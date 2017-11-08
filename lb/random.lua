@@ -13,19 +13,18 @@ function _M.new(self, url)
     local random = {
         url = url,
         endpoints = {},
+        name = "random",
         weight = ""
     }
     return setmetatable(random, mt)
 end
 
 function _M.on_refresh(self, endpoints)
-    -- body
-end
-
-function _M.on_refresh(self, endpoints)
+	self.endpoints = endpoints
 end
 
 function _M.select(self, req)
+	return self.endpoints[1]
 end
 
 function _M.select_array(self, req)

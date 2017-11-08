@@ -132,4 +132,104 @@ function _M.get_registry(self, url)
 	end
 end
 
+
+--+--------------------------------------------------------------------------------+--
+function _M.get_last_cluster_filter(self)
+	local _res = {
+	    _VERSION = '0.0.1'
+	}
+
+	local mt = { __index = _res }
+
+	function _res.new(_res_self)
+		local last_cluster_filter = {
+			name = "last_cluster_filter"
+		}
+	    return setmetatable(last_cluster_filter, mt)
+	end
+
+	function _res.get_index(_res_self)
+		return 100
+	end
+
+	function _res.get_name(_res_self)
+	    return _res_self.name
+	end
+
+	function _res.new_filter(_res_self, url)
+	end
+
+	function _res.filter(_res_self, ha, lb, req)
+		return ha:call(req, lb)
+	end
+
+	function _res.has_next(_res_self)
+		return false
+	end
+
+	function _res.set_next(_res_self, next_filter)
+		ngx.log(ngx.ERR, "Couldn't set next filter to last_cluster_filter.\n")
+	end
+
+	function _res.get_next(_res_self)
+		return nil
+	end
+
+	function _res.get_type(_res_self)
+		return consts.MOTAN_FILTER_TYPE_CLUSTER
+	end
+
+	return _res:new()
+end
+
+
+--+--------------------------------------------------------------------------------+--
+function _M.get_last_endpoint_filter(self)
+	local _res = {
+	    _VERSION = '0.0.1'
+	}
+
+	local mt = { __index = _res }
+
+	function _res.new(_res_self)
+		local last_endpoint_filter = {
+			name = "last_endpoint_filter"
+		}
+	    return setmetatable(last_endpoint_filter, mt)
+	end
+
+	function _res.get_index(_res_self)
+		return 100
+	end
+
+	function _res.get_name(_res_self)
+	    return _res_self.name
+	end
+
+	function _res.new_filter(_res_self, url)
+	end
+
+	function _res.filter(_res_self, caller, req)
+		return caller:call(req, req)
+	end
+
+	function _res.has_next(_res_self)
+		return false
+	end
+
+	function _res.set_next(_res_self, next_filter)
+		ngx.log(ngx.ERR, "Couldn't set next filter to last_endpoint_filter.\n")
+	end
+
+	function _res.get_next(_res_self)
+		return nil
+	end
+
+	function _res.get_type(_res_self)
+		return consts.MOTAN_FILTER_TYPE_ENDPOINT
+	end
+
+	return _res:new()
+end
+
 return _M

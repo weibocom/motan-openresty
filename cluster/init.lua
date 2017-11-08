@@ -17,45 +17,18 @@ local _M = {
 local mt = { __index = _M }
 
 function _M._init_filters(self)
-    local filter_keys = {}
-    filter_keys = assert(
-        utils.split(self.url.params[consts.MOTAN_FILTER_KEY], consts.COMMA_SEPARATOR)
-        , "Error parse filter conf."
-        )
-    local cluster_filters = {}
-    local endpoint_filters = {}
-    if not utils.is_empty(filter_keys) then
-        for _, filter_key in ipairs(filter_keys) do
-            local filter = self.ext:get_filter(filter_key)
-            if filter:get_type() == consts.MOTAN_FILTER_TYPE_CLUSTER then
-                table.insert(cluster_filters, filter)
-            else
-                table.insert(endpoint_filters, filter)
-            end
-        end
-        if #cluster_filters > 0 then
-            table.sort(cluster_filters, function(filter1, filter2)
-                return filter1:get_index() > filter2:get_index()
-            end)
-            local last_cluster_filter = {}
-            for _, filter in ipairs(cluster_filters) do
-                filter:set_next(last_cluster_filter)
-                last_cluster_filter = filter
-            end
-            cluster_filters = last_cluster_filter
-        end
-        if #endpoint_filters > 0 then
-            table.sort(endpoint_filters, function(filter1, filter2)
-                return filter1:get_index() > filter2:get_index()
-            end)
-        end
-        self.cluster_filters = cluster_filters
+    local cluster_filter, endpoint_filters = self.url:get_filters()
+    if utils.is_empty(cluster_filter) then
+        self.cluster_filter = self.ext:get_last_cluster_filter()
+    else
+        self.cluster_filter = cluster_filter
+    end
+    if not utils.is_empty(endpoint_filters) then
         self.filters = endpoint_filters
     end
-    ngx.log(ngx.ERR, "------------------->\n", sprint_r(self.filters))
 end
 
-function _M._init(self)
+function _M.init(self)
     self.ha = self.ext:get_ha(self.url)
     self.lb = self.ext:get_lb(self.url)
     self:_init_filters()
@@ -63,29 +36,135 @@ function _M._init(self)
 end
 
 function _M.refresh(self)
+    -- local refers = {}
+    -- for k, ref_url_obj in pairs(self.registry_refers) do
+    --     table.insert(refers, ref_url_obj)
+    -- end
+    -- self.refers = refers
     local refers = {}
-    for k, ref_url_obj in pairs(self.registry_refers) do
-        table.insert(refers, ref_url_obj)
+    for k, registry_refer in pairs(self.registry_refers) do
+        for _, ref_url_obj in ipairs(registry_refer) do
+            table.insert(refers, ref_url_obj)
+        end
     end
     self.refers = refers
-    -- self.lb.onfresh
+    self.lb:on_refresh(refers)
+end
+
+local _get_filter_endpoint
+_get_filter_endpoint = function(opts)
+    local _res = {
+        _VERSION = '0.0.1'
+    }
+    local _mt = { __index = _res }
+    function _res.new(_res_self, opts)
+        local _filter_endpoint = {
+            url = opts.url,
+            filter = opts.filter,
+            caller = opts.caller,
+            name = "filter_endpoint"
+        }
+        return setmetatable(_filter_endpoint, _mt)
+    end
+
+    function _res.call(_res_self, req)
+        return _res_self.filter:filter(_res_self.caller, req)
+    end
+
+    function _res.get_url(_res_self)
+        return _res_self.url
+    end
+
+    function _res.set_url(_res_self, url)
+        _res_self.url = url
+    end
+
+    function _res.get_name(_res_self)
+        return _res_self.name
+    end
+
+    function _res.destroy(_res_self)
+    end
+
+    function _res.set_proxy(_res_self, proxy)
+    end
+
+    function _res.set_serialization(_res_self, serialization)
+    end
+
+    function _res.is_available(_res_self)
+    end
+    return _res:new(opts)
+end
+
+function _M._add_filter(self, endpoint)
+    local last_filter = self.ext:get_last_endpoint_filter()
+    for _, filter in ipairs(self.filters) do
+        filter:set_next(last_filter)
+        last_filter = filter
+    end
+    local filter_endpoint = _get_filter_endpoint{
+        url = endpoint:get_url(),
+        filter = last_filter,
+        caller = endpoint
+    }
+    -- @TODO statusFilters
+    return filter_endpoint
 end
 
 function _M._notify(self, registry, ref_url_objs)
-    if not utils.is_empty(ref_url_objs) then
-        for _, url in pairs(ref_url_objs) do
-            local key = registry:get_identity()
-            self.registry_refers[key] = url
-        end
-        self:refresh()
+    -- if not utils.is_empty(ref_url_objs) then
+    --     for _, url in pairs(ref_url_objs) do
+    --         local key = registry:get_identity()
+    --         self.registry_refers[key] = url
+    --     end
+    --     self:refresh()
+    -- end
+
+
+
+    if utils.is_empty(ref_url_objs) then
+        return
     end
+    local registry_key = registry:get_identity()
+    local endpoints = {}
+    local endpoints_map = {}
+    local reg_referers = self.registry_refers[registry_key]
+    if not utils.is_empty(reg_referers) then
+        for _, endpoint in ipairs(reg_referers) do
+            local key = endpoint:get_url():get_identity()
+            endpoints_map[key] = endpoint
+        end
+    end
+    for _, url in ipairs(ref_url_objs) do
+        if utils.is_empty(url) then
+            ngx.log(ngx.ERR, "Cluster notified an empty url\n")
+            goto continue
+        end
+        if not utils.is_empty(endpoints_map[url:get_identity()]) then
+            endpoints_map[url:get_identity()] = nil
+        end
+        local ep = self.ext:get_endpoint(url)
+        ep = self:_add_filter(ep)
+        table.insert(endpoints, ep)
+        ::continue::
+    end
+    if #endpoints == 0 then
+        if #self.registry_refers > 0 then
+            self.registry_refers[registry_key] = nil
+        end
+    else
+        self.registry_refers[registry_key] = endpoints
+    end
+    self:refresh()
 end
 
 function _M.call(self, req)
-    local ep = self.ext:get_endpoint(self.refers[1])
-    if not utils.is_empty(ep) then
-        return ep:call(req)
-    end
+    -- local ep = self.ext:get_endpoint(self.refers[1])
+    -- if not utils.is_empty(ep) then
+    --     return ep:call(req)
+    -- end
+    return self.cluster_filter:filter(self.ha, self.lb, req)
 end
 
 function _M._parse_registry(self)
@@ -99,7 +178,8 @@ end
 
 function _M.new(self, ref_url_obj)
     local ext = singletons.motan_ext
-    local self = {
+    local cluster = {
+        name = "idevz",
         url = ref_url_obj,
         registries = {},
         ha = {},
@@ -107,16 +187,14 @@ function _M.new(self, ref_url_obj)
         refers = {},
         -- @TODO
         filters = {},
-        cluster_filters = {},
+        cluster_filter = {},
         ext = ext,
         registry_refers = {},
         endpoint_map = {},
         available = ture,
         closed = false
     }
-    setmetatable(self, mt)
-    self:_init()
-    return self
+    return setmetatable(cluster, mt)
 end
 
 return _M

@@ -16,6 +16,7 @@ local mt = { __index = _M }
 
 function _M.new(self, ref_url_obj)
     local cluster_obj = cluster:new(ref_url_obj)
+    cluster_obj:init()
     local client = {
         url = ref_url_obj,
         cluster = cluster_obj,

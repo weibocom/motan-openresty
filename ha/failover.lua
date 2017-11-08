@@ -11,13 +11,14 @@ local mt = { __index = _M }
 
 function _M.new(self, url)
     local failover = {
-        url = url
+        url = url,
+        name = "failover"
     }
     return setmetatable(failover, mt)
 end
 
 function _M.get_name(self)
-    return "failover"
+    return self.name
 end
 
 function _M.get_url(self)
@@ -27,6 +28,10 @@ function _M.set_url(self, url)
 end
 
 function _M.call(self, req, lb)
+	local lb = lb
+	local endpoint = lb:select(req)
+	local resp = endpoint:call(req)
+    return resp
 end
 
 return _M
