@@ -36,11 +36,6 @@ function _M.init(self)
 end
 
 function _M.refresh(self)
-    -- local refers = {}
-    -- for k, ref_url_obj in pairs(self.registry_refers) do
-    --     table.insert(refers, ref_url_obj)
-    -- end
-    -- self.refers = refers
     local refers = {}
     for k, registry_refer in pairs(self.registry_refers) do
         for _, ref_url_obj in ipairs(registry_refer) do
@@ -113,16 +108,6 @@ function _M._add_filter(self, endpoint)
 end
 
 function _M._notify(self, registry, ref_url_objs)
-    -- if not utils.is_empty(ref_url_objs) then
-    --     for _, url in pairs(ref_url_objs) do
-    --         local key = registry:get_identity()
-    --         self.registry_refers[key] = url
-    --     end
-    --     self:refresh()
-    -- end
-
-
-
     if utils.is_empty(ref_url_objs) then
         return
     end
@@ -160,10 +145,6 @@ function _M._notify(self, registry, ref_url_objs)
 end
 
 function _M.call(self, req)
-    -- local ep = self.ext:get_endpoint(self.refers[1])
-    -- if not utils.is_empty(ep) then
-    --     return ep:call(req)
-    -- end
     return self.cluster_filter:filter(self.ha, self.lb, req)
 end
 
@@ -179,7 +160,6 @@ end
 function _M.new(self, ref_url_obj)
     local ext = singletons.motan_ext
     local cluster = {
-        name = "idevz",
         url = ref_url_obj,
         registries = {},
         ha = {},
