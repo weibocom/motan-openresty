@@ -4,16 +4,16 @@ package.path = [[/?.lua;/?/init.lua;/media/psf/g/idevz/code/www/vanilla/framewor
 
 local helpers = require "motan.utils"
 
-function sprint_r( ... )
+function sprint_r(...)
     return helpers.sprint_r(...)
 end
 
-function lprint_r( ... )
+function lprint_r(...)
     local rs = sprint_r(...)
     print(rs)
 end
 
-function print_r( ... )
+function print_r(...)
     local rs = sprint_r(...)
     ngx.say(rs)
 end

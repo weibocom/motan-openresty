@@ -11,22 +11,22 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 function _M.new(self, opts)
     local m2codec_obj = m2codec:new()
     local handler = {
-	    _sock = opts.sock or {},
-	    _codec = m2codec_obj,
+        _sock = opts.sock or {}, 
+        _codec = m2codec_obj, 
         service_map = opts.service_map
-	}
+    }
     return setmetatable(handler, mt)
 end
 
 function _M.error_resp(self, err)
     self._codec:set_msg_type(consts.MOTAN_MSG_TYPE_RESPONSE)
     local req_obj = simple.serialize(err)
-    local req = self._codec:encode(1121331, req_obj,{})
+    local req = self._codec:encode(1121331, req_obj, {})
     return req
 end
 
@@ -36,7 +36,7 @@ function _M.resp(self, request_id, metadata, resp_body)
     local metadata = metadata or {}
     local request_id = request_id or ngx.now()
     local resp_body = simple.serialize(resp_body)
-    local resp = self._codec:encode(request_id, resp_body,metadata)
+    local resp = self._codec:encode(request_id, resp_body, metadata)
     return resp
 end
 
@@ -44,12 +44,12 @@ function _M.heartbeat_resp(self, req)
     local req = req or {}
     self._codec:set_msg_type(consts.MOTAN_MSG_TYPE_RESPONSE)
     local req_obj = simple.serialize(nil)
-    local req = self._codec:encode(req.header.request_id, req_obj,{})
+    local req = self._codec:encode(req.header.request_id, req_obj, {})
     return req
 end
 
 function _M.invoker(self)
-	local msg, err = self._codec:decode(self._sock)
+    local msg, err = self._codec:decode(self._sock)
     if not msg then
         ngx.log(ngx.ERR, "\nServer handler invoker err:\n", sprint_r(err))
         return nil, err

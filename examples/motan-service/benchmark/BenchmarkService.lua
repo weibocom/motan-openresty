@@ -12,7 +12,7 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 -- @TODO add metadata to service_instance when new
 function _M.new(self, opts)
@@ -21,11 +21,11 @@ function _M.new(self, opts)
 end
 
 function _M.echoService(self, opts)
-	return opts
+    return opts
 end
 
 function _M.emptyService()
-	return
+    return
 end
 
 return _M

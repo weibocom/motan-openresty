@@ -20,31 +20,31 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 function _M.new(self, opts)
     local m2header = {
-	    magic = consts.MOTAN_MAGIC,
-	    msg_type = opts.msg_type or 0,
-	    version_status = opts.version_status or 0,
-	    serialize = opts.serialize or 0,
-	    request_id = opts.request_id or ngx.now(),
-	}
+        magic = consts.MOTAN_MAGIC, 
+        msg_type = opts.msg_type or 0, 
+        version_status = opts.version_status or 0, 
+        serialize = opts.serialize or 0, 
+        request_id = opts.request_id or ngx.now(), 
+    }
     return setmetatable(m2header, mt)
 end
 
 function _M.pack_header(self)
-	local header_buffer = utils.msb_numbertobytes(0xF1F1, 2)
-	header_buffer = header_buffer .. utils.msb_numbertobytes(self.msg_type, 1)
-	header_buffer = header_buffer .. utils.msb_numbertobytes(self.version_status, 1)
-	header_buffer = header_buffer .. utils.msb_numbertobytes(self.serialize, 1)
+    local header_buffer = utils.msb_numbertobytes(0xF1F1, 2)
+    header_buffer = header_buffer .. utils.msb_numbertobytes(self.msg_type, 1)
+    header_buffer = header_buffer .. utils.msb_numbertobytes(self.version_status, 1)
+    header_buffer = header_buffer .. utils.msb_numbertobytes(self.serialize, 1)
     -- @TODO big num
     header_buffer = header_buffer .. utils.msb_numbertobytes(self.request_id, 8)
-	-- header_buffer = header_buffer .. self.request_id
-	-- local upper, lower = utils.split2int(self.request_id)
-	-- header_buffer = header_buffer .. utils.msb_numbertobytes(upper, 4)
-	-- header_buffer = header_buffer .. utils.msb_numbertobytes(lower, 4)
-	return header_buffer
+    -- header_buffer = header_buffer .. self.request_id
+    -- local upper, lower = utils.split2int(self.request_id)
+    -- header_buffer = header_buffer .. utils.msb_numbertobytes(upper, 4)
+    -- header_buffer = header_buffer .. utils.msb_numbertobytes(lower, 4)
+    return header_buffer
 end
 
 function _M.set_version(self, version)

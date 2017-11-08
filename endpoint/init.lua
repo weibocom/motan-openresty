@@ -6,10 +6,10 @@ local _M = {
 }
 
 function _M.regist_default_endpoint(ext)
-	local motan2_endpoint = require "motan.endpoint.motan"
-	ext:regist_ext_endpoint("motan2", function(url)
-		return motan2_endpoint:new(url)
-	end)
+    local motan2_endpoint = require "motan.endpoint.motan"
+    ext:regist_ext_endpoint("motan2", function(url)
+        return motan2_endpoint:new(url)
+    end)
 end
 
 return _M

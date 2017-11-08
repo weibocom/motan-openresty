@@ -12,19 +12,19 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 function _M.new(self, opts)
     local url = {}
     local opt_type = type(opts)
     if opt_type == "table" then
         url = {
-            protocol = opts.protocol or "",
-            host = opts.host or "",
-            port = opts.port or 0,
-            path = opts.path or "",
-            group = opts.group or "",
-            params = opts.params or {},
+            protocol = opts.protocol or "", 
+            host = opts.host or "", 
+            port = opts.port or 0, 
+            path = opts.path or "", 
+            group = opts.group or "", 
+            params = opts.params or {}, 
         }
     elseif opt_type == "string" then
         -- @TODO
@@ -39,21 +39,21 @@ end
 
 function _M.get_urlinfo(self, with_params_str)
     local url_info = {
-        self.protocol,
-        consts.PROTOCOL_SEPARATOR,
-        self.host,
-        consts.COLON_SEPARATOR,
-        self.port,
-        consts.PATH_SEPARATOR,
-        self.path,
-        consts.QMARK_SEPARATOR,
-        "group=",
-        self.group,
+        self.protocol, 
+        consts.PROTOCOL_SEPARATOR, 
+        self.host, 
+        consts.COLON_SEPARATOR, 
+        self.port, 
+        consts.PATH_SEPARATOR, 
+        self.path, 
+        consts.QMARK_SEPARATOR, 
+        "group=", 
+        self.group, 
     }
     if with_params_str then
         local params_arr = {}
         if self.params ~= null then
-            for k,v in pairs(self.params) do
+            for k, v in pairs(self.params) do
                 tab_insert(params_arr, consts.QUERY_PARAM_SEPARATOR)
                 tab_insert(params_arr, k)
                 tab_insert(params_arr, consts.EQUAL_SIGN_SEPERATOR)

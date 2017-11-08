@@ -25,12 +25,12 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 function _M.new(self, url)
     local motan_ep = {
-        url = url,
-        _sock = {},
+        url = url, 
+        _sock = {}, 
     }
     return setmetatable(motan_ep, mt)
 end
@@ -65,7 +65,7 @@ function _M.set_timeout(self, timeout)
     if not sock then
         return nil, "not initialized"
     end
-
+    
     return sock:settimeout(timeout)
 end
 
@@ -85,54 +85,54 @@ local function _read_reply(self, sock)
         return nil, err
     end
     local magic = utils.msb_stringtonumber(magic_buffer)
-
+    
     local msg_type_buf, err = sock:receive(consts.MOTAN_HEADER_MSG_TYPE_BYTE)
     if not msg_type_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local msg_type = utils.msb_stringtonumber(msg_type_buf)
-
+    
     local version_status_buf, err = sock:receive(consts.MOTAN_HEADER_VERSION_STATUS_BYTE)
     if not version_status_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local version_status = utils.msb_stringtonumber(version_status_buf)
-
+    
     local serialize_buf, err = sock:receive(consts.MOTAN_HEADER_SERIALIZE_BYTE)
     if not serialize_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local serialize = utils.msb_stringtonumber(serialize_buf)
-
+    
     local request_id_buf, err = sock:receive(consts.MOTAN_HEADER_REQUEST_ID_BYTE)
     if not request_id_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
-
+    
     local request_id = utils.msb_stringtonumber(request_id_buf)
-
+    
     local header_obj = header:new{
-        msg_type = msg_type,
-        version_status = version_status,
-        serialize = serialize,
-        request_id = request_id,
+        msg_type = msg_type, 
+        version_status = version_status, 
+        serialize = serialize, 
+        request_id = request_id, 
     }
-
+    
     if band(msg_type, 0x08) == 0x08 then
         header_obj:set_gzip(true)
     end
-
+    
     local metadata_size_buffer, err = sock:receive(consts.MOTAN_META_SIZE_BYTE)
     if not metadata_size_buffer then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local metasize = utils.msb_stringtonumber(metadata_size_buffer)
-
+    
     local metadata = {}
     if metasize > 0 then
         local metadata_buffer, err = sock:receive(metasize)
@@ -142,7 +142,7 @@ local function _read_reply(self, sock)
         local metadata_arr = utils.explode("\n", metadata_buffer)
         for i = 1, #metadata_arr, 2 do
             local key = metadata_arr[i]
-            metadata[key] = metadata_arr[i +1 ]
+            metadata[key] = metadata_arr[i + 1]
         end
     end
     local bodysize_buffer, err = sock:receive(consts.MOTAN_BODY_SIZE_BYTE)
@@ -151,7 +151,7 @@ local function _read_reply(self, sock)
         return nil, err
     end
     local body_size = utils.msb_stringtonumber(bodysize_buffer)
-
+    
     local buffer, body_buffer = "", ""
     local remaining = body_size - #body_buffer
     while remaining > 0 do
@@ -164,9 +164,9 @@ local function _read_reply(self, sock)
         remaining = body_size - #body_buffer
     end
     local msg = message:new{
-        header = header_obj,
-        metadata = metadata,
-        body = body_buffer,
+        header = header_obj, 
+        metadata = metadata, 
+        body = body_buffer, 
     }
     return msg
 end

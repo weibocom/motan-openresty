@@ -18,20 +18,20 @@ function _M.serialize(params)
         buffer = utils.msb_numbertobytes(2, consts.MOTAN_SIMPLE_TYPE_BYTE)
         local btemp = ""
         local btemp_len = 0
-        for k,v in pairs(params) do
+        for k, v in pairs(params) do
             if type(v) == "table" then
                 goto continue
             end
             btemp = btemp 
-                    .. utils.msb_numbertobytes(#k, consts.MOTAN_DATA_PACK_INT32_BYTE) .. k 
-                    .. utils.msb_numbertobytes(#v, consts.MOTAN_DATA_PACK_INT32_BYTE) .. v
+            .. utils.msb_numbertobytes(#k, consts.MOTAN_DATA_PACK_INT32_BYTE) .. k 
+            .. utils.msb_numbertobytes(#v, consts.MOTAN_DATA_PACK_INT32_BYTE) .. v
             btemp_len = btemp_len + #k + #v + 8
             ::continue::
         end
         buffer = buffer .. utils.msb_numbertobytes(btemp_len, consts.MOTAN_DATA_PACK_INT32_BYTE) .. btemp
     elseif p_type == "string" then
         buffer = utils.msb_numbertobytes(1, consts.MOTAN_SIMPLE_TYPE_BYTE) 
-                 .. utils.msb_numbertobytes(#params, consts.MOTAN_DATA_PACK_INT32_BYTE) .. params
+        .. utils.msb_numbertobytes(#params, consts.MOTAN_DATA_PACK_INT32_BYTE) .. params
     elseif p_type == nil then
         buffer = utils.msb_numbertobytes(0, consts.MOTAN_SIMPLE_TYPE_BYTE)
     end
@@ -50,7 +50,7 @@ function _M.deserialize(data)
     if buf_type == 0 then
         obj = null
     elseif buf_type == 1 then
-        body_len = utils.msb_stringtonumber(str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE  - 1))
+        body_len = utils.msb_stringtonumber(str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
         pos = pos + consts.MOTAN_DATA_PACK_INT32_BYTE
         obj = str_sub(data, pos)
     elseif buf_type == 2 then

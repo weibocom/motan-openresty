@@ -27,7 +27,7 @@ function _M.get_local_ip()
     local c_str_t = ffi.typeof("char[4]")
     local if_name = ffi.new(c_str_t)
     ffi.copy(if_name, "eth0")
-
+    
     local ip = ffi.new("char[32]")
     local local_ip = motan_tools.get_local_ip(if_name, ip)
     return ffi.string(ip)
@@ -39,16 +39,16 @@ function _M.build_service_key(group, version, protocol, path)
     local protocol = protocol or ""
     local path = path or ""
     local arr = {
-        group,
-        "_", version,
-        "_", protocol,
-        "_", path,
+        group, 
+        "_", version, 
+        "_", protocol, 
+        "_", path, 
     }
     return concat(arr)
 end
 
 function _M.is_in_table(value, tbl)
-    for k,v in ipairs(tbl) do
+    for k, v in ipairs(tbl) do
         if v == value then
             return true
         end
@@ -60,18 +60,18 @@ function _M.is_empty(t)
     return t == nil or next(t) == nil
 end
 
-function _M.explode(d,p)
+function _M.explode(d, p)
     local t, ll
-    t={}
-    ll=0
+    t = {}
+    ll = 0
     if(#p == 1) then return {p} end
     while true do
-        l=string.find(p,d,ll,true) -- find the next d in the string
-        if l~=nil then -- if "not not" found then..
-            table.insert(t, string.sub(p,ll,l-1)) -- Save it in our array.
-            ll=l+1 -- save just after where we found it for searching next time.
+        l = string.find(p, d, ll, true) -- find the next d in the string
+        if l ~= nil then -- if "not not" found then.. 
+            table.insert(t, string.sub(p, ll, l - 1)) -- Save it in our array.
+            ll = l + 1 -- save just after where we found it for searching next time.
         else
-            table.insert(t, string.sub(p,ll)) -- Save what's left in our array.
+            table.insert(t, string.sub(p, ll)) -- Save what's left in our array.
             break -- Break at end, as it should be, according to the lua manual.
         end
     end
@@ -116,7 +116,7 @@ end
 
 -- split a path in individual parts
 function _M.split_path(str)
-   return _M.split(str, '[\\/]+')
+    return _M.split(str, '[\\/]+')
 end
 
 -- value in table?
@@ -131,7 +131,7 @@ end
 function _M.reverse_table(t)
     local size = #t + 1
     local reversed = {}
-    for i = 1, #t  do
+    for i = 1, #t do
         reversed[size - i] = t[i]
     end
     return reversed
@@ -151,42 +151,42 @@ end
 
 -- Read an integer in LSB order.
 function _M.lsb_stringtonumber(str)
-  local function _b2n(exp, num, digit, ...)
-    if not digit then return num end
-    return _b2n(exp*256, num + digit*exp, ...)
-  end
-  return _b2n(256, string.byte(str, 1, -1))
+    local function _b2n(exp, num, digit, ...)
+        if not digit then return num end
+        return _b2n(exp * 256, num + digit * exp, ...)
+    end
+    return _b2n(256, string.byte(str, 1, -1))
 end
 
 -- Read an integer in MSB order.
 function _M.msb_stringtonumber(str)
-  local function _b2n(num, digit, ...)
-    if not digit then return num end
-    return _b2n(num*256 + digit, ...)
-  end
-  return _b2n(0, string.byte(str, 1, -1))
+    local function _b2n(num, digit, ...)
+        if not digit then return num end
+        return _b2n(num * 256 + digit, ...)
+    end
+    return _b2n(0, string.byte(str, 1, -1))
 end
 
 -- Write an integer in MSB order using width bytes.
 function _M.msb_numbertobytes(num, width)
-  local  function _n2b(t, width, num, rem)
-    if width == 0 then
-        return table.concat(t)
+    local function _n2b(t, width, num, rem)
+        if width == 0 then
+            return table.concat(t)
+        end
+        table.insert(t, 1, string.char(rem * 256))
+        return _n2b(t, width - 1, math.modf(num / 256))
     end
-    table.insert(t, 1, string.char(rem * 256))
-    return _n2b(t, width-1, math.modf(num/256))
-  end
-  return _n2b({}, width, math.modf(num/256))
+    return _n2b({}, width, math.modf(num / 256))
 end
 
 -- Write an integer in LSB order using width bytes.
 function _M.lsb_numbertobytes(num, width)
-  local function _n2b(width, num, rem)
-    rem = rem * 256
-    if width == 0 then return rem end
-    return rem, _n2b(width-1, math.modf(num/256))
-  end
-  return string.char(_n2b(width-1, math.modf(num/256)))
+    local function _n2b(width, num, rem)
+        rem = rem * 256
+        if width == 0 then return rem end
+        return rem, _n2b(width - 1, math.modf(num / 256))
+    end
+    return string.char(_n2b(width - 1, math.modf(num / 256)))
 end
 
 
@@ -196,13 +196,13 @@ end
 function _M.get_keywords ()
     if not lua_keyword then
         lua_keyword = {
-            ["and"] = true, ["break"] = true,  ["do"] = true,
-            ["else"] = true, ["elseif"] = true, ["end"] = true,
-            ["false"] = true, ["for"] = true, ["function"] = true,
-            ["if"] = true, ["in"] = true,  ["local"] = true, ["nil"] = true,
-            ["not"] = true, ["or"] = true, ["repeat"] = true,
-            ["return"] = true, ["then"] = true, ["true"] = true,
-            ["until"] = true,  ["while"] = true
+            ["and"] = true, ["break"] = true, ["do"] = true, 
+            ["else"] = true, ["elseif"] = true, ["end"] = true, 
+            ["false"] = true, ["for"] = true, ["function"] = true, 
+            ["if"] = true, ["in"] = true, ["local"] = true, ["nil"] = true, 
+            ["not"] = true, ["or"] = true, ["repeat"] = true, 
+            ["return"] = true, ["then"] = true, ["true"] = true, 
+            ["until"] = true, ["while"] = true
         }
     end
     return lua_keyword
@@ -218,7 +218,7 @@ local function has_lquote(s)
     local start, finish, bracket, equals, next_equals = nil, 0, nil, nil, nil
     -- print("checking lquote for", s)
     repeat
-        start, finish, bracket, next_equals =  s:find(lstring_pat, finish + 1)
+        start, finish, bracket, next_equals = s:find(lstring_pat, finish + 1)
         if start then
             -- print("found start", start, finish, bracket, next_equals)
             --length of captured =. Ex: [==[ is 2, ]] is 0.
@@ -227,7 +227,7 @@ local function has_lquote(s)
         end
     until not start
     --next_equals will be nil if there was no match.
-    return   equals 
+    return equals 
 end
 
 --- Quote the given string and preserve any control or escape characters, such that reloading the string in Lua returns the same result.
@@ -238,16 +238,16 @@ function _M.quote_string(s)
     --sequences that may cause issues.
     --This is important when strings are embedded within strings, like when serializing.
     local equal_signs = has_lquote(s) 
-    if  s:find("\n") or equal_signs then 
+    if s:find("\n") or equal_signs then 
         -- print("going with long string:", s)
-        equal_signs =  ("="):rep((equal_signs or -1) + 1)
+        equal_signs = ("="):rep((equal_signs or - 1) + 1)
         --long strings strip out leading \n. We want to retain that, when quoting.
         if s:find("^\n") then s = "\n" .. s end
         --if there is an embedded sequence that matches a long quote, then
         --find the one with the maximum number of = signs and add one to that number
-        local lbracket, rbracket =  
-            "[" .. equal_signs .. "[",  
-            "]" .. equal_signs .. "]"
+        local lbracket, rbracket = 
+        "[" .. equal_signs .. "[", 
+        "]" .. equal_signs .. "]"
         s = lbracket .. s .. rbracket
     else
         --Escape funny stuff.
@@ -258,7 +258,7 @@ end
 
 local function quote (s)
     if type(s) == 'table' then
-        return _M.write(s,'')
+        return _M.write(s, '')
     else
         --AAS
         return _M.quote_string(s)-- ('%q'):format(tostring(s))
@@ -274,13 +274,13 @@ local function quote_if_necessary (v)
     return v
 end
 
-local function index (numkey,key)
+local function index (numkey, key)
     --AAS
     if not numkey then 
         key = quote(key) 
-         key = key:find("^%[") and (" " .. key .. " ") or key
+        key = key:find("^%[") and (" " .. key .. " ") or key
     end
-    return '['..key..']'
+    return '[' .. key .. ']'
 end
 
 local function is_identifier (s)
@@ -299,7 +299,7 @@ end
 --  Defaults to false.
 --  @return a string
 --  @return a possible error message
-function _M.write (tbl,space,not_clever)
+function _M.write (tbl, space, not_clever)
     if type(tbl) ~= 'table' then
         local res = tostring(tbl)
         if type(tbl) == 'string' then return quote(tbl) end
@@ -314,37 +314,37 @@ function _M.write (tbl,space,not_clever)
     local lines = {}
     local line = ''
     local tables = {}
-
-
+    
+    
     local function put(s)
         if #s > 0 then
-            line = line..s
+            line = line .. s
         end
     end
-
+    
     local function putln (s)
         if #line > 0 then
-            line = line..s
-            append(lines,line)
+            line = line .. s
+            append(lines, line)
             line = ''
         else
-            append(lines,s)
+            append(lines, s)
         end
     end
-
+    
     local function eat_last_comma ()
-        local n,lastch = #lines
-        local lastch = lines[n]:sub(-1,-1)
+        local n, lastch = #lines
+        local lastch = lines[n]:sub(-1, -1)
         if lastch == ',' then
-            lines[n] = lines[n]:sub(1,-2)
+            lines[n] = lines[n]:sub(1, -2)
         end
     end
-
+    
     local writeit
-    writeit = function (t,oldindent,indent)
+    writeit = function (t, oldindent, indent)
         local tp = type(t)
-        if tp ~= 'string' and  tp ~= 'table' then
-            putln(quote_if_necessary(tostring(t))..',')
+        if tp ~= 'string' and tp ~= 'table' then
+            putln(quote_if_necessary(tostring(t)) .. ',')
         elseif tp == 'string' then
             -- if t:find('\n') then
             --     putln('[[\n'..t..']],')
@@ -352,49 +352,49 @@ function _M.write (tbl,space,not_clever)
             --     putln(quote(t)..',')
             -- end
             --AAS
-            putln(_M.quote_string(t) ..",")
+            putln(_M.quote_string(t) .. ",")
         elseif tp == 'table' then
             if tables[t] then
                 putln('<cycle>,')
                 return
             end
             tables[t] = true
-            local newindent = indent..space
+            local newindent = indent .. space
             putln('{')
             local used = {}
             if not not_clever then
-                for i,val in ipairs(t) do
+                for i, val in ipairs(t) do
                     put(indent)
-                    writeit(val,indent,newindent)
+                    writeit(val, indent, newindent)
                     used[i] = true
                 end
             end
-            for key,val in pairs(t) do
+            for key, val in pairs(t) do
                 local numkey = type(key) == 'number'
                 if not_clever then
                     key = tostring(key)
-                    put(indent..index(numkey,key)..set)
-                    writeit(val,indent,newindent)
+                    put(indent .. index(numkey, key) .. set)
+                    writeit(val, indent, newindent)
                 else
                     if not numkey or not used[key] then -- non-array indices
                         if numkey or not is_identifier(key) then
-                            key = index(numkey,key)
+                            key = index(numkey, key)
                         end
-                        put(indent..key..set)
-                        writeit(val,indent,newindent)
+                        put(indent .. key .. set)
+                        writeit(val, indent, newindent)
                     end
                 end
             end
             tables[t] = nil
             eat_last_comma()
-            putln(oldindent..'},')
+            putln(oldindent .. '},')
         else
-            putln(tostring(t)..',')
+            putln(tostring(t) .. ',')
         end
     end
-    writeit(tbl,'',space)
+    writeit(tbl, '', space)
     eat_last_comma()
-    return concat(lines,#space > 0 and '\n' or '')
+    return concat(lines, #space > 0 and '\n' or '')
 end
 
 function _M.sprint_r(o)

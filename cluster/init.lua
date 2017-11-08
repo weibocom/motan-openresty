@@ -14,7 +14,7 @@ local _M = {
     _VERSION = '0.0.1'
 }
 
-local mt = { __index = _M }
+local mt = {__index = _M}
 
 function _M._init_filters(self)
     local cluster_filter, endpoint_filters = self.url:get_filters()
@@ -51,42 +51,42 @@ _get_filter_endpoint = function(opts)
     local _res = {
         _VERSION = '0.0.1'
     }
-    local _mt = { __index = _res }
+    local _mt = {__index = _res}
     function _res.new(_res_self, opts)
         local _filter_endpoint = {
-            url = opts.url,
-            filter = opts.filter,
-            caller = opts.caller,
+            url = opts.url, 
+            filter = opts.filter, 
+            caller = opts.caller, 
             name = "filter_endpoint"
         }
         return setmetatable(_filter_endpoint, _mt)
     end
-
+    
     function _res.call(_res_self, req)
         return _res_self.filter:filter(_res_self.caller, req)
     end
-
+    
     function _res.get_url(_res_self)
         return _res_self.url
     end
-
+    
     function _res.set_url(_res_self, url)
         _res_self.url = url
     end
-
+    
     function _res.get_name(_res_self)
         return _res_self.name
     end
-
+    
     function _res.destroy(_res_self)
     end
-
+    
     function _res.set_proxy(_res_self, proxy)
     end
-
+    
     function _res.set_serialization(_res_self, serialization)
     end
-
+    
     function _res.is_available(_res_self)
     end
     return _res:new(opts)
@@ -99,8 +99,8 @@ function _M._add_filter(self, endpoint)
         last_filter = filter
     end
     local filter_endpoint = _get_filter_endpoint{
-        url = endpoint:get_url(),
-        filter = last_filter,
+        url = endpoint:get_url(), 
+        filter = last_filter, 
         caller = endpoint
     }
     -- @TODO statusFilters
@@ -152,7 +152,7 @@ function _M._parse_registry(self)
     -- @TODO support multi regstry at the same time
     local registry_key = self.url.params[consts.MOTAN_REGISTRY_KEY]
     local registry_url_obj = assert(singletons.client_regstry[registry_key]
-        , "Empty registry config: " .. registry_key)
+    , "Empty registry config: " .. registry_key)
     local registry = self.ext:get_registry(registry_url_obj)
     registry:subscribe(self.url, self)
 end
@@ -160,18 +160,18 @@ end
 function _M.new(self, ref_url_obj)
     local ext = singletons.motan_ext
     local cluster = {
-        url = ref_url_obj,
-        registries = {},
-        ha = {},
-        lb = {},
-        refers = {},
+        url = ref_url_obj, 
+        registries = {}, 
+        ha = {}, 
+        lb = {}, 
+        refers = {}, 
         -- @TODO
-        filters = {},
-        cluster_filter = {},
-        ext = ext,
-        registry_refers = {},
-        endpoint_map = {},
-        available = ture,
+        filters = {}, 
+        cluster_filter = {}, 
+        ext = ext, 
+        registry_refers = {}, 
+        endpoint_map = {}, 
+        available = ture, 
         closed = false
     }
     return setmetatable(cluster, mt)
