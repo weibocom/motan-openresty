@@ -20,7 +20,6 @@ end
 local ngx = ngx
 local assert = assert
 local utils = require "motan.utils"
-local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 
 local Motan = {}

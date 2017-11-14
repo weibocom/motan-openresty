@@ -1,8 +1,7 @@
 -- Copyright (C) idevz (idevz.org)
 
 
-local assert = assert
-local consts = require "motan.consts"
+local ipairs = ipairs
 local singletons = require "motan.singletons"
 local utils = require "motan.utils"
 
@@ -24,32 +23,32 @@ _get_default_msg_handler = function()
         }
         return setmetatable(_default_msg_handler, _mt)
     end
-
+    
     function _res.initialize(_res_self)
     end
-
+    
     function _res.add_provider(_res_self, provider)
         _res_self.providers[provider:get_path()] = provider
     end
-
+    
     function _res.rm_provider(_res_self, provider)
         local service_name = provider:get_path()
         if _res_self.providers[service_name] ~= nil then
             _res_self.providers[service_name] = nil
         end
     end
-
+    
     function _res.get_provider(_res_self, service_name)
         local service_name = provider:get_path()
         return _res_self.providers[service_name] or false
     end
-
+    
     function _res.call(_res_self, req)
         local req = req
         local provider = _res_self.providers[req:get_service_name()]
         return provider:call(req)
     end
-
+    
     return _res:new()
 end
 
@@ -64,41 +63,41 @@ _get_filter_provider_warper = function(provider, filter)
             ngx.log(ngx.ERR, "Err warper a provider with an empty provider or filter")
         end
         local _filter_provider_warper = {
-            provider = provider,
-            filter = filter,
+            provider = provider, 
+            filter = filter, 
             name = "filter_provider_warper"
         }
         return setmetatable(_filter_provider_warper, _mt)
     end
-
+    
     function _res.set_service(_res_self, service)
         _res_self.provider:set_service(service)
     end
-
+    
     function _res.get_url(_res_self)
         return provider:get_url()
     end
-
+    
     function _res.set_url(_res_self, url)
         _res_self.provider:set_url(url)
     end
-
+    
     function _res.get_path(_res_self)
         return _res_self.provider:get_path()
     end
-
+    
     function _res.is_available(_res_self)
         return _res_self.provider.is_available()
     end
-
+    
     function _res.destroy(_res_self)
         _res_self.provider.destroy()
     end
-
+    
     function _res.call(_res_self, req)
         return _res_self.filter:filter(_res_self.provider, req)
     end
-
+    
     return _res:new(provider, filter)
 end
 
@@ -107,7 +106,7 @@ _warp_provider_with_filter = function(provider)
     local last_filter = singletons.motan_ext:get_last_endpoint_filter()
     local provider_url = provider:get_url()
     local _, filters = provider_url:get_filters()
-
+    
     for _, filter in ipairs(filters) do
         local nfilter = filter:new_filter(provider_url)
         nfilter:set_next(last_filter)

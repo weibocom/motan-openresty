@@ -32,6 +32,7 @@ function _M.resp(self, response, serialization)
     return self.protocol:convert_to_response_msg(response, serialization)
 end
 
+-- @TODO heartbeat
 function _M.heartbeat_resp(self, req)
     local req = req or {}
     self._codec:set_msg_type(consts.MOTAN_MSG_TYPE_RESPONSE)
