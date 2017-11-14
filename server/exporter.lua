@@ -45,8 +45,8 @@ _do_register = function(premature, self)
     for service_key, service_obj in pairs(self.service_map) do
         local service_url_obj = service_obj.url
         heartbeat_map[service_key] = {}
-        local registry_key = service_url_obj.params.registry or ""
-        if registry_key ~= "" then
+        local registry_key = service_url_obj.params.registry or nil
+        if registry_key then
             local registry_info = assert(self.server_regstry[registry_key]
             , "Empty registry config: " .. registry_key)
             if not utils.is_empty(registry_info) then
@@ -59,7 +59,7 @@ _do_register = function(premature, self)
         end
     end
     ngx.log(ngx.INFO, "Service registry: \n" .. sprint_r(heartbeat_map))
-    local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD, _do_heartbeat, heartbeat_map)
+    local ok, err = ngx.timer.at(0, _do_heartbeat, heartbeat_map)
     if not ok then
         ngx.log(ngx.ERR, "failed to create the _do_register timer: ", err)
         return

@@ -143,6 +143,16 @@ MOTAN_LUA_SERVICE_PACKAGE = "MOTAN_LUA_SERVICE_PACKAGE"
 MOTAN_LRU_MAX_REFERERS = 100
 
 
+---------------- protocol constants -----------------
+MOTAN_SERIALIZE_ARR = {}
+MOTAN_SERIALIZE_ARR[0] = "hessian"
+MOTAN_SERIALIZE_ARR[1] = "grpc-pb"
+MOTAN_SERIALIZE_ARR[2] = "json"
+MOTAN_SERIALIZE_ARR[3] = "msgpack"
+MOTAN_SERIALIZE_ARR[6] = "simple"
+
+
+
 ---------------- consul registry constants -----------------
 
 MOTAN_CONSUL_HEARTBEAT_PERIOD = 5

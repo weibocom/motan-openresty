@@ -6,8 +6,6 @@ local setmetatable = setmetatable
 local utils = require "motan.utils"
 local consts = require "motan.consts"
 local singletons = require "motan.singletons"
-local endpoint = require "motan.endpoint.motan"
-local motan_consul = require "motan.registry.consul"
 
 
 local _M = {
@@ -57,6 +55,7 @@ _get_filter_endpoint = function(opts)
             url = opts.url, 
             filter = opts.filter, 
             caller = opts.caller, 
+            status_filters = opts.status_filters, 
             name = "filter_endpoint"
         }
         return setmetatable(_filter_endpoint, _mt)
@@ -87,23 +86,37 @@ _get_filter_endpoint = function(opts)
     function _res.set_serialization(_res_self, serialization)
     end
     
-    function _res.is_available(_res_self)
+    function _res.is_available(_res_self) 
+        if not utils.is_empty(_res_self.status_filters) then
+            for i = #_res_self.status_filters, 1, -1 do
+                local is_available = _res_self.status_filters[i]:is_available()
+                if not is_available then
+                    return false
+                end
+            end
+        end
+        return _res_self.caller:is_available()
     end
     return _res:new(opts)
 end
 
 function _M._add_filter(self, endpoint)
     local last_filter = self.ext:get_last_endpoint_filter()
+    local status_filters = {}
     for _, filter in ipairs(self.filters) do
-        filter:set_next(last_filter)
-        last_filter = filter
+        local nfilter = filter:new_filter(endpoint:get_url())
+        nfilter:set_next(last_filter)
+        last_filter = nfilter
+        if nfilter["is_available"] ~= nil then
+            table.insert(status_filters, nfilter)
+        end
     end
     local filter_endpoint = _get_filter_endpoint{
         url = endpoint:get_url(), 
         filter = last_filter, 
-        caller = endpoint
+        caller = endpoint, 
+        status_filters = status_filters
     }
-    -- @TODO statusFilters
     return filter_endpoint
 end
 

@@ -2,7 +2,7 @@
 
 
 local _M = {
-    sys_conf = {}, 
+    config = {}, 
     var = {}, 
     motan_ext = {}, 
     referer_map = {}, 

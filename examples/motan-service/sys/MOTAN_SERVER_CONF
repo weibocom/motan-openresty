@@ -1,4 +1,4 @@
-[motan.basicRefer.simple_rpc_ref]
+[motan.basicService.simple_rpc_service]
 group=yf-api-core
 registry=consul-test-motan2
 serialization=simple
@@ -11,7 +11,8 @@ filter=accessLog,metrics
 maxClientConnection=10
 minClientConnection=1
 retries=0
-application=whos-agent
+provider=motan
+application=idevz-test
 
 [motan.service.or_service]
 group=idevz-test-static
@@ -19,6 +20,16 @@ path=com.weibo.motan.status
 registry=consul-test-motan2
 version=1
 port=1234
+protocol=motan2
+serialization=simple
+basicRefer=simple_rpc_service
+
+[motan.service.or_service_test]
+group=idevz-test-static_test
+path=com.weibo.motan.status
+registry=consul-test-motan2
+version=1
+port=1245
 protocol=motan2
 serialization=simple
 basicRefer=simple_rpc_service

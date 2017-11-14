@@ -95,30 +95,9 @@ function Motan.content_motan_server()
         ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
         return
     end
-    local err_count = 1
     local server = require "motan.server"
-    local service_map = singletons.service_map
-    local sock = assert(ngx.req.socket(true))
-    local server_obj = server:new{
-        sock = sock, 
-        service_map = service_map
-    }
-    local buf = ""
-    
-    while not ngx.worker.exiting() do
-        local buf, err = server_obj:invoker()
-        if not buf then
-            err_count = err_count + 1
-            return nil, err
-        end
-        if err_count > 3 then
-            break
-        end
-        local bytes, err = sock:send(buf)
-        if not bytes then
-            break
-        end
-    end
+    local motan_server = server:new()
+    motan_server:run()
 end
 
 function Motan.access()
@@ -131,9 +110,9 @@ function Motan.content_motan_client_test()
     local res = client:show_batch({name = "idevz"})
     print_r("<pre/>")
     print_r(serialize.deserialize(res.body))
-    local client2 = client_map["rpc_test_java"]
-    local res2 = client2:hello("<-----Motan")
-    print_r(serialize.deserialize(res2.body))
+    -- local client2 = client_map["rpc_test_java"]
+    -- local res2 = client2:hello("<-----Motan")
+    -- print_r(serialize.deserialize(res2.body))
 end
 
 return Motan

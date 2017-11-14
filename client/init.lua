@@ -5,8 +5,9 @@ local setmetatable = setmetatable
 local consts = require "motan.consts"
 local cluster = require "motan.cluster"
 local simple = require "motan.serialize.simple"
-local message = require "motan.protocol.message"
-local m2codec = require "motan.protocol.m2codec"
+local message = require "motan.protocol.motan2.message"
+local m2codec = require "motan.protocol.motan2.codec"
+local singletons = require "motan.singletons"
 
 local _M = {
     _VERSION = '0.0.1'
@@ -25,10 +26,9 @@ function _M.new(self, ref_url_obj)
 end
 
 function _do_call(self, fucname, ...)
-    local m2codec_obj = m2codec:new{
-        msg_type = consts.MOTAN_MSG_TYPE_REQUEST, 
-    }
-    local header = m2codec_obj:buildRequestHeader(555)
+    -- @TODO service_protocol
+    local protocol = singletons.motan_ext:get_protocol("motan2")
+    local header = protocol:buildRequestHeader(555)
     local metadata = {
         M_p = self.url.path, 
         M_m = fucname, 
@@ -41,7 +41,8 @@ function _do_call(self, fucname, ...)
         metadata = metadata, 
         body = simple.serialize(req_params), 
     }
-    return self.cluster:call(req)
+    local resp = self.cluster:call(req)
+    return resp
 end
 
 setmetatable(_M, {__index = function(self, fucname)

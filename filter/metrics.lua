@@ -28,6 +28,7 @@ function _M.get_name(self)
 end
 
 function _M.new_filter(self, url)
+    return self:new()
 end
 
 function _M.filter(self, caller, req)

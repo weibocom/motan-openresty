@@ -24,10 +24,10 @@ function _M.show_batch(self, opts)
     share_motan:set("idevz", idevz + 1)
     local num = share_motan:get("idevz")
     
-    local client_map = singletons.client_map
-    local client = client_map["rpc_test_java"]
-    local rpc_res_tmp = client:hello("<-----Motan")
-    local rpc_res = serialize.deserialize(rpc_res_tmp.body)
+    -- local client_map = singletons.client_map
+    -- local client = client_map["rpc_test_java"]
+    -- local rpc_res_tmp = client:hello("<-----Motan")
+    -- local rpc_res = serialize.deserialize(rpc_res_tmp.body)
     
     
     if type(opts) == "table" then
@@ -36,7 +36,7 @@ function _M.show_batch(self, opts)
         else
             return {
                 openresty = "--> Motan" .. "-" .. opts.name .. ngx.now(), 
-                Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
+                -- Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
             }
         end
     else

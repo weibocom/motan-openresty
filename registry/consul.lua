@@ -107,7 +107,7 @@ _lookup_service_update = function(premature, registry, url, listener_map)
     if not premature then
         local ref_url_objs = registry:discover(url)
         local need_notify = _check_need_notify()
-        if need_notify then
+        if need_notify and not utils.is_empty(ref_url_objs) then
             for k, listener in pairs(listener_map) do
                 listener:_notify(url, ref_url_objs)
             end
@@ -149,7 +149,8 @@ function _M.discover(self, url)
     local key = "/health/service/" .. service_name .. params
     local services, ok = self.client:get(key)
     if not ok[1] then
-        ngx.log(ngx.ERR, "Consul discover error: \n" .. sprint_r(err_or_info) .. "\n")
+        ngx.log(ngx.ERR, "Consul discover error: \n" .. sprint_r(ok) .. "\n")
+        return false
     end
     for k, service_info in pairs(services) do
         local service = url:new{

@@ -15,7 +15,9 @@ function _M.new()
         ha_fctrs = {}, 
         lb_fctrs = {}, 
         serialize_fctrs = {}, 
+        protocol_fctrs = {},
         endpoint_fctrs = {}, 
+        provider_fctrs = {}, 
         registry_fctrs = {}, 
         registries = {}, 
     }
@@ -45,7 +47,7 @@ function _M.get_filter(self, name)
     if new_filter ~= nil then
         return new_filter()
     end
-    ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
+    ngx.log(ngx.ERR, "Didn't have a filter: " .. key)
 end
 
 
@@ -60,7 +62,7 @@ function _M.get_ha(self, url)
     if new_ha ~= nil then
         return new_ha(url)
     end
-    ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
+    ngx.log(ngx.ERR, "Didn't have a ha: " .. key)
 end
 
 
@@ -75,7 +77,7 @@ function _M.get_lb(self, url)
     if new_lb ~= nil then
         return new_lb(url)
     end
-    ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
+    ngx.log(ngx.ERR, "Didn't have a lb: " .. key)
 end
 
 
@@ -84,13 +86,28 @@ function _M.regist_ext_serialization(self, name, func)
     return _new_index(self, "serialize_fctrs", name, func)
 end
 
-function _M.get_serialization(self, url)
-    local key = url.params["loadbalance"]
+function _M.get_serialization(self, name)
+    local key = name
     local new_serialize = self.serialize_fctrs[key]
     if new_serialize ~= nil then
-        return new_serialize(url)
+        return new_serialize()
     end
-    ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
+    ngx.log(ngx.ERR, "Didn't have a serialization: " .. key)
+end
+
+
+--+--------------------------------------------------------------------------------+--
+function _M.regist_ext_protocol(self, name, func)
+    return _new_index(self, "protocol_fctrs", name, func)
+end
+
+function _M.get_protocol(self, protocol_name)
+    local key = protocol_name
+    local new_protocol = self.protocol_fctrs[key]
+    if new_protocol ~= nil then
+        return new_protocol()
+    end
+    ngx.log(ngx.ERR, "Didn't have a protocol: " .. key)
 end
 
 
@@ -104,6 +121,21 @@ function _M.get_endpoint(self, url)
     local new_endpoint = self.endpoint_fctrs[key]
     if new_endpoint ~= nil then
         return new_endpoint(url)
+    end
+    ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
+end
+
+
+--+--------------------------------------------------------------------------------+--
+function _M.regist_ext_provider(self, name, func)
+    return _new_index(self, "provider_fctrs", name, func)
+end
+
+function _M.get_provider(self, url)
+    local key = url.params["provider"]
+    local new_provider = self.provider_fctrs[key]
+    if new_provider ~= nil then
+        return new_provider(url)
     end
     ngx.log(ngx.ERR, "Didn't have a endpoint: " .. key)
 end

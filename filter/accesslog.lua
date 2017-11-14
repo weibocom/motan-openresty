@@ -11,9 +11,10 @@ local _M = {
 
 local mt = {__index = _M}
 
-function _M.new(self)
+function _M.new(self, url)
     local accessLog = {
         name = "accessLog", 
+        url = url or {}, 
         next = {}
     }
     return setmetatable(accessLog, mt)
@@ -28,10 +29,11 @@ function _M.get_name(self)
 end
 
 function _M.new_filter(self, url)
+    return self:new(url)
 end
 
 function _M.filter(self, caller, req)
-    local resp = self:get_next():filter(caller, req)
+    local resp = self:get_next():filter(caller, req)    
     return resp
 end
 
@@ -49,6 +51,13 @@ end
 
 function _M.get_type(self)
     return consts.MOTAN_FILTER_TYPE_ENDPOINT
+end
+
+function _M.is_available(self)
+    if self.url.port == 8005 then
+        return false
+    end
+    return true
 end
 
 return _M

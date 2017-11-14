@@ -89,7 +89,8 @@ function _M.get_filters(self)
         for _, filter_key in ipairs(filter_keys) do
             local filter = singletons.motan_ext:get_filter(filter_key)
             if filter:get_type() == consts.MOTAN_FILTER_TYPE_CLUSTER then
-                table.insert(cluster_filters, filter)
+                local nfilter = filter:new_filter(self)
+                table.insert(cluster_filters, nfilter)
             else
                 table.insert(endpoint_filters, filter)
             end

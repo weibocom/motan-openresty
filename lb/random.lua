@@ -24,7 +24,11 @@ function _M.on_refresh(self, endpoints)
 end
 
 function _M.select(self, req)
-    return self.endpoints[1]
+    for _, endpoint in ipairs(self.endpoints) do
+        if endpoint:is_available() then
+            return endpoint
+        end
+    end
 end
 
 function _M.select_array(self, req)
