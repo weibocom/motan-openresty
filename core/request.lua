@@ -9,12 +9,12 @@ local mt = {__index = _M}
 
 function _M.new(self, opts)
     local request = {
-        request_id = opts.request_id or nil,
-        service_name = opts.service_name or nil,
-        method = opts.method or nil,
-        method_desc = opts.method_desc or nil,
-        arguments = opts.arguments or {},
-        attachment = opts.attachment or {},
+        request_id = opts.request_id or nil, 
+        service_name = opts.service_name or nil, 
+        method = opts.method or nil, 
+        method_desc = opts.method_desc or nil, 
+        arguments = opts.arguments or {}, 
+        attachment = opts.attachment or {}, 
     }
     return setmetatable(request, mt)
 end

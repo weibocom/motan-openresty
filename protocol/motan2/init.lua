@@ -139,10 +139,10 @@ function _M.build_error_resp(self, err, request)
     local request_id = request:get_request_id()
     local attachment = request:get_attachments()
     return motan_response:new{
-        request_id = request_id,
-        value = nil,
-        exception = err,
-        process_time = nil,
+        request_id = request_id, 
+        value = nil, 
+        exception = err, 
+        process_time = nil, 
         attachment = attachment
     }
 end
@@ -154,16 +154,16 @@ function _M.read_reply(self, sock, serialization)
         ngx.log(ngx.ERR, "motan endpoint read reply err: ", resp_err)
         return nil, resp_err
     end
-
+    
     local value, exception = nil, nil
     local request_id = resp_ok.header.request_id
     value = serialization.deserialize(resp_ok.body)
     local attachment = resp_ok.metadata
     return motan_response:new{
-        request_id = request_id,
-        value = value,
-        exception = exception,
-        process_time = nil,
+        request_id = request_id, 
+        value = value, 
+        exception = exception, 
+        process_time = nil, 
         attachment = attachment
     }
 end

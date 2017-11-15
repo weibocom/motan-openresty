@@ -86,6 +86,7 @@ function _M.call(self, req)
             ngx.log(ngx.ERR, "motan endpoint receive RPC resp err: ", resp_err)
             return protocol:build_error_resp(resp_err, req)
         end
+        -- @TODO make keepalive configurate able
         sock:setkeepalive(5000, 100)
         local process_time = ngx.now() - start_time
         resp_ok:set_process_time(math.floor((process_time * 100) + 0.5) * 0.01)

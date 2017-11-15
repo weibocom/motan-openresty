@@ -28,24 +28,24 @@ function _M.show_batch(self, opts)
     -- local client = client_map["rpc_test_java"]
     -- local rpc_res_tmp = client:hello("<-----Motan")
     -- local rpc_res = serialize.deserialize(rpc_res_tmp.body)
+    return sprint_r(opts) .. num
     
-    
-    if type(opts) == "table" then
-        if not opts.name then
-            return "--> Motan" .. "->not name----->\n" .. sprint_r(opts) .. num
-        else
-            return {
-                openresty = "--> Motan" .. "-" .. opts.name .. ngx.now(), 
-                -- Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
-            }
-        end
-    else
-        local x = {}
-        table.insert(x, "a")
-        table.insert(x, "b")
-        table.insert(x, "c")
-        return {ok = "ok." .. table.concat(x)}
-    end
+    -- if type(opts) == "table" then
+    --     if not opts.name then
+    --         return "--> Motan" .. "->not name----->\n" .. sprint_r(opts) .. num
+    --     else
+    --         return {
+    --             openresty = "--> Motan" .. "-" .. opts.name .. ngx.now(), 
+    --             -- Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
+    --         }
+    --     end
+    -- else
+    --     local x = {}
+    --     table.insert(x, "a")
+    --     table.insert(x, "b")
+    --     table.insert(x, "c")
+    --     return {ok = "ok." .. table.concat(x)}
+    -- end
 end
 
 return _M

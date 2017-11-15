@@ -104,7 +104,18 @@ function Motan.content_motan_client_test()
     local serialize = require "motan.serialize.simple"
     local client_map = singletons.client_map
     local client = client_map["rpc_test"]
-    local res = client:show_batch({name = "idevz"})
+    local http_method = ngx.req.get_method()
+    local params = {}
+    params = ngx.req.get_uri_args()
+    if http_method == "POST" then
+        ngx.req.read_body()
+        local post_args = ngx.req.get_post_args()
+        for k,v in pairs(post_args) do
+            params[k] = v
+        end
+    end
+    params["http_method"] = http_method
+    local res = client:show_batch(params)
     print_r("<pre/>")
     print_r(res)
     print_r(client.response)

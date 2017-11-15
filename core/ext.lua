@@ -15,7 +15,7 @@ function _M.new()
         ha_fctrs = {}, 
         lb_fctrs = {}, 
         serialize_fctrs = {}, 
-        protocol_fctrs = {},
+        protocol_fctrs = {}, 
         endpoint_fctrs = {}, 
         provider_fctrs = {}, 
         registry_fctrs = {}, 

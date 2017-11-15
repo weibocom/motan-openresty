@@ -2,11 +2,7 @@
 
 
 local setmetatable = setmetatable
-local consts = require "motan.consts"
 local cluster = require "motan.cluster"
-local simple = require "motan.serialize.simple"
-local message = require "motan.protocol.motan2.message"
-local m2codec = require "motan.protocol.motan2.codec"
 local singletons = require "motan.singletons"
 
 local _M = {
