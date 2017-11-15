@@ -21,28 +21,16 @@ function _M.new(self, ref_url_obj)
     local client = {
         url = ref_url_obj, 
         cluster = cluster_obj, 
+        response = {}
     }
     return setmetatable(client, mt)
 end
 
 function _do_call(self, fucname, ...)
-    -- @TODO service_protocol
-    local protocol = singletons.motan_ext:get_protocol("motan2")
-    local header = protocol:buildRequestHeader(555)
-    local metadata = {
-        M_p = self.url.path, 
-        M_m = fucname, 
-        M_g = self.url.group, 
-        M_pp = self.url.protocol, 
-    }
-    local req_params = ...
-    local req = message:new{
-        header = header, 
-        metadata = metadata, 
-        body = simple.serialize(req_params), 
-    }
-    local resp = self.cluster:call(req)
-    return resp
+    local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
+    local req = protocol:make_motan_request(self.url, fucname, ...)
+    self.response = self.cluster:call(req)
+    return self.response.value
 end
 
 setmetatable(_M, {__index = function(self, fucname)

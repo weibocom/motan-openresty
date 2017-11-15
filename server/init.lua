@@ -58,7 +58,7 @@ function _M.invoker(self, sock)
         local handler = service.handler
         local serialize_num = msg.header:get_serialize()
         local serialization = singletons.motan_ext:get_serialization(consts.MOTAN_SERIALIZE_ARR[serialize_num])
-        local motan_request = self.protocol:convert_to_requst(msg, serialization)
+        local motan_request = self.protocol:convert_to_request(msg, serialization)
         local resp_obj = handler:call(motan_request)
         return self:resp(resp_obj, serialization)
     end

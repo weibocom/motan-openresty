@@ -1,6 +1,9 @@
 -- Copyright (C) idevz (idevz.org)
 
 
+local pairs = pairs
+local assert = assert
+local setmetatable = setmetatable
 local json = require 'cjson'
 local consul_lib = require "resty.consul"
 local url = require "motan.url"
@@ -9,7 +12,6 @@ local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 local consul_service = require "motan.registry.consul_service"
 local escape_uri = ngx.escape_uri
-local setmetatable = setmetatable
 local tab_concat = table.concat
 local tab_insert = table.insert
 
@@ -19,6 +21,7 @@ local _M = {
 
 local mt = {__index = _M}
 
+-- @TODO ext registry
 function _M.new(self, opts)
     local consul_host = opts.host or singletons.var.LOCAL_IP
     local consul_port = opts.port or consts.MOTAN_CONSUL_DEFAULT_PORT
@@ -123,7 +126,6 @@ end
 
 function _M.subscribe(self, url, listener)
     -- @TODO check lock
-    -- @check why subkey have many listener
     local sub_key = _get_sub_key(url)
     local listener_map = self.subscribe_map[sub_key]
     local listener_idt = listener.url:get_identity()

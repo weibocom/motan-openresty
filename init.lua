@@ -65,10 +65,8 @@ function Motan.init_worker_motan_server()
         ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
         return
     end
-    local service_map = singletons.service_map
-    local server_regstry = singletons.server_regstry
     local exporter = require "motan.server.exporter"
-    local exporter_obj = exporter:new(service_map, server_regstry)
+    local exporter_obj = exporter:new()
     exporter_obj:export()
 end
 
@@ -108,7 +106,9 @@ function Motan.content_motan_client_test()
     local client = client_map["rpc_test"]
     local res = client:show_batch({name = "idevz"})
     print_r("<pre/>")
-    print_r(serialize.deserialize(res.body))
+    print_r(res)
+    print_r(client.response)
+    -- print_r(serialize.deserialize(res.body))
     -- local client2 = client_map["rpc_test_java"]
     -- local res2 = client2:hello("<-----Motan")
     -- print_r(serialize.deserialize(res2.body))

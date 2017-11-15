@@ -134,7 +134,7 @@ function _M.decode(self, sock)
         metadata = metadata, 
         body = body_buffer, 
     }
-    return msg
+    return msg, nil
 end
 
 return _M

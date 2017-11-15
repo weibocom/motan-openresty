@@ -1,11 +1,14 @@
 -- Copyright (C) idevz (idevz.org)
 
 
+local pairs = pairs
+local ipairs = ipairs
 local assert = assert
 local setmetatable = setmetatable
 local utils = require "motan.utils"
 local consts = require "motan.consts"
 local singletons = require "motan.singletons"
+local table_insert = table.insert
 
 
 local _M = {
@@ -37,7 +40,7 @@ function _M.refresh(self)
     local refers = {}
     for k, registry_refer in pairs(self.registry_refers) do
         for _, ref_url_obj in ipairs(registry_refer) do
-            table.insert(refers, ref_url_obj)
+            table_insert(refers, ref_url_obj)
         end
     end
     self.refers = refers
@@ -108,7 +111,7 @@ function _M._add_filter(self, endpoint)
         nfilter:set_next(last_filter)
         last_filter = nfilter
         if nfilter["is_available"] ~= nil then
-            table.insert(status_filters, nfilter)
+            table_insert(status_filters, nfilter)
         end
     end
     local filter_endpoint = _get_filter_endpoint{
@@ -144,7 +147,7 @@ function _M._notify(self, registry, ref_url_objs)
         end
         local ep = self.ext:get_endpoint(url)
         ep = self:_add_filter(ep)
-        table.insert(endpoints, ep)
+        table_insert(endpoints, ep)
         ::continue::
     end
     if #endpoints == 0 then

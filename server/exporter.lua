@@ -1,8 +1,11 @@
 -- Copyright (C) idevz (idevz.org)
 
 
+local pairs = pairs
 local assert = assert
+local setmetatable = setmetatable
 local motan_consul = require "motan.registry.consul"
+local singletons = require "motan.singletons"
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 
@@ -72,7 +75,9 @@ local _M = {
 
 local mt = {__index = _M}
 
-function _M.new(self, service_map, server_regstry)
+function _M.new(self)
+    local service_map = singletons.service_map
+    local server_regstry = singletons.server_regstry
     local exporter = {
         service_map = service_map, 
         server_regstry = server_regstry
