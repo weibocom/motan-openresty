@@ -85,6 +85,10 @@ end
 
 function _M.convert_to_response_msg(self, response, serialization)
     local response = response
+    local exception = response:get_exception()
+    if exception ~= nil then
+        return self:convert_to_err_response_msg(response:get_request_id(), exception)
+    end
     local serialization = serialization
     local header = self:buildResponseHeader(response:get_request_id(), consts.MOTAN_MSG_STATUS_NORMAL)
     local metadata = response:get_attachments()

@@ -25,6 +25,7 @@ function _M.new(self)
 end
 
 function _M.error_resp(self, request_id, err)
+    -- @TODO check if need convert err response together with nomal response for take more info such as serialization
     return self.protocol:convert_to_err_response_msg(request_id, err)
 end
 

@@ -88,23 +88,28 @@ function _M.call(self, req)
     local resp_obj = {}
     local method = req:get_method()
     local ok, res = pcall(service[method], service, req:get_arguments())
+    local request_id = req:get_request_id()
+    
     if ok then
         value = res
     else
-        exception = "Provider Call Err" .. ok
+        ngx.log(ngx.ERR, "Provider Call Err" .. res)
+        exception = "Provider Call Err" .. res
+        return response:new{
+            request_id = request_id, 
+            exception = exception, 
+        }
     end
     local process_time = ngx.now() - start_time
-    local request_id = req:get_request_id()
     local attachment = req:get_attachments()
     
-    local resp = response:new{
+    return response:new{
         request_id = request_id, 
         value = value, 
         exception = exception, 
         process_time = math.floor((process_time * 100) + 0.5) * 0.01, 
         attachment = attachment
     }
-    return resp
 end
 
 return _M
