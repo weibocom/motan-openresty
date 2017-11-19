@@ -116,8 +116,10 @@ function Motan.content_motan_client_test()
     end
     params["http_method"] = http_method
     local res = client:show_batch(params)
+    ngx.header["X-IDEVZ"] = 'idevz-k-49';
     print_r("<pre/>")
     print_r(res)
+    print_r(ngx.req.get_headers())
     print_r(client.response)
     -- print_r(serialize.deserialize(res.body))
     -- local client2 = client_map["rpc_test_java"]

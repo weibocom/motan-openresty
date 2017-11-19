@@ -6,6 +6,12 @@ local share_motan = ngx.shared.motan
 -- local utils = require "motan.utils"
 local singletons = require "motan.singletons"
 local serialize = require "motan.serialize.simple"
+local bit = bit
+local band = bit.band
+local bxor = bit.bxor
+local bor = bit.bor
+local lshift = bit.lshift
+local rshift = bit.rshift
 
 local _M = {
     _VERSION = '0.0.1'
@@ -19,16 +25,30 @@ function _M.new(self, opts)
     return setmetatable(status, mt)
 end
 
+local function msb_stringtonumber(str)
+    local function _b2n(num, digit, ...)
+        ngx.log(ngx.ERR, "\n\n", num, "-------------", digit, "-------------", table.concat( {...}, ", " ), "\n\n")
+        if not digit then return num end
+        return _b2n(num * 256 + digit, ...)
+    end
+        ngx.log(ngx.ERR, string.format("\n\n--------x------- %s \n\n", table.concat( {string.byte(str, 1, -1)}, ", " )))
+    return _b2n(0, string.byte(str, 1, -1))
+end
+
 function _M.show_batch(self, opts)
     local idevz = share_motan:get("idevz") or 0
     share_motan:set("idevz", idevz + 1)
     local num = share_motan:get("idevz")
-    
     -- local client_map = singletons.client_map
     -- local client = client_map["rpc_test_java"]
     -- local rpc_res_tmp = client:hello("<-----Motan")
     -- local rpc_res = serialize.deserialize(rpc_res_tmp.body)
-    return sprint_r(opts) .. num
+
+    local bigint = msb_stringtonumber(opts.bigint)
+
+ngx.log(ngx.ERR, "\n\n", bigint , "\n\n")
+    return sprint_r(opts) .. num .. "\n\n" .. table.concat( {string.byte(opts.bigint, 1, -1)}, ", ")
+    -- return sprint_r(opts) .. num .. int64 .. "\n" .. tostring(int64)
     
     -- if type(opts) == "table" then
     --     if not opts.name then
