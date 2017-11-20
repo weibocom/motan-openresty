@@ -27,11 +27,9 @@ end
 
 local function msb_stringtonumber(str)
     local function _b2n(num, digit, ...)
-        ngx.log(ngx.ERR, "\n\n", num, "-------------", digit, "-------------", table.concat( {...}, ", " ), "\n\n")
         if not digit then return num end
         return _b2n(num * 256 + digit, ...)
     end
-        ngx.log(ngx.ERR, string.format("\n\n--------x------- %s \n\n", table.concat( {string.byte(str, 1, -1)}, ", " )))
     return _b2n(0, string.byte(str, 1, -1))
 end
 
