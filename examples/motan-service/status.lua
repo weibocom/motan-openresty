@@ -33,6 +33,12 @@ local function msb_stringtonumber(str)
     return _b2n(0, string.byte(str, 1, -1))
 end
 
+local function toxxnumber(int_str)
+    local bt_arr = {string.byte( int_str, 1, -1)}
+    local x = bor(bor(bor(bor(bor(bor(bor(bor(lshift(bt_arr[1], 56),lshift(bt_arr[2], 48)), lshift(bt_arr[3], 40)), lshift(bt_arr[4], 32)), lshift(bt_arr[5], 24)), lshift(bt_arr[6], 16)), lshift(bt_arr[6], 16)), lshift(bt_arr[7], 8)),bt_arr[8])
+    return x
+end
+
 function _M.show_batch(self, opts)
     local idevz = share_motan:get("idevz") or 0
     share_motan:set("idevz", idevz + 1)
@@ -45,7 +51,7 @@ function _M.show_batch(self, opts)
     local bigint = msb_stringtonumber(opts.bigint)
 
 ngx.log(ngx.ERR, "\n\n", bigint , "\n\n")
-    return sprint_r(opts) .. num .. "\n\n" .. table.concat( {string.byte(opts.bigint, 1, -1)}, ", ")
+    return sprint_r(opts) .. num .. "\n\n" .. table.concat( {string.byte(opts.bigint, 1, -1)}, ", ") .. "\n" .. toxxnumber(opts.bigint)
     -- return sprint_r(opts) .. num .. int64 .. "\n" .. tostring(int64)
     
     -- if type(opts) == "table" then
