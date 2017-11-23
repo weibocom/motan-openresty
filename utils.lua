@@ -14,7 +14,9 @@ local ssub = string.sub
 local ffi = require "ffi"
 local motan_tools = ffi.load('motan_tools')
 ffi.cdef[[
-int get_local_ip(char *, char *)
+int get_local_ip(char *, char *);
+int get_request_id(uint8_t[8], char *);
+int get_request_id_bytes(const char *, char *);
 ]]
 
 local BIGINT_DIVIDER = 0xffffffff + 1
@@ -22,6 +24,20 @@ local BIGINT_DIVIDER = 0xffffffff + 1
 local _M = {
     _VERSION = '0.0.1'
 }
+
+function _M.pack_request_id(rid_str)
+    local rid_num_str = ffi.new("const char *", rid_str)
+    local rid_bytes_arr = ffi.new("char[8]")
+    motan_tools.get_request_id_bytes(rid_num_str, rid_bytes_arr)
+    return ffi.string(rid_bytes_arr)
+end
+
+function _M.unpack_request_id(rid_bytes)
+    local rid_bytes_arr = ffi.new("uint8_t[8]", rid_bytes)
+    local rid_str = ffi.new("char[18]")
+    motan_tools.get_request_id(rid_bytes_arr, rid_str)
+    return ffi.string(rid_str)
+end
 
 function _M.get_local_ip()
     local c_str_t = ffi.typeof("char[4]")
