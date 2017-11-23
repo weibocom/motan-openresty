@@ -78,6 +78,7 @@ function _M.decode(self, sock)
         return nil, err
     end
     
+    -- @TODO unpack request support bigint
     local request_id = utils.msb_stringtonumber(request_id_buf)
     -- local request_id = request_id_buf
     
