@@ -38,8 +38,7 @@ function _M.pack_header(self)
     header_buffer = header_buffer .. utils.msb_numbertobytes(self.msg_type, 1)
     header_buffer = header_buffer .. utils.msb_numbertobytes(self.version_status, 1)
     header_buffer = header_buffer .. utils.msb_numbertobytes(self.serialize, 1)
-    -- @TODO big num pack to bytes
-    header_buffer = header_buffer .. utils.msb_numbertobytes(self.request_id, 8)
+    header_buffer = header_buffer .. utils.pack_request_id(self.request_id)
     -- header_buffer = header_buffer .. self.request_id
     -- local upper, lower = utils.split2int(self.request_id)
     -- header_buffer = header_buffer .. utils.msb_numbertobytes(upper, 4)
