@@ -29,7 +29,7 @@ function _M.pack_request_id(rid_str)
     local rid_num_str = ffi.new("const char *", rid_str)
     local rid_bytes_arr = ffi.new("char[8]")
     motan_tools.get_request_id_bytes(rid_num_str, rid_bytes_arr)
-    return ffi.string(rid_bytes_arr)
+    return ffi.string(rid_bytes_arr, 8)
 end
 
 function _M.unpack_request_id(rid_bytes)
