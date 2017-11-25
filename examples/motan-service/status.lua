@@ -36,7 +36,7 @@ function _M.show_batch(self, opts)
 
     local big_int_num = utils.unpack_request_id(opts.bigint)
     local big_int_byte = utils.pack_request_id(big_int_num)
-    return sprint_r(utils.unpack_request_id(big_int_byte))
+    return sprint_r(utils.unpack_request_id(big_int_byte)) .. "\n" .. table.concat( {string.byte( opts.bigint, 1, -1)}, ", ")
     
     -- if type(opts) == "table" then
     --     if not opts.name then
