@@ -3,6 +3,7 @@
 
 local ngx = ngx
 local consts = require "motan.consts"
+local utils = require("motan.utils")
 local singletons = require "motan.singletons"
 local motan_request = require "motan.core.request"
 local motan_response = require "motan.core.response"
@@ -197,7 +198,7 @@ function _M.make_motan_request(self, url, fucname, ...)
         M_g = url.group, 
         M_pp = url.protocol, 
     }
-    local request_id = req_params["request_id"] or ngx.now()
+    local request_id = req_params["request_id"] or utils.generate_request_id()
     local service_name = url.path
     local method = fucname
     local method_desc = req_params["M_md"] or nil

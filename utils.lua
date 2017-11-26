@@ -49,6 +49,10 @@ function _M.get_local_ip()
     return ffi.string(ip)
 end
 
+function _M.generate_request_id()
+    return string.format("%14d%04d%d%d", ngx.now()*10000, ngx.worker.pid(), ngx.worker.id(), math.random(1,9))
+end
+
 function _M.build_service_key(group, version, protocol, path)
     local group = group or ""
     local version = version or ""
