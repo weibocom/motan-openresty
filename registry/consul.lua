@@ -83,10 +83,11 @@ end
 
 function _M.check_pass(self, url)
     local key = "/agent/check/pass/service:" .. _build_id(url)
-    local res, err_or_info = self.client:get(key)
-    if err_or_info[1] ~= false
-        or err_or_info[2] ~= false
-        or err_or_info[3] ~= false then
+    local res, err_or_info = self.client:put(key)
+    if err_or_info ~= nil then
+    -- if err_or_info[1] ~= false
+    --     or err_or_info[2] ~= false
+    --     or err_or_info[3] ~= false then
         ngx.log(ngx.ERR, "Consul check_pass error: \n" .. sprint_r(err_or_info) .. "\n")
     end
 end
