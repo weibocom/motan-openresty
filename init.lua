@@ -53,8 +53,8 @@ function Motan.init(sys_conf, motan_ext_set)
     local service_map = {}
     local service_key = ""
     for _, info in pairs(service_map_tmp) do
-        service_key = utils.build_service_key(info.group, info.params["version"], 
-        info.protocol, info.path)
+        service_key = utils.build_service_key(info.group, 
+        info.params["version"], info.protocol, info.path)
         service_map[service_key] = service:new(info)
     end
     singletons.service_map = service_map
@@ -62,7 +62,8 @@ end
 
 function Motan.init_worker_motan_server()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, 
+        "Caution: Server Could only use under stream subsystem.")
         return
     end
     local exporter = require "motan.server.exporter"
@@ -82,14 +83,16 @@ end
 
 function Motan.preread()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: preread Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, 
+        "Caution: preread Could only use under stream subsystem.")
         return
     end
 end
 
 function Motan.content_motan_server()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, 
+        "Caution: Server Could only use under stream subsystem.")
         return
     end
     local server = require "motan.server"
