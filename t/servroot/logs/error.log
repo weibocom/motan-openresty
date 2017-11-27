@@ -1,0 +1,2 @@
+2017/11/27 19:21:18 [warn] 8808#0: *21 stream [lua] preread_by_lua(nginx.conf:29):6: 1,0,0,0,0,0,0,4 while prereading client data, client: 127.0.0.1, server: 0.0.0.0:2001
+2017/11/27 19:21:19 [warn] 8808#0: *24 stream [lua] preread_by_lua(nginx.conf:29):6: 1,0,0,0,0,0,0,4 while prereading client data, client: 127.0.0.1, server: 0.0.0.0:2001

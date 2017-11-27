@@ -18,3 +18,4 @@ nginx
 *.pyc
 lj
 .gdb_history
+./t/servroot/
