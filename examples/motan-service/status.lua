@@ -34,26 +34,26 @@ function _M.show_batch(self, opts)
     -- local rpc_res_tmp = client:hello("<-----Motan")
     -- local rpc_res = serialize.deserialize(rpc_res_tmp.body)
 
-    local big_int_num = utils.unpack_request_id(opts.bigint)
-    local big_int_byte = utils.pack_request_id(big_int_num)
-    return sprint_r(utils.unpack_request_id(big_int_byte)) .. "\n" .. table.concat( {string.byte( opts.bigint, 1, -1)}, ", ")
+    -- local big_int_num = utils.unpack_request_id(opts.bigint)
+    -- local big_int_byte = utils.pack_request_id(big_int_num)
+    -- return sprint_r(utils.unpack_request_id(big_int_byte)) .. "\n" .. table.concat( {string.byte( opts.bigint, 1, -1)}, ", ") .. num
     
-    -- if type(opts) == "table" then
-    --     if not opts.name then
-    --         return "--> Motan" .. "->not name----->\n" .. sprint_r(opts) .. num
-    --     else
-    --         return {
-    --             openresty = "--> Motan" .. "-" .. opts.name .. ngx.now(), 
-    --             -- Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
-    --         }
-    --     end
-    -- else
-    --     local x = {}
-    --     table.insert(x, "a")
-    --     table.insert(x, "b")
-    --     table.insert(x, "c")
-    --     return {ok = "ok." .. table.concat(x)}
-    -- end
+    if type(opts) == "table" then
+        if not opts.name then
+            return "--> Motan" .. "->not name----->\n" .. sprint_r(opts) .. num
+        else
+            return {
+                openresty = "--> Motan" .. "-" .. opts.name .. ngx.now(), 
+                -- Rpc_call_test = "Rpc_call_test -->: " .. sprint_r(rpc_res) .. singletons.var.LOCAL_IP
+            }
+        end
+    else
+        local x = {}
+        table.insert(x, "a")
+        table.insert(x, "b")
+        table.insert(x, "c")
+        return {ok = "ok." .. table.concat(x)}
+    end
 end
 
 return _M
