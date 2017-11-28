@@ -37,7 +37,8 @@ function _M.to_new(self, opts)
     -- HTTP = opts.HTTP or "",
     -- TCP = opts.TCP or "",
     -- Timeout = opts.Timeout or "",
-    -- DeregisterCriticalServiceAfter = opts.DeregisterCriticalServiceAfter or "",
+    -- DeregisterCriticalServiceAfter 
+    -- = opts.DeregisterCriticalServiceAfter or "",
     -- }
     self.Check = check
 end

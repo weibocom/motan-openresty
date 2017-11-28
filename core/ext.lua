@@ -2,6 +2,7 @@
 
 
 local utils = require "motan.utils"
+local consts = require "motan.consts"
 
 local _M = {
     _VERSION = '0.0.1'
@@ -36,7 +37,7 @@ _new_index = function(self, key, name, func)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_filter(self, name, func)
     return _new_index(self, "filter_fctrs", name, func)
 end
@@ -51,7 +52,7 @@ function _M.get_filter(self, name)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_ha(self, name, func)
     return _new_index(self, "ha_fctrs", name, func)
 end
@@ -66,7 +67,7 @@ function _M.get_ha(self, url)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_lb(self, name, func)
     return _new_index(self, "lb_fctrs", name, func)
 end
@@ -81,7 +82,7 @@ function _M.get_lb(self, url)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_serialization(self, name, func)
     return _new_index(self, "serialize_fctrs", name, func)
 end
@@ -96,7 +97,7 @@ function _M.get_serialization(self, name)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_protocol(self, name, func)
     return _new_index(self, "protocol_fctrs", name, func)
 end
@@ -111,7 +112,7 @@ function _M.get_protocol(self, protocol_name)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_endpoint(self, name, func)
     return _new_index(self, "endpoint_fctrs", name, func)
 end
@@ -126,7 +127,7 @@ function _M.get_endpoint(self, url)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_provider(self, name, func)
     return _new_index(self, "provider_fctrs", name, func)
 end
@@ -141,7 +142,7 @@ function _M.get_provider(self, url)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.regist_ext_registry(self, name, func)
     return _new_index(self, "registry_fctrs", name, func)
 end
@@ -154,7 +155,7 @@ function _M.get_registry(self, url)
     else
         local registry = self.registry_fctrs[url.protocol]
         if registry ~= nil then
-            registry_obj = registry(url)
+            local registry_obj = registry(url)
             self.registries[key] = registry_obj
             return registry_obj
         else
@@ -165,7 +166,7 @@ function _M.get_registry(self, url)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.get_last_cluster_filter(self)
     local _res = {
         _VERSION = '0.0.1'
@@ -215,7 +216,7 @@ function _M.get_last_cluster_filter(self)
 end
 
 
---+--------------------------------------------------------------------------------+--
+--+-------------------------------------------------------------------+--
 function _M.get_last_endpoint_filter(self)
     local _res = {
         _VERSION = '0.0.1'

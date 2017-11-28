@@ -23,15 +23,22 @@ function _M.serialize(params)
                 goto continue
             end
             btemp = btemp 
-            .. utils.msb_numbertobytes(#k, consts.MOTAN_DATA_PACK_INT32_BYTE) .. k 
-            .. utils.msb_numbertobytes(#v, consts.MOTAN_DATA_PACK_INT32_BYTE) .. v
+            .. utils.msb_numbertobytes(#k, consts.MOTAN_DATA_PACK_INT32_BYTE)
+            .. k 
+            .. utils.msb_numbertobytes(#v, consts.MOTAN_DATA_PACK_INT32_BYTE)
+            .. v
             btemp_len = btemp_len + #k + #v + 8
             ::continue::
         end
-        buffer = buffer .. utils.msb_numbertobytes(btemp_len, consts.MOTAN_DATA_PACK_INT32_BYTE) .. btemp
+        buffer = buffer 
+        .. utils.msb_numbertobytes(btemp_len
+        , consts.MOTAN_DATA_PACK_INT32_BYTE)
+        .. btemp
     elseif p_type == "string" then
         buffer = utils.msb_numbertobytes(1, consts.MOTAN_SIMPLE_TYPE_BYTE) 
-        .. utils.msb_numbertobytes(#params, consts.MOTAN_DATA_PACK_INT32_BYTE) .. params
+        .. utils.msb_numbertobytes(#params
+        , consts.MOTAN_DATA_PACK_INT32_BYTE)
+        .. params
     elseif p_type == nil then
         buffer = utils.msb_numbertobytes(0, consts.MOTAN_SIMPLE_TYPE_BYTE)
     end
@@ -40,32 +47,38 @@ end
 
 function _M.deserialize(data)
     local obj = {}
-    if data == null then
+    if data == nil then
         return obj
     end
     local pos = 1
     local body_len = 0
-    local buf_type = utils.msb_stringtonumber(str_sub(data, pos, consts.MOTAN_SIMPLE_TYPE_BYTE))
+    local buf_type = utils.msb_stringtonumber(
+        str_sub(data, pos, consts.MOTAN_SIMPLE_TYPE_BYTE))
     pos = pos + consts.MOTAN_SIMPLE_TYPE_BYTE
     if buf_type == 0 then
-        obj = null
+        obj = nil
     elseif buf_type == 1 then
-        body_len = utils.msb_stringtonumber(str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
+        body_len = utils.msb_stringtonumber(
+            str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
         pos = pos + consts.MOTAN_DATA_PACK_INT32_BYTE
         obj = str_sub(data, pos)
     elseif buf_type == 2 then
-        body_len = utils.msb_stringtonumber(str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE))
+        body_len = utils.msb_stringtonumber(
+            str_sub(data, pos, pos + consts.MOTAN_DATA_PACK_INT32_BYTE))
         pos = pos + consts.MOTAN_DATA_PACK_INT32_BYTE
         local map_buf = str_sub(data, pos, pos + body_len - 1)
         local map_pos = 1
-        local key_len = utils.msb_stringtonumber(str_sub(map_buf, map_pos, consts.MOTAN_DATA_PACK_INT32_BYTE))
+        local key_len = utils.msb_stringtonumber(
+            str_sub(map_buf, map_pos, consts.MOTAN_DATA_PACK_INT32_BYTE))
         map_pos = map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE
         local key = str_sub(map_buf, map_pos, map_pos + key_len - 1)
         map_pos = map_pos + key_len
         local value = ""
         local value_len = 0
         while key ~= "" do
-            value_len = utils.msb_stringtonumber(str_sub(map_buf, map_pos, map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
+            value_len = utils.msb_stringtonumber(
+                str_sub(map_buf, map_pos
+                , map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
             map_pos = map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE
             value = str_sub(map_buf, map_pos, map_pos + value_len - 1)
             map_pos = map_pos + value_len
@@ -75,13 +88,16 @@ function _M.deserialize(data)
             if map_pos == body_len then
                 break
             end
-            key_len = utils.msb_stringtonumber(str_sub(map_buf, map_pos, map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
+            key_len = utils.msb_stringtonumber(
+                str_sub(map_buf, map_pos
+                , map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE - 1))
             map_pos = map_pos + consts.MOTAN_DATA_PACK_INT32_BYTE
             key = str_sub(map_buf, map_pos, map_pos + key_len - 1)
             map_pos = map_pos + key_len
         end
     else
-        ngx.log(ngx.ERR, "Fail to Decode response body, got a no support type!")
+        ngx.log(ngx.ERR
+        , "Fail to Decode response body, got a no support type!")
     end
     return obj
 end

@@ -5,6 +5,7 @@ local consts = require "motan.consts"
 local utils = require "motan.utils"
 local simple = require "motan.serialize.simple"
 local singletons = require "motan.singletons"
+local sprint_r = utils.sprint_r
 local setmetatable = setmetatable
 
 local _M = {
@@ -15,7 +16,8 @@ local mt = {__index = _M}
 
 function _M.new(self)
     local service_map = singletons.service_map
-    local protocol_name = singletons.config.conf_set["MOTAN_SERVICE_PROTOCOL"] or "motan2"
+    local protocol_name = singletons.config.conf_set["MOTAN_SERVICE_PROTOCOL"]
+                          or "motan2"
     local protocol = singletons.motan_ext:get_protocol(protocol_name)
     local handler = {
         service_map = service_map,
@@ -25,7 +27,8 @@ function _M.new(self)
 end
 
 function _M.error_resp(self, request_id, err)
-    -- @TODO check if need convert err response together with nomal response for take more info such as serialization
+    -- @TODO check if need convert err response together with nomal response 
+    -- for take more info such as serialization
     return self.protocol:convert_to_err_response_msg(request_id, err)
 end
 
@@ -58,12 +61,15 @@ function _M.invoker(self, sock)
     if not utils.is_empty(service) then
         local handler = service.handler
         local serialize_num = msg.header:get_serialize()
-        local serialization = singletons.motan_ext:get_serialization(consts.MOTAN_SERIALIZE_ARR[serialize_num])
-        local motan_request = self.protocol:convert_to_request(msg, serialization)
+        local serialization = singletons.motan_ext:get_serialization(
+            consts.MOTAN_SERIALIZE_ARR[serialize_num])
+        local motan_request
+        motan_request = self.protocol:convert_to_request(msg, serialization)
         local resp_obj = handler:call(motan_request)
         return self:resp(resp_obj, serialization)
     end
-    return self:error_resp(msg.header.request_id, "Service didn't exist." .. sprint_r(service_key) .. sprint_r(msg))
+    return self:error_resp(msg.header.request_id
+    , "Service didn't exist." .. sprint_r(service_key) .. sprint_r(msg))
 end
 
 function _M.run(self)

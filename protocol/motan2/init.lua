@@ -4,6 +4,7 @@
 local ngx = ngx
 local consts = require "motan.consts"
 local utils = require("motan.utils")
+local sprint_r = utils.sprint_r
 local singletons = require "motan.singletons"
 local motan_request = require "motan.core.request"
 local motan_response = require "motan.core.response"
@@ -40,7 +41,8 @@ function _M.read_msg(self, sock)
     return msg
 end
 
-function _M.buildHeader(self, msg_type, proxy, serialize, request_id, msg_status)
+function _M.buildHeader(self
+    , msg_type, proxy, serialize, request_id, msg_status)
     local m_type = 0x00
     if proxy then
         m_type = bor(m_type, 0x02)
@@ -62,17 +64,28 @@ function _M.buildHeader(self, msg_type, proxy, serialize, request_id, msg_status
 end
 
 function _M.buildRequestHeader(self, request_id)
-    return self:buildHeader(consts.MOTAN_MSG_TYPE_REQUEST, false, consts.MOTAN_SERIALIZE_SIMPLE, request_id, consts.MOTAN_MSG_STATUS_NORMAL)
+    return self:buildHeader(
+        consts.MOTAN_MSG_TYPE_REQUEST
+        , false
+        , consts.MOTAN_SERIALIZE_SIMPLE
+        , request_id, consts.MOTAN_MSG_STATUS_NORMAL
+    )
 end
 
 function _M.buildResponseHeader(self, request_id, msg_status)
-    return self:buildHeader(consts.MOTAN_MSG_TYPE_RESPONSE, false, consts.MOTAN_SERIALIZE_SIMPLE, request_id, msg_status)
+    return self:buildHeader(consts.MOTAN_MSG_TYPE_RESPONSE
+        , false
+        , consts.MOTAN_SERIALIZE_SIMPLE
+        , request_id
+        , msg_status
+    )
 end
 
 function _M.convert_to_err_response_msg(self, request_id, err)
     local request_id = request_id
     local err = err
-    local header = self:buildResponseHeader(request_id, consts.MOTAN_MSG_STATUS_EXCEPTION)
+    local header = self:buildResponseHeader(request_id
+    , consts.MOTAN_MSG_STATUS_EXCEPTION)
     local metadata = {
         M_e = err
     }
@@ -88,10 +101,12 @@ function _M.convert_to_response_msg(self, response, serialization)
     local response = response
     local exception = response:get_exception()
     if exception ~= nil then
-        return self:convert_to_err_response_msg(response:get_request_id(), exception)
+        return self:convert_to_err_response_msg(
+            response:get_request_id(), exception)
     end
     local serialization = serialization
-    local header = self:buildResponseHeader(response:get_request_id(), consts.MOTAN_MSG_STATUS_NORMAL)
+    local header = self:buildResponseHeader(
+        response:get_request_id(), consts.MOTAN_MSG_STATUS_NORMAL)
     local metadata = response:get_attachments()
     local body = serialization.serialize(response:get_value())
     local msg = message:new{

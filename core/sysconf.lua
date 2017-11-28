@@ -5,6 +5,7 @@ local url = require "motan.url"
 local utils = require "motan.utils"
 local consts = require "motan.consts"
 local config_handle = require "motan.config.handle"
+local sprint_r = utils.sprint_r
 local setmetatable = setmetatable
 
 local _M = {
@@ -56,7 +57,10 @@ end
 
 local service_conf
 service_conf = function(service_path, sys_conf_files)
-    local config_handle_obj = config_handle:new{ctype = "ini", cpath = service_path}
+    local config_handle_obj = config_handle:new{
+        ctype = "ini",
+        cpath = service_path
+    }
     local sys_conf = {}
     for _, v in ipairs(sys_conf_files) do
         sys_conf[v] = config_handle_obj:get('sys/' .. v)
@@ -88,7 +92,9 @@ _build_url = function(conf_info, conf_section)
         if not conf_info.path 
             or not conf_info.protocol
             or not conf_info.port then
-            return nil, "_build_url Err: service need port, path and protocol info.\n" .. sprint_r(conf_info)
+            return nil
+            , "_build_url Err: service need port, path and protocol info.\n" 
+            .. sprint_r(conf_info)
         end
     end
     local service_url = url:new(conf_info)
@@ -123,19 +129,32 @@ _get_section = function(self, conf_file)
     local registry_urls_arr = {}
     local conf_section = ""
     if conf_file == self.conf_set.MOTAN_SERVER_CONF_FILE then
-        local server_conf = assert(self.conf_arr[conf_file], "Get server config arr err, Check if have this file: " .. conf_file)
-        registry_urls_arr = _parse_conf_by_key(server_conf, consts.MOTAN_REGISTRY_PREFIX)
-        local service_urls = _parse_conf_by_key(server_conf, consts.MOTAN_SERVICES_PREFIX)
-        local basic_services = _parse_conf_by_key(server_conf, consts.MOTAN_BASIC_SERVICES_PREFIX)
-        tmp_section_urls = _parse_basic(service_urls, basic_services, consts.MOTAN_BASIC_REF_KEY)
+        local server_conf = assert(self.conf_arr[conf_file]
+        , "Get server config arr err, Check if have this file: " 
+        .. conf_file)
+        registry_urls_arr = _parse_conf_by_key(server_conf
+        , consts.MOTAN_REGISTRY_PREFIX)
+        local service_urls = _parse_conf_by_key(server_conf
+        , consts.MOTAN_SERVICES_PREFIX)
+        local basic_services = _parse_conf_by_key(server_conf
+        , consts.MOTAN_BASIC_SERVICES_PREFIX)
+        tmp_section_urls = _parse_basic(service_urls
+        , basic_services
+        , consts.MOTAN_BASIC_REF_KEY)
         -- @TODO rm conf_section
         conf_section = "service_urls"
     elseif conf_file == self.conf_set.MOTAN_CLIENT_CONF_FILE then
-        local client_conf = assert(self.conf_arr[conf_file], "Get client config arr err, Check if have this file: " .. conf_file)
-        registry_urls_arr = _parse_conf_by_key(client_conf, consts.MOTAN_REGISTRY_PREFIX)
-        local referer_urls = _parse_conf_by_key(client_conf, consts.MOTAN_REFS_PREFIX)
-        local basic_refs = _parse_conf_by_key(client_conf, consts.MOTAN_BASIC_REFS_PREFIX)
-        tmp_section_urls = _parse_basic(referer_urls, basic_refs, consts.MOTAN_BASIC_REF_KEY)
+        local client_conf = assert(self.conf_arr[conf_file]
+        , "Get client config arr err, Check if have this file: " 
+        .. conf_file)
+        registry_urls_arr = _parse_conf_by_key(client_conf
+        , consts.MOTAN_REGISTRY_PREFIX)
+        local referer_urls = _parse_conf_by_key(client_conf
+        , consts.MOTAN_REFS_PREFIX)
+        local basic_refs = _parse_conf_by_key(client_conf
+        , consts.MOTAN_BASIC_REFS_PREFIX)
+        tmp_section_urls = _parse_basic(referer_urls
+        , basic_refs, consts.MOTAN_BASIC_REF_KEY)
         conf_section = "referer_urls"
     end
     local section_urls = _build_section_url(tmp_section_urls, conf_section)
@@ -144,7 +163,8 @@ _get_section = function(self, conf_file)
 end
 
 function _M.new(self, sys_conf)
-    local conf_arr = assert(_parse_conf(sys_conf), "Parse conf Err: cloudn't find any config files.")
+    local conf_arr = assert(_parse_conf(sys_conf)
+    , "Parse conf Err: cloudn't find any config files.")
     local sysconf = {
         conf_set = sys_conf, 
         conf_arr = conf_arr, 

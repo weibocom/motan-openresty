@@ -61,12 +61,14 @@ function _M.get_service_obj(self, url)
         return
     end
     local service_file = ""
-    local MOTAN_LUA_SERVICE_PERFIX = singletons.config.conf_set["MOTAN_LUA_SERVICE_PERFIX"]
-    if MOTAN_LUA_SERVICE_PERFIX ~= nil then
+    local service_prefix
+    service_prefix = singletons.config.conf_set["MOTAN_LUA_SERVICE_PERFIX"]
+    if service_prefix ~= nil then
         local ss = url.path
-        local s, e = string.find(ss, MOTAN_LUA_SERVICE_PERFIX)
+        local s, e = string.find(ss, service_prefix)
         if not s then
-            return nil, "build service Err: service path didn't contain MOTAN_LUA_SERVICE_PERFIX.\n"
+            return nil
+            , "build service Err: service path didn't contain service_prefix."
         end
         service_file = service_path_conf .. "/" .. string.sub(ss, e + 1)
     else

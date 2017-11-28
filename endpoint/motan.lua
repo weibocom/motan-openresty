@@ -74,7 +74,9 @@ function _M.call(self, req)
     local ok, err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     if ok then
-        local serialization = singletons.motan_ext:get_serialization(self.url.params["serialization"])
+        local serialization
+        serialization = singletons.motan_ext:get_serialization(
+            self.url.params["serialization"])
         local req_buf = protocol:convert_to_request_msg(req, serialization)
         local bytes, err = sock:send(req_buf)
         if not bytes then

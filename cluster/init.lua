@@ -187,7 +187,7 @@ function _M.new(self, ref_url_obj)
         ext = ext, 
         registry_refers = {}, 
         endpoint_map = {}, 
-        available = ture, 
+        available = true, 
         closed = false
     }
     return setmetatable(cluster, mt)

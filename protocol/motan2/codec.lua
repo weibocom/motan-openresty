@@ -33,7 +33,7 @@ function _M.encode(self, msg)
         mt_index = mt_index + 1
         ::continue::
     end
-    mt_str = tab_concat(mt, "\n")
+    local mt_str = tab_concat(mt, "\n")
     buffer = buffer .. utils.msb_numbertobytes(#mt_str, 4)
     buffer = buffer .. mt_str
     buffer = buffer .. utils.msb_numbertobytes(#msg.body, 4)
@@ -44,35 +44,40 @@ end
 
 function _M.decode(self, sock)
     local sock = sock
-    local magic_buffer, err = sock:receive(consts.MOTAN_HEADER_MAGIC_NUM_BYTE)
+    local magic_buffer, err = sock:receive(
+        consts.MOTAN_HEADER_MAGIC_NUM_BYTE)
     if not magic_buffer then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local magic = utils.msb_stringtonumber(magic_buffer)
     
-    local msg_type_buf, err = sock:receive(consts.MOTAN_HEADER_MSG_TYPE_BYTE)
+    local msg_type_buf, err = sock:receive(
+        consts.MOTAN_HEADER_MSG_TYPE_BYTE)
     if not msg_type_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local msg_type = utils.msb_stringtonumber(msg_type_buf)
     
-    local version_status_buf, err = sock:receive(consts.MOTAN_HEADER_VERSION_STATUS_BYTE)
+    local version_status_buf, err = sock:receive(
+        consts.MOTAN_HEADER_VERSION_STATUS_BYTE)
     if not version_status_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local version_status = utils.msb_stringtonumber(version_status_buf)
     
-    local serialize_buf, err = sock:receive(consts.MOTAN_HEADER_SERIALIZE_BYTE)
+    local serialize_buf, err = sock:receive(
+        consts.MOTAN_HEADER_SERIALIZE_BYTE)
     if not serialize_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
     end
     local serialize = utils.msb_stringtonumber(serialize_buf)
     
-    local request_id_buf, err = sock:receive(consts.MOTAN_HEADER_REQUEST_ID_BYTE)
+    local request_id_buf, err = sock:receive(
+        consts.MOTAN_HEADER_REQUEST_ID_BYTE)
     if not request_id_buf then
         ngx.log(ngx.ERR, err)
         return nil, err
@@ -91,7 +96,8 @@ function _M.decode(self, sock)
         header_obj:set_gzip(true)
     end
     
-    local metadata_size_buffer, err = sock:receive(consts.MOTAN_META_SIZE_BYTE)
+    local metadata_size_buffer, err = sock:receive(
+        consts.MOTAN_META_SIZE_BYTE)
     if not metadata_size_buffer then
         ngx.log(ngx.ERR, err)
         return nil, err
@@ -110,7 +116,8 @@ function _M.decode(self, sock)
             metadata[key] = metadata_arr[i + 1]
         end
     end
-    local bodysize_buffer, err = sock:receive(consts.MOTAN_BODY_SIZE_BYTE)
+    local bodysize_buffer, err = sock:receive(
+        consts.MOTAN_BODY_SIZE_BYTE)
     if not bodysize_buffer then
         ngx.log(ngx.ERR, err)
         return nil, err

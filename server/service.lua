@@ -39,7 +39,7 @@ _get_default_msg_handler = function()
     end
     
     function _res.get_provider(_res_self, service_name)
-        local service_name = provider:get_path()
+        local service_name = service_name
         return _res_self.providers[service_name] or false
     end
     
@@ -60,7 +60,8 @@ _get_filter_provider_warper = function(provider, filter)
     local _mt = {__index = _res}
     function _res.new(_res_self, provider, filter)
         if utils.is_empty(provider) or utils.is_empty(filter) then
-            ngx.log(ngx.ERR, "Err warper a provider with an empty provider or filter")
+            ngx.log(ngx.ERR
+            , "Err warper a provider with an empty provider or filter")
         end
         local _filter_provider_warper = {
             provider = provider, 

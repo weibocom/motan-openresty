@@ -23,7 +23,8 @@ function _M.new(self, ref_url_obj)
 end
 
 -- @TODO 500 Call ERR
-function _do_call(self, fucname, ...)
+local _do_call
+_do_call = function(self, fucname, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     local req = protocol:make_motan_request(self.url, fucname, ...)
     self.response = self.cluster:call(req)

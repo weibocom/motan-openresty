@@ -35,14 +35,14 @@ end
 
 function _M.pack_header(self)
     local header_buffer = utils.msb_numbertobytes(0xF1F1, 2)
-    header_buffer = header_buffer .. utils.msb_numbertobytes(self.msg_type, 1)
-    header_buffer = header_buffer .. utils.msb_numbertobytes(self.version_status, 1)
-    header_buffer = header_buffer .. utils.msb_numbertobytes(self.serialize, 1)
-    header_buffer = header_buffer .. utils.pack_request_id(self.request_id)
-    -- header_buffer = header_buffer .. self.request_id
-    -- local upper, lower = utils.split2int(self.request_id)
-    -- header_buffer = header_buffer .. utils.msb_numbertobytes(upper, 4)
-    -- header_buffer = header_buffer .. utils.msb_numbertobytes(lower, 4)
+    header_buffer = header_buffer
+    .. utils.msb_numbertobytes(self.msg_type, 1)
+    header_buffer = header_buffer
+    .. utils.msb_numbertobytes(self.version_status, 1)
+    header_buffer = header_buffer
+    .. utils.msb_numbertobytes(self.serialize, 1)
+    header_buffer = header_buffer
+    .. utils.pack_request_id(self.request_id)
     return header_buffer
 end
 
@@ -50,11 +50,14 @@ function _M.set_version(self, version)
     if version > 31 then
         error('motan header: version should not great than 31')
     end
-    self.version_status = bor(band(self.version_status, 0x07), band(lshift(version, 3), 0xf8))
+    self.version_status = bor(
+        band(self.version_status, 0x07)
+        , band(lshift(version, 3), 0xf8))
 end
 
 function _M.get_version(self)
-    return tonumber(band(rshift(self.version_status, 3), 0x1f), 16)
+    return tonumber(
+        band(rshift(self.version_status, 3), 0x1f), 16)
 end
 
 function _M.set_heartbeat(self, is_heartbeat)
@@ -121,7 +124,8 @@ function _M.set_status(self, status)
     if status > 7 then
         error('motan header: status should not great than 7')
     end
-    self.version_status = bor(band(self.version_status, 0xf8), band(status, 0x07))
+    self.version_status = bor(
+        band(self.version_status, 0xf8), band(status, 0x07))
 end
 
 function _M.get_status(self)
@@ -132,7 +136,8 @@ function _M.set_serialize(self, serialize)
     if serialize > 31 then
         error('motan header: serialize should not great than 31')
     end
-    self.serialize = bor(band(self.serialize, 0x07), band(lshift(serialize, 3), 0xf8))
+    self.serialize = bor(
+        band(self.serialize, 0x07), band(lshift(serialize, 3), 0xf8))
 end
 
 function _M.get_serialize(self)

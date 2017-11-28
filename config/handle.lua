@@ -24,12 +24,16 @@ function _M.new(self, opts)
 end
 
 function _M.get(self, conf)
-    local lines = function(name) return assert(io.open(name)):lines() end
+    local lines = function(name)
+        return assert(io.open(name)):lines()
+    end
     return parse[self.ctype](lines, self.cpath .. '/' .. conf)
 end
 
 function _M.save(self, name, t)
-    local write = function(name, contents) return assert(io.open(name, "w")):write(contents) end
+    local write = function(name, contents) 
+        return assert(io.open(name, "w")):write(contents)
+    end
     save[self.ctype](write, self.cpath .. '/' .. name, t)
     return true
 end

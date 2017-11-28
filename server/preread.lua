@@ -6,6 +6,7 @@ local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 local m2codec = require "motan.protocol.m2codec"
 local utils = require "motan.utils"
+local sprint_r = utils.sprint_r
 local m_request = require "motan.core.request"
 
 local _M = {
@@ -15,7 +16,8 @@ local _M = {
 local mt = {__index = _M}
 
 function _M.new(self)
-    local service_protocol = singletons.sys_conf.conf_set["MOTAN_SERVICE_PROTOCOL"] or "motan2"
+    local service_protocol 
+    = singletons.sys_conf.conf_set["MOTAN_SERVICE_PROTOCOL"] or "motan2"
     local protocol_obj = singletons.motan_ext:get_protocol(service_protocol)
     local ctx = ngx.ctx
     local motan_ctx = ctx.motan_ctx or {}

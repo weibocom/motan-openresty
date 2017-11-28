@@ -14,6 +14,7 @@ local consul_service = require "motan.registry.consul_service"
 local escape_uri = ngx.escape_uri
 local tab_concat = table.concat
 local tab_insert = table.insert
+local sprint_r = utils.sprint_r
 
 local _M = {
     _VERSION = '0.0.1'
@@ -71,9 +72,12 @@ end
 local _register_service
 _register_service = function(client, url)
     local service = _build_service(url)
-    local ok, res_or_err = client:put("/agent/service/register", json.encode(service))
+    local ok, res_or_err = client:put("/agent/service/register"
+    , json.encode(service))
     if not ok then
-        ngx.log(ngx.ERR, "Consul _register_service error: \n" .. sprint_r(res_or_err) .. "\n")
+        ngx.log(ngx.ERR
+        , "Consul _register_service error: \n" 
+        .. sprint_r(res_or_err) .. "\n")
     end
 end
 
@@ -88,7 +92,9 @@ function _M.check_pass(self, url)
     -- if err_or_info[1] ~= false
     --     or err_or_info[2] ~= false
     --     or err_or_info[3] ~= false then
-        ngx.log(ngx.ERR, "Consul check_pass error: \n" .. sprint_r(err_or_info) .. "\n")
+        ngx.log(ngx.ERR
+        , "Consul check_pass error: \n" 
+        .. sprint_r(err_or_info) .. "\n")
     end
 end
 
@@ -116,7 +122,8 @@ _lookup_service_update = function(premature, registry, url, listener_map)
                 listener:_notify(url, ref_url_objs)
             end
         end
-        local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD, _lookup_service_update, registry, url, listener_map)
+        local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD
+        , _lookup_service_update, registry, url, listener_map)
         if not ok then
             ngx.log(ngx.ERR, "failed to create the _do_register timer: ", err)
             return
@@ -140,14 +147,16 @@ function _M.subscribe(self, url, listener)
         listener_map[listener_idt] = listener
         self.subscribe_map[sub_key] = listener_map
         
-        ngx.timer.at(0, _lookup_service_update, self, url, self.subscribe_map[sub_key])
+        ngx.timer.at(0, _lookup_service_update
+        , self, url, self.subscribe_map[sub_key])
     end
 end
 
 function _M.discover(self, url)
     local res = {}
     local group = url.group
-    local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE .. group, "discover at wrong server.")
+    local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE 
+    .. group, "discover at wrong server.")
     local params = "?passing&wait=600s&index=0"
     local key = "/health/service/" .. service_name .. params
     local services, ok = self.client:get(key)

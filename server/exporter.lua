@@ -8,6 +8,7 @@ local motan_consul = require "motan.registry.consul"
 local singletons = require "motan.singletons"
 local consts = require "motan.consts"
 local utils = require "motan.utils"
+local sprint_r = utils.sprint_r
 
 local _get_consul_obj
 _get_consul_obj = function(registry_info)
@@ -31,7 +32,8 @@ _do_heartbeat = function(premature, heartbeat_map)
         local c_obj = _get_consul_obj(heartbeat_info.registry_info)
         c_obj:check_pass(heartbeat_info.service_url_obj)
     end
-    local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD, _do_heartbeat, heartbeat_map)
+    local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD
+    , _do_heartbeat, heartbeat_map)
     if not ok then
         ngx.log(ngx.ERR, "failed to create the _do_register timer: ", err)
         return
