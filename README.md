@@ -1,17 +1,23 @@
 # Motan-OpenResty
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/weibocom/motan/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)]
+(https://github.com/weibocom/motan/blob/master/LICENSE)
 
 
 # Overview
-[Motan][motan] is a cross-language remote procedure call(RPC) framework for rapid development of high performance distributed services.
+[Motan][motan] is a cross-language remote procedure call(RPC) framework 
+for rapid development of high performance distributed services.
 
-This project is the OpenResty Motan implementation. Provides OpenResty motan server, motan client.
+This project is the OpenResty Motan implementation. 
+Provides OpenResty motan server, motan client.
 
 # Features
 - Interactive with mulit language through motan2 protocol,such as Java, PHP.
-- Provides cluster support and integrate with popular service discovery services like [Consul][consul]. 
-- Supports advanced scheduling features like weighted load-balance, scheduling cross IDCs, etc.
-- Optimization for high load scenarios, provides high availability in production environment.
+- Provides cluster support and integrate 
+with popular service discovery services like [Consul][consul]. 
+- Supports advanced scheduling features like 
+weighted load-balance, scheduling cross IDCs, etc.
+- Optimization for high load scenarios, 
+provides high availability in production environment.
 
 # Quick Start
 
@@ -21,7 +27,8 @@ This project is the OpenResty Motan implementation. Provides OpenResty motan ser
 git clone https://github.com/weibocom/motan-openresty.git motan
 ```
 
-The quick start gives very basic example of running client and server on the same machine. For the detailed information about using and developing Motan, please jump to [Documents](#documents).
+The quick start gives very basic example of running client and server on the same machine. 
+For the detailed information about using and developing Motan, please jump to [Documents](#documents).
 the demo case is in the examples/ directory.
 
 ## Motan server
@@ -65,7 +72,8 @@ serialization=simple
 basicRefer=simple_rpc_service
 ```
 
-2. Write an implementation, create and start RPC Server: examples/motan-service/status.lua.
+2. Write an implementation, create and start RPC Server:
+examples/motan-service/status.lua.
 
 ```lua
 local setmetatable = setmetatable
@@ -91,7 +99,8 @@ return _M
 
 ## Motan client
 
-1. Create examples/motan-service/sys/MOTAN_CLIENT_CONF to config service for subscribe
+1. Create examples/motan-service/sys/MOTAN_CLIENT_CONF 
+to config service for subscribe
 
 ```ini
 ;config of registries
@@ -156,7 +165,8 @@ print_r(serialize.deserialize(res.body))
 
 # License
 
-Motan is released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Motan is released under the 
+[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 [motan]:https://github.com/weibocom/motan
 [consul]:http://www.consul.io
