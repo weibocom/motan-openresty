@@ -17,7 +17,8 @@ local _M = {
     _DEFAULT_EXT = {}
 }
 
-function _add_default_ext(ext)
+local _add_default_ext
+_add_default_ext = function(ext)
     endpoint.regist_default_endpoint(ext)
     provider.regist_default_provider(ext)
     registry.regist_default_registry(ext)

@@ -22,7 +22,9 @@ local assert = assert
 local utils = require "motan.utils"
 local singletons = require "motan.singletons"
 
-local Motan = {}
+local Motan = {
+    _VERSION = '0.0.1'
+}
 
 function Motan.init(sys_conf, motan_ext_set)
     local conf = require "motan.core.sysconf"

@@ -26,7 +26,9 @@ function _M.new(self, opts)
             group = opts.group or "", 
             params = opts.params or {}, 
         }
-        local check_arr = {"protocol", "host", "port", "path", "group", "params"}
+        local check_arr = {
+            "protocol", "host", "port", "path", "group", "params"
+        }
         for k, v in pairs(opts) do
             if not utils.is_in_table(k, check_arr) then
                 url.params[k] = v
@@ -58,7 +60,7 @@ function _M.get_urlinfo(self, with_params_str)
     }
     if with_params_str then
         local params_arr = {}
-        if self.params ~= null then
+        if self.params ~= nil then
             for k, v in pairs(self.params) do
                 tab_insert(params_arr, consts.QUERY_PARAM_SEPARATOR)
                 tab_insert(params_arr, k)
@@ -79,7 +81,8 @@ end
 function _M.get_filters(self)
     local filter_keys = {}
     filter_keys = assert(
-        utils.split(self.params[consts.MOTAN_FILTER_KEY], consts.COMMA_SEPARATOR)
+        utils.split(self.params[consts.MOTAN_FILTER_KEY]
+        , consts.COMMA_SEPARATOR)
         , "Error parse filter conf."
     )
     local cluster_filters = {}
@@ -99,7 +102,8 @@ function _M.get_filters(self)
             table.sort(cluster_filters, function(filter1, filter2)
                 return filter1:get_index() > filter2:get_index()
             end)
-            local last_cluster_filter = singletons.motan_ext:get_last_cluster_filter()
+            local last_cluster_filter 
+            last_cluster_filter = singletons.motan_ext:get_last_cluster_filter()
             for _, filter in ipairs(cluster_filters) do
                 filter:set_next(last_cluster_filter)
                 last_cluster_filter = filter

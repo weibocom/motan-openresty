@@ -50,7 +50,9 @@ function _M.get_local_ip()
 end
 
 function _M.generate_request_id()
-    return string.format("%14d%04d%d%d", ngx.now()*10000, ngx.worker.pid(), ngx.worker.id(), math.random(1,9))
+    return string.format("%14d%04d%d%d"
+    , ngx.now()*10000, ngx.worker.pid()
+    , ngx.worker.id(), math.random(1,9))
 end
 
 function _M.build_service_key(group, version, protocol, path)
@@ -81,18 +83,24 @@ function _M.is_empty(t)
 end
 
 function _M.explode(d, p)
-    local t, ll
+    local t, ll, l
     t = {}
     ll = 0
     if(#p == 1) then return {p} end
     while true do
-        l = string.find(p, d, ll, true) -- find the next d in the string
-        if l ~= nil then -- if "not not" found then.. 
-            table.insert(t, string.sub(p, ll, l - 1)) -- Save it in our array.
-            ll = l + 1 -- save just after where we found it for searching next time.
+        -- find the next d in the string
+        l = string.find(p, d, ll, true)
+        -- if "not not" found then.. 
+        if l ~= nil then
+            -- Save it in our array.
+            table.insert(t, string.sub(p, ll, l - 1))
+            -- save just after where we found it for searching next time.
+            ll = l + 1
         else
-            table.insert(t, string.sub(p, ll)) -- Save what's left in our array.
-            break -- Break at end, as it should be, according to the lua manual.
+            -- Save what's left in our array.
+            table.insert(t, string.sub(p, ll))
+            -- Break at end, as it should be, according to the lua manual.
+            break
         end
     end
     return t
@@ -214,6 +222,7 @@ end
 -- So `res["and"]` etc would be `true`.
 -- @return a table
 function _M.get_keywords ()
+    local lua_keyword
     if not lua_keyword then
         lua_keyword = {
             ["and"] = true, ["break"] = true, ["do"] = true, 
@@ -228,11 +237,14 @@ function _M.get_keywords ()
     return lua_keyword
 end
 
---- Utility function that finds any patterns that match a long string's an open or close.
--- Note that having this function use the least number of equal signs that is possible is a harder algorithm to come up with.
+-- Utility function that finds any patterns 
+-- that match a long string's an open or close.
+-- Note that having this function use the least number of equal signs 
+-- that is possible is a harder algorithm to come up with.
 -- Right now, it simply returns the greatest number of them found.
 -- @param s The string
--- @return 'nil' if not found. If found, the maximum number of equal signs found within all matches.
+-- @return 'nil' if not found. If found, 
+-- the maximum number of equal signs found within all matches.
 local function has_lquote(s)
     local lstring_pat = '([%[%]])(=*)%1'
     local start, finish, bracket, equals, next_equals = nil, 0, nil, nil, nil
@@ -250,21 +262,25 @@ local function has_lquote(s)
     return equals 
 end
 
---- Quote the given string and preserve any control or escape characters, such that reloading the string in Lua returns the same result.
+-- Quote the given string and preserve any control or escape characters, 
+-- such that reloading the string in Lua returns the same result.
 -- @param s The string to be quoted.
 -- @return The quoted string.
 function _M.quote_string(s)
     --find out if there are any embedded long-quote
     --sequences that may cause issues.
-    --This is important when strings are embedded within strings, like when serializing.
+    --This is important when strings are embedded within strings
+    -- , like when serializing.
     local equal_signs = has_lquote(s) 
     if s:find("\n") or equal_signs then 
         -- print("going with long string:", s)
         equal_signs = ("="):rep((equal_signs or - 1) + 1)
-        --long strings strip out leading \n. We want to retain that, when quoting.
+        --long strings strip out leading \n. 
+        -- We want to retain that, when quoting.
         if s:find("^\n") then s = "\n" .. s end
         --if there is an embedded sequence that matches a long quote, then
-        --find the one with the maximum number of = signs and add one to that number
+        --find the one with the maximum number of
+        --  = signs and add one to that number
         local lbracket, rbracket = 
         "[" .. equal_signs .. "[", 
         "]" .. equal_signs .. "]"
@@ -304,6 +320,7 @@ local function index (numkey, key)
 end
 
 local function is_identifier (s)
+    local keywords = _M.get_keywords()
     return type(s) == 'string' and s:find('^[%a_][%w_]*$') and not keywords[s]
 end
 
@@ -325,9 +342,7 @@ function _M.write (tbl, space, not_clever)
         if type(tbl) == 'string' then return quote(tbl) end
         return res, 'not a table'
     end
-    if not keywords then
-        keywords = _M.get_keywords()
-    end
+    local keywords = _M.get_keywords()
     local set = ' = '
     if space == '' then set = '=' end
     space = space or '  '

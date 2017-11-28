@@ -2,6 +2,7 @@
 
 
 local _M = {
+    _VERSION = '0.0.1', 
     config = {}, 
     var = {}, 
     motan_ext = {}, 
