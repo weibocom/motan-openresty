@@ -22,6 +22,9 @@ function _M.serialize(params)
             if type(v) == "table" then
                 goto continue
             end
+            if type(v) == "boolean" then
+                v = tostring(v)
+            end
             btemp = btemp 
             .. utils.msb_numbertobytes(#k, consts.MOTAN_DATA_PACK_INT32_BYTE)
             .. k 

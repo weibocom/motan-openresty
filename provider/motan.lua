@@ -95,8 +95,8 @@ function _M.call(self, req)
     if ok then
         value = res
     else
-        ngx.log(ngx.ERR, "Provider Call Err" .. res)
-        exception = "Provider Call Err" .. res
+        ngx.log(ngx.ERR, "Provider Call Err " .. res)
+        exception = "Provider Call Err " .. res
         return response:new{
             request_id = request_id, 
             exception = exception, 
