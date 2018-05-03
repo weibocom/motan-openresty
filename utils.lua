@@ -198,6 +198,7 @@ end
 -- Write an integer in MSB order using width bytes.
 function _M.msb_numbertobytes(num, width)
     local function _n2b(t, width, num, rem)
+        -- lprint_r({t,width,num,rem})
         if width == 0 then
             return table.concat(t)
         end
@@ -205,6 +206,68 @@ function _M.msb_numbertobytes(num, width)
         return _n2b(t, width - 1, math.modf(num / 256))
     end
     return _n2b({}, width, math.modf(num / 256))
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function _M.f(n)
+    local floor = math.floor
+    local function fn(t, n)
+        table.insert( t, 1, n % 2)
+        local rem = floor(n / 2)
+        if rem == 0 then
+            return t
+        end
+        return fn(t, rem)
+    end
+    return table.concat( fn({}, n), "" )
+end
+
+
+
+function _M.amsb_numbertobytes(num, width)
+    local bit = bit
+    local rs = {}
+    num = bit.tobit(num)
+    for i=0, (width -1) * 8, 8 do
+        table.insert( rs, 1, string.char( bit.band(bit.rshift(num, i), 0xff) ) )
+        i = i + 8
+    end
+    return table.concat( rs )
+end
+
+
+
+-- Write an integer in MSB order using width bytes.
+function _M.xmsb_numbertobytes(num, width)
+    -- if num > bit.lshift(1, width * 8) - 1 then
+    --     error("number width overflow")
+    -- end
+    local bit = require("bit")
+    local rs = {}
+    local band = 0xff
+    for i=1,width do
+        table.insert( rs, 1, string.char(bit.rshift(bit.band(num, band), 8 * (i -1))) )
+        band = bit.lshift(band, 8)
+    end
+    return table.concat(rs)
 end
 
 -- Write an integer in LSB order using width bytes.
@@ -215,6 +278,53 @@ function _M.lsb_numbertobytes(num, width)
         return rem, _n2b(width - 1, math.modf(num / 256))
     end
     return string.char(_n2b(width - 1, math.modf(num / 256)))
+end
+
+function _M.motan_table_type(v)
+    local data_type, err = nil, nil
+    local orgin_len = #v
+    local add_one_len = 0
+    local v_type = nil
+    local v_type_number = {byte=false, int=false}
+    v['check_if_is_a_array_or_a_hash'] = false
+    for k, value in pairs(v) do
+        add_one_len = add_one_len + 1
+        if k == "check_if_is_a_array_or_a_hash" then
+            goto continue
+        end
+        v_type = type(value)
+        if v_type == "number" then
+            if value >= 0 and value <= 0xff then
+                v_type_number.byte = true
+            else
+                v_type_number.int = true
+            end
+        end
+        ::continue::
+    end
+    if orgin_len == 0 and add_one_len > 1 then
+        if v_type == "string" then
+            data_type = consts.DTYPE_STRING_MAP
+        else
+            data_type = consts.DTYPE_MAP
+        end
+    elseif orgin_len == add_one_len - 1 then
+        lprint_r(v_type)
+        if v_type == "number" 
+        and v_type_number.byte == true 
+        and v_type_number.int == false then
+            data_type = consts.DTYPE_BYTE_ARRAY
+        elseif v_type == "string" then
+            data_type = consts.DTYPE_STRING_ARRAY
+        else
+            data_type = consts.DTYPE_ARRAY
+        end
+    else
+        data_type = nil
+        err = "UnSupport table type."
+    end
+    v['check_if_is_a_array_or_a_hash'] = nil
+    return data_type, err
 end
 
 

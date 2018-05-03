@@ -7,6 +7,7 @@ local singletons = require "motan.singletons"
 local setmetatable = setmetatable
 local tab_concat = table.concat
 local tab_insert = table.insert
+local tab_sort = table.sort
 
 local _M = {
     _VERSION = '0.0.1'
@@ -93,13 +94,13 @@ function _M.get_filters(self)
             local filter = singletons.motan_ext:get_filter(filter_key)
             if filter:get_type() == consts.MOTAN_FILTER_TYPE_CLUSTER then
                 local nfilter = filter:new_filter(self)
-                table.insert(cluster_filters, nfilter)
+                tab_insert(cluster_filters, nfilter)
             else
-                table.insert(endpoint_filters, filter)
+                tab_insert(endpoint_filters, filter)
             end
         end
         if #cluster_filters > 0 then
-            table.sort(cluster_filters, function(filter1, filter2)
+            tab_sort(cluster_filters, function(filter1, filter2)
                 return filter1:get_index() > filter2:get_index()
             end)
             local last_cluster_filter 
@@ -111,7 +112,7 @@ function _M.get_filters(self)
             cluster_filter = last_cluster_filter
         end
         if #endpoint_filters > 0 then
-            table.sort(endpoint_filters, function(filter1, filter2)
+            tab_sort(endpoint_filters, function(filter1, filter2)
                 return filter1:get_index() > filter2:get_index()
             end)
         end

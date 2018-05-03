@@ -124,16 +124,21 @@ function _M.decode(self, sock)
     end
     local body_size = utils.msb_stringtonumber(bodysize_buffer)
     
-    local buffer, body_buffer = "", ""
-    local remaining = body_size - #body_buffer
-    while remaining > 0 do
-        buffer, err = sock:receive(remaining)
-        if not buffer then
-            ngx.log(ngx.ERR, err)
-            return nil, err
+    local buffer, body_buffer
+    if body_size == 0 then
+        buffer, body_buffer = nil, nil
+    else
+        buffer, body_buffer = "", ""
+        local remaining = body_size - #body_buffer
+        while remaining > 0 do
+            buffer, err = sock:receive(remaining)
+            if not buffer then
+                ngx.log(ngx.ERR, err)
+                return nil, err
+            end
+            body_buffer = body_buffer .. buffer
+            remaining = body_size - #body_buffer
         end
-        body_buffer = body_buffer .. buffer
-        remaining = body_size - #body_buffer
     end
     local msg = message:new{
         header = header_obj, 

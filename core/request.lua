@@ -13,7 +13,7 @@ function _M.new(self, opts)
         service_name = opts.service_name or nil, 
         method = opts.method or nil, 
         method_desc = opts.method_desc or nil, 
-        arguments = opts.arguments or {}, 
+        arguments = opts.arguments or nil, 
         attachment = opts.attachment or {}, 
     }
     return setmetatable(request, mt)

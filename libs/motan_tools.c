@@ -12,25 +12,26 @@
 // gcc motan_tools.o -dynamiclib -o libmotan_tools.dylib
 // sudo cp libmotan_tools.dylib /usr/local/lib/
 void perror(const char *);
-int	 close(int);
-int get_local_ip(char * ifname, char * ip)
+int close(int);
+int get_local_ip(char *ifname, char *ip)
 {
     char *temp = NULL;
     int inet_sock;
     struct ifreq ifr;
 
-    inet_sock = socket(AF_INET, SOCK_DGRAM, 0); 
+    inet_sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     memset(ifr.ifr_name, 0, sizeof(ifr.ifr_name));
     memcpy(ifr.ifr_name, ifname, strlen(ifname));
 
-    if(0 != ioctl(inet_sock, SIOCGIFADDR, &ifr)) 
-    {   
+    if (0 != ioctl(inet_sock, SIOCGIFADDR, &ifr))
+    {
         perror("ioctl error");
         return -1;
     }
-    temp = inet_ntoa(((struct sockaddr_in*)&(ifr.ifr_addr))->sin_addr);     
+    temp = inet_ntoa(((struct sockaddr_in *)&(ifr.ifr_addr))->sin_addr);
     memcpy(ip, temp, strlen(temp));
+    ip[strlen(temp)] = '\0';
     close(inet_sock);
     return 0;
 }
@@ -75,9 +76,9 @@ int get_request_id_bytes(const char *request_id_str, char *rs_bytes)
     int width = 8, i = 0;
     u_int64_t j = 0xff;
     u_int64_t rid_num = strtoull(request_id_str, NULL, 10);
-    for (; i < 8;i++)
+    for (; i < 8; i++)
     {
-        width --;
+        width--;
         bytes[width] = (j & rid_num) >> (i * 8);
         j = j << 8;
     }

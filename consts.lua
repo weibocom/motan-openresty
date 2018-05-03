@@ -196,6 +196,32 @@ MOTAN_CONSUL_BLOCK_TIME_SECONDS = MOTAN_CONSUL_BLOCK_TIME_MINUTES * 60
 MOTAN_FILTER_TYPE_CLUSTER = 1
 MOTAN_FILTER_TYPE_ENDPOINT = 2
 
+---------------- byte order constants -----------------
+
+BYTE_ORDER_BIG_ENDIAN = 0
+BYTE_ORDER_LITTLE_ENDIAN = 1
+
+---------------- simple serialize constants -----------------
+
+DEFAULT_BUFFER_SIZE = 2048
+
+DTYPE_NULL = 0
+DTYPE_STRING = 1
+DTYPE_STRING_MAP = 2
+DTYPE_BYTE_ARRAY = 3
+DTYPE_STRING_ARRAY = 4
+DTYPE_BOOL = 5
+DTYPE_BYTE = 6
+DTYPE_INT16 = 7
+DTYPE_INT32 = 8
+DTYPE_INT64 = 9
+DTYPE_FLOAT32 = 10
+DTYPE_FLOAT64 = 11
+
+DTYPE_MAP = 20
+DTYPE_ARRAY = 21
+
+
 setmetatable(_M, {
     __newindex = 
     function (self, key, ...)

@@ -16,7 +16,7 @@ function _M.new(self, opts)
     local msg = {
         header = opts.header or {}, 
         metadata = opts.metadata or {}, 
-        body = opts.body or "", 
+        body = opts.body or nil, 
     }
     return setmetatable(msg, mt)
 end

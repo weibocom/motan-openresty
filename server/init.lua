@@ -38,17 +38,13 @@ end
 
 -- @TODO heartbeat
 function _M.heartbeat_resp(self, req)
-    local req = req or {}
-    self._codec:set_msg_type(consts.MOTAN_MSG_TYPE_RESPONSE)
-    local req_obj = simple.serialize(nil)
-    local req = self._codec:encode(req.header.request_id, req_obj, {})
-    return req
+    return self.protocol:convert_to_heartbeat_response_msg(req)
 end
 
 function _M.invoker(self, sock)
     local sock = sock
     local msg, err = self.protocol:read_msg(sock)
-    if not msg then
+    if err ~= nil then
         ngx.log(ngx.ERR, "\nRead msg from sock err:\n", sprint_r(err))
         return nil, err
     end

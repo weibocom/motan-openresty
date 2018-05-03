@@ -16,6 +16,7 @@ local bit = require "bit"
 local lshift = bit.lshift
 local bor = bit.bor
 local band = bit.band
+local cjson = require "cjson"
 
 local _M = {
     _VERSION = '0.0.1'
@@ -81,13 +82,25 @@ function _M.buildResponseHeader(self, request_id, msg_status)
     )
 end
 
+function _M.convert_to_heartbeat_response_msg(self, req)
+    local request_id = req.header.request_id
+    
+    local msg = message:new{
+        header =  self:buildResponseHeader(
+        request_id, consts.MOTAN_MSG_STATUS_NORMAL), 
+        metadata = req.metadata, 
+        body = nil
+    }
+    return self.codec_obj:encode(msg)
+end
+
 function _M.convert_to_err_response_msg(self, request_id, err)
     local request_id = request_id
     local err = err
     local header = self:buildResponseHeader(request_id
     , consts.MOTAN_MSG_STATUS_EXCEPTION)
     local metadata = {
-        M_e = err
+        M_e = cjson.encode({errcode=1,errmsg=ngx.re.gsub(err, "(\n)", "", "i"),errtype=1})
     }
     local err_msg = message:new{
         header = header, 
@@ -124,7 +137,7 @@ function _M.convert_to_request(self, msg, serialization)
     local service_name = msg.metadata["M_p"]
     local method = msg.metadata["M_m"]
     local method_desc = msg.metadata["M_md"]
-    local arguments = {}
+    local arguments = nil
     local attachment = msg.metadata
     -- @TODO check if need raw_msg
     -- local is_proxy = msg.header:is_proxy()
@@ -133,14 +146,15 @@ function _M.convert_to_request(self, msg, serialization)
     --     raw_msg = msg
     -- }
     
-    if msg.body ~= nil and #msg.body > 0 then
+    -- support nil
+    -- if msg.body ~= nil and #msg.body > 0 then
         if msg.header:is_gzip() then
             -- @TODO unzip
             -- msg.body = unzip()
             -- msg.header:set_gzip(false)
         end
         arguments = serialization.deserialize(msg:get_body())
-    end
+    -- end
     
     local motan_req = {
         request_id = request_id, 

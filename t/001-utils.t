@@ -1,7 +1,7 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua::Stream;
-our $MOTAN_P_ROOT="/media/psf/g/idevz/code/www/vanilla/framework";
+our $MOTAN_P_ROOT="/media/psf/code/www/vanilla/framework";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 log_level('warn');
