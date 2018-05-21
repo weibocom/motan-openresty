@@ -151,7 +151,7 @@ function _M.convert_to_request(self, msg, serialization, args_num)
         -- msg.body = unzip()
         -- msg.header:set_gzip(false)
     end
-    if args_num <= 2 then
+    if args_num <= 1 then
         arguments = serialization.deserialize(msg:get_body())
     else
         arguments = serialization.deserialize_multi(msg:get_body(), args_num)

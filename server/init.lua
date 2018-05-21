@@ -47,7 +47,7 @@ get_service_method_args_num = function(handler, msg)
     local msg = msg
     local provider = handler.providers[msg.metadata["M_p"]]['provider']
     local func = provider:get_service_obj(provider.url)[msg.metadata["M_m"]]
-    return debug.getinfo(func)["nparams"]
+    return debug.getinfo(func)["nparams"] - 1
 end
 
 function _M.invoker(self, sock)
