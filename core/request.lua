@@ -14,6 +14,7 @@ function _M.new(self, opts)
         method = opts.method or nil, 
         method_desc = opts.method_desc or nil, 
         arguments = opts.arguments or nil, 
+        args_num = opts.args_num or 0,
         attachment = opts.attachment or {}, 
     }
     return setmetatable(request, mt)

@@ -89,7 +89,12 @@ function _M.call(self, req)
     local service = self:get_service_obj(self.url)
     local resp_obj = {}
     local method = req:get_method()
-    local ok, res = pcall(service[method], service, req:get_arguments())
+    local ok, res
+    if req.args_num <= 2 then
+        ok, res = pcall(service[method], service, req:get_arguments())
+    else
+        ok, res = pcall(service[method], service, unpack(req:get_arguments()))     
+    end
     local request_id = req:get_request_id()
     
     if ok then

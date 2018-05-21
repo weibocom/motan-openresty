@@ -131,7 +131,7 @@ function _M.convert_to_response_msg(self, response, serialization)
 end
 
 -- deal with a request msg called to motan server
-function _M.convert_to_request(self, msg, serialization)
+function _M.convert_to_request(self, msg, serialization, args_num)
     local msg = msg
     local request_id = msg.header.request_id
     local service_name = msg.metadata["M_p"]
@@ -146,15 +146,17 @@ function _M.convert_to_request(self, msg, serialization)
     --     raw_msg = msg
     -- }
     
-    -- support nil
-    -- if msg.body ~= nil and #msg.body > 0 then
-        if msg.header:is_gzip() then
-            -- @TODO unzip
-            -- msg.body = unzip()
-            -- msg.header:set_gzip(false)
-        end
+    if msg.header:is_gzip() then
+        -- @TODO unzip
+        -- msg.body = unzip()
+        -- msg.header:set_gzip(false)
+    end
+    if args_num <= 2 then
         arguments = serialization.deserialize(msg:get_body())
-    -- end
+    else
+        arguments = serialization.deserialize_multi(msg:get_body(), args_num)
+    end
+    
     
     local motan_req = {
         request_id = request_id, 
@@ -162,6 +164,7 @@ function _M.convert_to_request(self, msg, serialization)
         method = method, 
         method_desc = method_desc, 
         arguments = arguments, 
+        args_num = args_num,
         attachment = attachment
     }
     return motan_request:new(motan_req)
@@ -207,7 +210,7 @@ function _M.convert_to_request_msg(self, request, serialization)
     local serialization = serialization
     local header = self:buildRequestHeader(request:get_request_id())
     local metadata = request:get_attachments()
-    local body = serialization.serialize(request:get_arguments())
+    local body = serialization.serialize_multi(request:get_arguments())
     
     local req_msg = message:new{
         header = header, 
@@ -219,26 +222,22 @@ end
 
 function _M.make_motan_request(self, url, fucname, ...)
     local url = url
-    local fucname = fucname
-    local req_params = ...
     local metadata = {
         M_p = url.path, 
         M_m = fucname, 
         M_g = url.group, 
         M_pp = url.protocol, 
     }
-    local request_id = req_params["request_id"] or utils.generate_request_id()
+    local request_id = utils.generate_request_id()
     local service_name = url.path
-    local method = fucname
-    local method_desc = req_params["M_md"] or nil
-    local arguments = req_params
+    local method_desc = nil
     local attachment = metadata
     return motan_request:new{
         request_id = request_id, 
         service_name = service_name, 
-        method = method, 
+        method = fucname, 
         method_desc = method_desc, 
-        arguments = arguments, 
+        arguments = {...}, 
         attachment = attachment
     }
 end

@@ -41,6 +41,15 @@ function _M.heartbeat_resp(self, req)
     return self.protocol:convert_to_heartbeat_response_msg(req)
 end
 
+local get_service_method_args_num
+get_service_method_args_num = function(handler, msg)
+    local handler = handler
+    local msg = msg
+    local provider = handler.providers[msg.metadata["M_p"]]['provider']
+    local func = provider:get_service_obj(provider.url)[msg.metadata["M_m"]]
+    return debug.getinfo(func)["nparams"]
+end
+
 function _M.invoker(self, sock)
     local sock = sock
     local msg, err = self.protocol:read_msg(sock)
@@ -59,8 +68,9 @@ function _M.invoker(self, sock)
         local serialize_num = msg.header:get_serialize()
         local serialization = singletons.motan_ext:get_serialization(
             consts.MOTAN_SERIALIZE_ARR[serialize_num])
+        local args_num = get_service_method_args_num(handler, msg)
         local motan_request
-        motan_request = self.protocol:convert_to_request(msg, serialization)
+        motan_request = self.protocol:convert_to_request(msg, serialization, args_num)
         local resp_obj = handler:call(motan_request)
         return self:resp(resp_obj, serialization)
     end
