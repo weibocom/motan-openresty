@@ -1,6 +1,9 @@
 -- Copyright (C) idevz (idevz.org)
 
 
+-- @TODO check LuaJIT bit 32
+-- rlwrap /usr/local/bin/v-console-0.1.0.rc7
+-- openresty-1.13.6.1-gdb/build/LuaJIT-2.1-20171103/src
 local setmetatable = setmetatable
 local utils = require "motan.utils"
 local consts = require "motan.consts"
@@ -97,7 +100,7 @@ will got a number string, which won't contain any alphabet.
 ]]--
 local check_byte_arr
 check_byte_arr = function(byte_arr)
-    local ok, byte_concat_str = pcall(table.concat( byte_arr, ""))
+    local ok, byte_concat_str = pcall(table.concat, byte_arr, "")
     if not ok then
         return false
     end
@@ -111,12 +114,9 @@ end
 function _M.write_byte(self, c)
     if not type(c) == "number" then
         ngx.log(ngx.ERR, "write_byte paramete err, it's not a number.\n")
+        error("write_byte paramete err, it's not a number.\n")
     end
-    if #self.byte_arr_buf < self.wpos + 1 then
-        self:grow(1)
-    end
-
-    -- self.byte_arr_buf[self.wpos] = c
+    
     table.insert(self.byte_arr_buf, self.wpos, c)
     self.wpos = self.wpos + 1
 
@@ -126,11 +126,9 @@ function _M.write(self, bytes)
     local is_byte_arr = check_byte_arr(bytes)
     if not is_byte_arr then
         ngx.log(ngx.ERR, "write paramete err, it's not a byte array.\n")
+        error("write paramete err, it's not a byte array.\n")
     end
     local l = #bytes
-    if #self.byte_arr_buf < self.wpos + l then
-        self:grow(l)
-    end
 
     
     local i = 1
@@ -148,17 +146,13 @@ end
 function _M.insert_uint(self, u)
     if not type(u) == "number" then
         ngx.log(ngx.ERR, "write_uint paramete err, it's not a number.\n")
+        error("write_uint paramete err, it's not a number.\n")
     end
-    -- if #self.byte_arr_buf < self.wpos + width then
-    --     self:grow(width)
-    -- end
+    
     local num_byte_str = self.numbertobytes(u, 4)
     self.temp = {string.byte( num_byte_str, 1, -1 )}
 
     local l = #self.temp
-    if l ~= width then
-        ngx.log(ngx.ERR, "Err to write a uint")
-    end
 
     local i = 1
     local from = self.wpos
@@ -174,16 +168,16 @@ local write_uint
 write_uint = function(self, u, width)
     if not type(u) == "number" then
         ngx.log(ngx.ERR, "write_uint paramete err, it's not a number.\n")
+        error("write_uint paramete err, it's not a number.\n")
     end
-    -- if #self.byte_arr_buf < self.wpos + width then
-    --     self:grow(width)
-    -- end
+
     local num_byte_str = self.numbertobytes(u, width)
     self.temp = {string.byte( num_byte_str, 1, -1 )}
 
     local l = #self.temp
     if l ~= width then
         ngx.log(ngx.ERR, "Err to write a uint")
+        error("Err to write a uint")
     end
 
     local i = 1
@@ -222,21 +216,10 @@ function _M.write_varint(self, u)
         self:write_byte((bor(band(u, 0x7f), 0x80)))
         u = rshift(u, 7)
         l = l + 1
-
     end
     self:write_byte(u)
     l = l + 1
     return l
-end
-
--- @TODO
--- luajit table.new or bit64.rshift
-function _M.grow(self, n)
-    local byte_arr_buf = new_tab(2*(#self.byte_arr_buf) + 1, 0)
-    for i=1,#self.byte_arr_buf do
-        byte_arr_buf[i] = self.byte_arr_buf[i]
-    end
-    self.byte_arr_buf = byte_arr_buf
 end
 
 function _M.bytes(self)

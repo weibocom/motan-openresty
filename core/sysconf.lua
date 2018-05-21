@@ -173,10 +173,16 @@ function _M.new(self, sys_conf)
 end
 
 function _M.get_server_conf(self)
+    if self.conf_set.MOTAN_SERVER_CONF_FILE == nil then
+        return {}, {}
+    end
     return _get_section(self, self.conf_set.MOTAN_SERVER_CONF_FILE)
 end
 
 function _M.get_client_conf(self)
+    if self.conf_set.MOTAN_CLIENT_CONF_FILE == nil then
+        return {}, {}
+    end
     return _get_section(self, self.conf_set.MOTAN_CLIENT_CONF_FILE)
 end
 

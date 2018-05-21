@@ -23,7 +23,7 @@ motan_table_type = function(v)
     local data_type, err = nil, nil
     local orgin_len = #v
     local add_one_len = 0
-    local v_type = nil
+    local v_type = type(v)
     local v_type_number = {byte=false, int=false}
     v['check_if_is_a_array_or_a_hash'] = false
     for k, value in pairs(v) do
@@ -48,7 +48,6 @@ motan_table_type = function(v)
             data_type = consts.DTYPE_MAP
         end
     elseif orgin_len == add_one_len - 1 then
-        lprint_r(v_type)
         if v_type == "number" 
         and v_type_number.byte == true 
         and v_type_number.int == false then
@@ -273,7 +272,7 @@ serialize_buf = function(params, buf)
         else
             return nil, p_type_err
         end
-    elseif p_type == "nil" then
+    elseif p_type == "nil" or params == ngx.null then
         buf:write_byte(consts.DTYPE_NULL)
     end
     return nil
@@ -282,6 +281,24 @@ end
 function _M.serialize(params)
     local buf = buf_lib:new_bytes_buff(consts.DEFAULT_BUFFER_SIZE)
     local err = serialize_buf(params, buf)
+    return string.char(unpack(buf.byte_arr_buf)), err
+end
+
+function _M.serialize_multi(params)
+    if #params == 0 then
+        return nil, nil
+    end
+    local err
+    local buf = buf_lib:new_bytes_buff(consts.DEFAULT_BUFFER_SIZE)
+    for _,v in ipairs(params) do
+        if type(v) == 'table' and utils.is_empty(v) then
+            v = nil
+        end
+        err = serialize_buf(v, buf)
+        if err ~= nil then
+            return nil, err
+        end
+    end
     return string.char(unpack(buf.byte_arr_buf)), err
 end
 
@@ -626,6 +643,34 @@ end
 function _M.deserialize(data)
     local buf = buf_lib:create_bytes_buff(data)
     return deserialize_buf(buf)
+end
+
+function _M.deserialize_multi(data, args_num)
+    local ret, rv, err = {}, {}
+    local buf = buf_lib:create_bytes_buff(data)
+    if args_num ~= nil then
+        for i=1, args_num - 1 do
+            rv, err = deserialize_buf(buf, nil)
+            if err ~= nil then
+                return nil, err
+            end
+            table.insert(ret, rv)
+        end
+    else
+        while(buf:remain() > 0)
+        do
+            rv, err = deserialize_buf(buf, nil)
+            if err ~= nil then
+                if err == "io.EOF" then
+                    break;
+                else
+                    return nil, err
+                end
+            end
+            table.insert(ret, rv)
+        end
+    end
+    return ret, err
 end
 
 return _M
