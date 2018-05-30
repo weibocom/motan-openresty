@@ -41,6 +41,31 @@ function _M.new(self, opts)
     return setmetatable(url, mt)
 end
 
+function _M.get_addr(self)
+    local addr_info = {
+        self.protocol, 
+        consts.PROTOCOL_SEPARATOR, 
+        self.host, 
+        consts.COLON_SEPARATOR, 
+        self.port, 
+        consts.PATH_SEPARATOR
+    }
+    return tab_concat(addr_info)
+end
+
+function _M.copy(self)
+    local url = {}
+    local params = {}
+    for k,v in pairs(self.params) do
+        params[k] = v
+    end
+    url.protocol, url.host, url.port
+    , url.path, url.group, url.params
+    = self.protocol, self.host
+    , self.port, self.path, self.group, params
+    return self:new(url)
+end
+
 function _M.get_identity(self)
     local url_info = self:get_urlinfo()
     return tab_concat(url_info)
@@ -77,6 +102,11 @@ end
 
 function _M.to_extinfo(self)
     return tab_concat(self:get_urlinfo(true))
+end
+
+-- @TODO
+function _M.from_ext_info(self, ext_info)
+    return self:new{}
 end
 
 function _M.get_filters(self)

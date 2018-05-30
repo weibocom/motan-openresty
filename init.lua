@@ -71,6 +71,7 @@ function Motan.init_worker_motan_server()
     local exporter = require "motan.server.exporter"
     local exporter_obj = exporter:new()
     exporter_obj:export()
+    exporter_obj:heartbeat()
 end
 
 function Motan.init_worker_motan_client()

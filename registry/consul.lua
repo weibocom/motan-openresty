@@ -11,32 +11,14 @@ local utils = require "motan.utils"
 local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 local consul_service = require "motan.registry.consul_service"
+local timer = require "resty.timer"
 local escape_uri = ngx.escape_uri
 local tab_concat = table.concat
 local tab_insert = table.insert
 local sprint_r = utils.sprint_r
 
-local _M = {
-    _VERSION = '0.0.1'
-}
-
-local mt = {__index = _M}
-
--- @TODO ext registry
-function _M.new(self, opts)
-    local consul_host = opts.host or singletons.var.LOCAL_IP
-    local consul_port = opts.port or consts.MOTAN_CONSUL_DEFAULT_PORT
-    local consul_client = consul_lib:new{
-        host = consul_host, 
-        port = consul_port, 
-    }
-    local consul = {
-        url = opts.url or {}, 
-        client = consul_client, 
-        subscribe_map = {}, 
-    }
-    return setmetatable(consul, mt)
-end
+local DEFAULT_TIMEOUT = 60*1000 -- 60s default timeout
+local DEFAULT_HEART_INTERVAL  = 5
 
 local _build_id
 _build_id = function(url)
@@ -76,30 +58,64 @@ _register_service = function(client, url)
     , json.encode(service))
     if not ok then
         ngx.log(ngx.ERR
-        , "Consul _register_service error: \n" 
-        .. sprint_r(res_or_err) .. "\n")
+        , "Consul _register_service error:" 
+        , sprint_r(res_or_err))
+        return nil, res_or_err
     end
+    return true
 end
 
-function _M.do_register(self, url)
-    _register_service(self.client, url)
-end
-
-function _M.check_pass(self, url)
+local _check_pass
+_check_pass = function(client, url)
     local key = "/agent/check/pass/service:" .. _build_id(url)
-    local res, err_or_info = self.client:put(key)
+    local res, err_or_info = client:put(key)
     if err_or_info ~= nil then
-    -- if err_or_info[1] ~= false
-    --     or err_or_info[2] ~= false
-    --     or err_or_info[3] ~= false then
         ngx.log(ngx.ERR
-        , "Consul check_pass error: \n" 
-        .. sprint_r(err_or_info) .. "\n")
+        , "Consul check_pass error:" 
+        , sprint_r(err_or_info))
+        return nil, err_or_info
     end
+    return true
 end
 
-function _M.get(self, ...)
-    return self.client:get(...)
+local _M = {
+    _VERSION = '0.0.1'
+}
+
+local mt = {__index = _M}
+
+-- @TODO ext registry
+function _M:new(url)
+    local consul_host = url.host or singletons.var.LOCAL_IP
+    local consul_port = url.port or consts.MOTAN_CONSUL_DEFAULT_PORT
+    local consul_client = consul_lib:new{
+        host = consul_host, 
+        port = consul_port, 
+    }
+
+    local timeout = url.timeout or DEFAULT_TIMEOUT
+    local heart_interval = url.heart_interval or DEFAULT_HEART_INTERVAL
+
+    local consul = {
+        url = url,
+        client = consul_client, 
+        subscribe_map = {}, 
+        timeout = timeout,
+        heart_interval = heart_interval,
+    }
+    return setmetatable(consul, mt)
+end
+
+function _M:get_name()
+    return "consulxRegistry"
+end
+
+function _M:get_url()
+    return self.url
+end
+
+function _M:set_url(url)
+    self.url = url
 end
 
 local _get_sub_key
@@ -113,26 +129,19 @@ local function _check_need_notify()
 end
 
 local _lookup_service_update
-_lookup_service_update = function(premature, registry, url, listener_map)
-    if not premature then
-        local ref_url_objs = registry:discover(url)
-        local need_notify = _check_need_notify()
-        if need_notify and not utils.is_empty(ref_url_objs) then
-            for k, listener in pairs(listener_map) do
-                listener:_notify(url, ref_url_objs)
-            end
+_lookup_service_update = function(self, url)
+    local sub_key = _get_sub_key(url)
+    local listener_map = self.subscribe_map[sub_key]
+    local ref_url_objs = self:discover(url)
+    local need_notify = _check_need_notify()
+    if need_notify and not utils.is_empty(ref_url_objs) then
+        for k, listener in pairs(listener_map) do
+            listener:_notify(self.url, ref_url_objs)
         end
-        local ok, err = ngx.timer.at(consts.MOTAN_CONSUL_HEARTBEAT_PERIOD
-        , _lookup_service_update, registry, url, listener_map)
-        if not ok then
-            ngx.log(ngx.ERR, "failed to create the _do_register timer: ", err)
-            return
-        end
-        
     end
 end
 
-function _M.subscribe(self, url, listener)
+function _M:subscribe(url, listener)
     -- @TODO check lock
     local sub_key = _get_sub_key(url)
     local listener_map = self.subscribe_map[sub_key]
@@ -146,13 +155,18 @@ function _M.subscribe(self, url, listener)
         listener_map = listener_map or {}
         listener_map[listener_idt] = listener
         self.subscribe_map[sub_key] = listener_map
-        
-        ngx.timer.at(0, _lookup_service_update
-        , self, url, self.subscribe_map[sub_key])
+
+        local notify_timer = timer:new()
+        notify_timer:tick(
+            notify_timer.NO_RES, self.heart_interval, 
+            _lookup_service_update, self, url)
     end
 end
 
-function _M.discover(self, url)
+function _M:unsubscribe(url, listener)
+end
+
+function _M:discover(url)
     local res = {}
     local group = url.group
     local service_name = assert(consts.MOTAN_CONSUL_SERVICE_MOTAN_PRE 
@@ -161,8 +175,8 @@ function _M.discover(self, url)
     local key = "/health/service/" .. service_name .. params
     local services, ok = self.client:get(key)
     if not ok[1] then
-        ngx.log(ngx.ERR, "Consul discover error: \n" .. sprint_r(ok) .. "\n")
-        return false
+        ngx.log(ngx.ERR, "Consul discover error: \n", sprint_r(ok))
+        return nil, sprint_r(ok)
     end
     for k, service_info in pairs(services) do
         local service = url:new{
@@ -176,6 +190,82 @@ function _M.discover(self, url)
         tab_insert(res, service)
     end
     return res
+end
+
+function _M:subscribe_command(url, listener)
+end
+
+function _M:unsubscribe_command(url, listener)
+end
+
+function _M:discover_command(url)
+end
+
+local _get_consul_obj
+_get_consul_obj = function(registry_info)
+    return motan_consul:new{
+        host = registry_info.host, 
+        port = registry_info.port, 
+    }
+end
+
+local _do_heartbeat
+_do_heartbeat = function(client, service_url_obj_arr)
+    for _, service_url_obj in ipairs(service_url_obj_arr) do
+        local ok, err = _check_pass(client, service_url_obj)
+        if err ~= nil then
+            ngx.log(ngx.ERR, "Consul heartbeat Error:" , 
+            err, service_url_obj:get_identity())
+        end
+    end
+end
+
+function _M:heartbeat(service_url_obj_arr)
+    local heartbeat_timer = timer:new(true)
+    heartbeat_timer:tick(
+        heartbeat_timer.NO_RES, self.heart_interval, 
+        _do_heartbeat, self.client, service_url_obj_arr)
+end
+
+function _M:register(service_url)
+    if service_url.group == ""
+    or service_url.path  == ""
+    or service_url.host  == ""
+    or service_url.port  == 0 then
+        ngx.log(ngx.ERR, 
+        "Register Fail, invalid url:"
+        , service_url:get_identity())
+        return
+    end
+    if ngx.worker.id() == 0 then
+        ngx.timer.at(0, function(premature, client, service_url)
+            if not premature then
+                local service_url_obj = service_url
+                local ok, err = _register_service(client, service_url_obj)
+                if err ~= nil then
+                    ngx.log(ngx.ERR, "Consul register Error:" , 
+                    err, service_url_obj:get_identity())
+                    return false
+                end
+                ngx.log(ngx.INFO, "Service registry: \n", service_url_obj:get_identity())
+            end
+        end, self.client, service_url)
+    end
+end
+
+function _M:unregister(server_url)
+end
+
+function _M:available(server_url)
+end
+
+function _M:unavailable(server_url)
+end
+
+function _M:get_registered_services()
+end
+
+function _M:start_snapshot(conf)
 end
 
 return _M

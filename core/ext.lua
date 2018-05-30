@@ -150,7 +150,7 @@ end
 function _M.get_registry(self, url)
     local key = url:get_identity()
     local registries_cache = self.registries[key] or {}
-    if registries_cache[self.registries[key]] ~= nil then
+    if not utils.is_empty(registries_cache) then
         return registries_cache
     else
         local registry = self.registry_fctrs[url.protocol]

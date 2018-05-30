@@ -36,8 +36,13 @@ function _M.encode(self, msg)
     local mt_str = tab_concat(mt, "\n")
     buffer = buffer .. utils.msb_numbertobytes(#mt_str, 4)
     buffer = buffer .. mt_str
-    buffer = buffer .. utils.msb_numbertobytes(#msg.body, 4)
-    buffer = buffer .. msg.body
+    local b_len, b = 0, ""
+    if msg.body ~= nil then
+        b_len = #msg.body
+        b = msg.body
+    end
+    buffer = buffer .. utils.msb_numbertobytes(b_len, 4)
+    buffer = buffer .. b
     
     return buffer
 end
@@ -46,6 +51,10 @@ function _M.decode(self, sock)
     local sock = sock
     local magic_buffer, err = sock:receive(
         consts.MOTAN_HEADER_MAGIC_NUM_BYTE)
+    if err == "closed" then
+        ngx.log(ngx.NOTICE, err)
+        return nil, err
+    end
     if not magic_buffer then
         ngx.log(ngx.ERR, err)
         return nil, err

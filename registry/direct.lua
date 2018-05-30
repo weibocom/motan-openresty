@@ -13,7 +13,7 @@ local _M = {
 
 local mt = { __index = _M }
 
-function _M.new(self, opts)
+function _M:new(opts)
     local direct = {
         host = opts.host,
         port = opts.port
@@ -21,21 +21,24 @@ function _M.new(self, opts)
     return setmetatable(direct, mt)
 end
 
-function _M.do_register(self, url)
-    ngx.log(ngx.INFO, "register url " .. url:get_identity())
+function _M:get_name()
+    return "directRegistry"
 end
 
-function _M.check_pass(self, url)
+function _M:get_url()
 end
 
-function _M.get(self, ...)
+function _M:set_url(url)
 end
 
-function _M.subscribe(self, url, listener)
+function _M:subscribe(url, listener)
     listener:_notify(url, self:discover(url))
 end
 
-function _M.discover(self, url)
+function _M:unsubscribe(url, listener)
+end
+
+function _M:discover(url)
     local res = {}
     local endpoint_url = url:new {
         protocol = url.protocol,
@@ -47,6 +50,36 @@ function _M.discover(self, url)
     }
     tab_insert(res, endpoint_url)
     return res
+end
+
+function _M:subscribe_command(url, listener)
+end
+
+function _M:unsubscribe_command(url, listener)
+end
+
+function _M:discover_command(url)
+end
+
+function _M:heartbeat(service_url_obj_arr)
+end
+
+function _M:register(server_url)
+end
+
+function _M:unregister(server_url)
+end
+
+function _M:available(server_url)
+end
+
+function _M:unavailable(server_url)
+end
+
+function _M:get_registered_services()
+end
+
+function _M:start_snapshot(conf)
 end
 
 return _M

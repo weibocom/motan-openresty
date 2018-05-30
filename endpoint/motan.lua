@@ -5,6 +5,10 @@ local tcp = ngx.socket.tcp
 local setmetatable = setmetatable
 local rawget = rawget
 local singletons = require "motan.singletons"
+local consts = require "motan.consts"
+
+local MAX_IDLE_TIMEOUT = 30*1000 -- 30s default timeout
+local POOL_SIZE        = 100
 
 local _M = {
     _VERSION = '0.0.1'
@@ -15,6 +19,10 @@ local mt = {__index = _M}
 function _M.new(self, url)
     local motan_ep = {
         url = url, 
+        max_idle_timeout = consts.MOTAN2_EP_MAX_IDLE_TIMEOUT
+         or MAX_IDLE_TIMEOUT,
+        pool_size = consts.MOTAN2_EP_POOL_SIZE 
+         or POOL_SIZE,
         _sock = {}, 
     }
     return setmetatable(motan_ep, mt)
@@ -88,8 +96,7 @@ function _M.call(self, req)
             ngx.log(ngx.ERR, "motan endpoint receive RPC resp err: ", resp_err)
             return protocol:build_error_resp(resp_err, req)
         end
-        -- @TODO make keepalive configurate able
-        sock:setkeepalive(5000, 100)
+        sock:setkeepalive(self.max_idle_timeout, self.pool_size)
         local process_time = ngx.now() - start_time
         resp_ok:set_process_time(math.floor((process_time * 100) + 0.5) * 0.01)
         return resp_ok

@@ -28,6 +28,9 @@ _do_call = function(self, fucname, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     local req = protocol:make_motan_request(self.url, fucname, ...)
     self.response = self.cluster:call(req)
+    if self.response:get_exception() ~= nil then
+        return nil, self.response:get_exception()
+    end
     return self.response.value
 end
 

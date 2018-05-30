@@ -89,19 +89,19 @@ function _M.call(self, req)
     local service = self:get_service_obj(self.url)
     local resp_obj = {}
     local method = req:get_method()
-    local ok, res
+    local ok, res_or_err
     if req.args_num <= 2 then
-        ok, res = pcall(service[method], service, req:get_arguments())
+        ok, res_or_err = pcall(service[method], service, req:get_arguments())
     else
-        ok, res = pcall(service[method], service, unpack(req:get_arguments()))     
+        ok, res_or_err = pcall(service[method], service, unpack(req:get_arguments()))     
     end
     local request_id = req:get_request_id()
     
     if ok then
-        value = res
+        value = res_or_err
     else
-        ngx.log(ngx.ERR, "Provider Call Err " .. res)
-        exception = "Provider Call Err " .. res
+        ngx.log(ngx.ERR, "Provider Call Err", res_or_err)
+        exception = "Provider Call Err "
         return response:new{
             request_id = request_id, 
             exception = exception, 

@@ -47,14 +47,22 @@ get_service_method_args_num = function(handler, msg)
     local msg = msg
     local provider = handler.providers[msg.metadata["M_p"]]['provider']
     local func = provider:get_service_obj(provider.url)[msg.metadata["M_m"]]
-    return debug.getinfo(func)["nparams"] - 1
+    if func ~= nil then
+        return debug.getinfo(func)["nparams"] - 1
+    end
+    ngx.log(ngx.ERR, "get_service_method_args_num: function not found.")
+    return false, "function not found."
 end
 
 function _M.invoker(self, sock)
     local sock = sock
     local msg, err = self.protocol:read_msg(sock)
+    if err == "closed" then
+        ngx.log(ngx.NOTICE, err)
+        return nil, err
+    end
     if err ~= nil then
-        ngx.log(ngx.ERR, "\nRead msg from sock err:\n", sprint_r(err))
+        ngx.log(ngx.ERR, "Read msg from sock err:", sprint_r(err))
         return nil, err
     end
     if msg.header:is_heartbeat() then
@@ -72,6 +80,10 @@ function _M.invoker(self, sock)
         local motan_request
         motan_request = self.protocol:convert_to_request(msg, serialization, args_num)
         local resp_obj = handler:call(motan_request)
+        if resp_obj:get_exception() ~= nil then
+            return self:error_resp(msg.header.request_id
+            , resp_obj:get_exception())
+        end
         return self:resp(resp_obj, serialization)
     end
     return self:error_resp(msg.header.request_id

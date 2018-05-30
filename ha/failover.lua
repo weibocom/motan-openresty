@@ -2,6 +2,7 @@
 
 
 local setmetatable = setmetatable
+local singletons = require "motan.singletons"
 
 local _M = {
     _VERSION = '0.0.1'
@@ -30,6 +31,12 @@ end
 function _M.call(self, req, lb)
     local lb = lb
     local endpoint = lb:select(req)
+
+    if not endpoint then
+        local protocol = singletons.motan_ext:get_protocol(self.url["protocol"])
+        return protocol:build_error_resp("None endpoint got.", req)
+    end
+
     local resp = endpoint:call(req)
     return resp
 end

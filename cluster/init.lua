@@ -128,6 +128,7 @@ function _M._notify(self, registry, ref_url_objs)
         return
     end
     local registry_key = registry:get_identity()
+    ngx.log(ngx.DEBUG, "==>cluster notify:", registry_key)
     local endpoints = {}
     local endpoints_map = {}
     local reg_referers = self.registry_refers[registry_key]
@@ -160,17 +161,24 @@ function _M._notify(self, registry, ref_url_objs)
     self:refresh()
 end
 
+function _M.get_identity(self)
+    return self.url:get_identity()
+end
+
 function _M.call(self, req)
     return self.cluster_filter:filter(self.ha, self.lb, req)
 end
 
 function _M._parse_registry(self)
-    -- @TODO support multi regstry at the same time
-    local registry_key = self.url.params[consts.MOTAN_REGISTRY_KEY]
-    local registry_url_obj = assert(singletons.client_regstry[registry_key]
-    , "Empty registry config: " .. registry_key)
-    local registry = self.ext:get_registry(registry_url_obj)
-    registry:subscribe(self.url, self)
+    local registry_keys = self.url.params[consts.MOTAN_REGISTRY_KEY]
+    local registry_arr = utils.split(registry_keys, ",")
+    for _, registry_key in ipairs(registry_arr) do
+        local registry_url_obj = assert(singletons.client_regstry[registry_key]
+        , "Empty registry config: " .. registry_key)
+        local registry = self.ext:get_registry(registry_url_obj)
+        assert(registry ~= nil, "_parse_registry got not registry obj")
+        registry:subscribe(self.url, self)
+    end
 end
 
 function _M.new(self, ref_url_obj)

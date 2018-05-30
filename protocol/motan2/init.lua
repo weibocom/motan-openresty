@@ -35,6 +35,10 @@ end
 function _M.read_msg(self, sock)
     local sock = sock
     local msg, err = self.codec_obj:decode(sock)
+    if err == "closed" then
+        ngx.log(ngx.NOTICE, err)
+        return nil, err
+    end
     if not msg then
         ngx.log(ngx.ERR, "Server handler read_msg err:\n", sprint_r(err))
         return nil, err
@@ -187,15 +191,17 @@ end
 function _M.read_reply(self, sock, serialization)
     local sock = sock
     local resp_ok, resp_err = self.codec_obj:decode(sock)
+
     if not resp_ok then
         ngx.log(ngx.ERR, "motan endpoint read reply err: ", resp_err)
         return nil, resp_err
     end
     
-    local value, exception = nil, nil
-    local request_id = resp_ok.header.request_id
-    value = serialization.deserialize(resp_ok.body)
-    local attachment = resp_ok.metadata
+    local request_id, value, attachment, exception 
+        = resp_ok.header.request_id or nil
+        , serialization.deserialize(resp_ok.body) or nil
+        , resp_ok.metadata or {}
+        , resp_ok.metadata.M_e or nil
     return motan_response:new{
         request_id = request_id, 
         value = value, 

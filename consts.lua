@@ -92,6 +92,11 @@ M2_INFO_SIGN = "M_is"
 M2_ERROR = "M_e"
 M2_PROCESS_TIME = "M_pt"
 
+
+---------------- motan 2 endpoints constants -----------------
+MOTAN2_EP_MAX_IDLE_TIMEOUT = 30*1000 -- 30s default timeout
+MOTAN2_EP_POOL_SIZE        = 100
+
 ---------------- Global CTX Sys Conf -----------------
 MOTAN_GCTX_CONF_KEY = "globalcontext"
 MOTAN_REGISTRY_PREFIX     = "motan.registry."
