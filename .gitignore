@@ -17,6 +17,11 @@ nginx
 *.cbt
 *.pyc
 lj
-.gdb_history
 t/servroot
 .idea
+
+
+.gdb_history
+.DS_Store
+build
+app

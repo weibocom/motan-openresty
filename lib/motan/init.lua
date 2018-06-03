@@ -26,15 +26,28 @@ local Motan = {
     _VERSION = '0.0.1'
 }
 
-function Motan.init(sys_conf, motan_ext_set)
+local init_env
+init_env = function()
+    local APP_ROOT = string.sub(package.path, 1, string.find(package.path, [[//]]))
+    local motan_env = os.getenv("MOTAN_ENV") or "production"
+    if motan_env == "development" then
+        singletons.is_dev = true
+    end
+
+    local motan_var = {}
+    motan_var["LOCAL_IP"] = utils.get_local_ip()
+    motan_var["APP_ROOT"] = APP_ROOT
+    motan_var["ENV_STR"]  = motan_env
+    singletons.var = motan_var
+end
+
+function Motan.init(motan_ext_set)
+    init_env()
+    local sys_conf = require("env." .. singletons.var["ENV_STR"])
     local conf = require "motan.core.sysconf"
     local service = require "motan.server.service"
     local conf_obj = conf:new(sys_conf)
     singletons.config = conf_obj
-    
-    local motan_var = {}
-    motan_var["LOCAL_IP"] = utils.get_local_ip()
-    singletons.var = motan_var
     
     local motan_ext = {}
     if utils.is_empty(motan_ext_set) then
