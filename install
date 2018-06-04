@@ -3,7 +3,7 @@
 ### BEGIN ###
 # Author: idevz
 # Since: 2018/03/12
-# Description:       Manage a motan openresty dependences
+# Description:       Motan OpenResty installation
 ### END ###
 
 # base conf
@@ -26,7 +26,8 @@ doRequire() {
     https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
     '
     REQUIRE=${PWD}/build/require
-    mkdir -p $REQUIRE/{src,resty}
+    mkdir -p $REQUIRE/src
+    mkdir -p $REQUIRE/resty
 
     for dep in ${DEPENDENCES}
     do
