@@ -6,7 +6,11 @@
 # Description:       Manage a motan openresty dependences
 ### END ###
 
-DEPENDENCES='https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz https://github.com/idevz/lua-resty-timer.git https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz'
+DEPENDENCES='
+https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz
+https://github.com/idevz/lua-resty-timer/archive/v0.0.1.tar.gz
+https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
+'
 SRC_ROOT=$(realpath ./)
 REQUIRE=${SRC_ROOT}/build/require
 

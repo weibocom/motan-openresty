@@ -1,0 +1,82 @@
+#!/bin/sh
+
+### BEGIN ###
+# Author: idevz
+# Since: 2018/03/12
+# Description:       Manage a motan openresty dependences
+### END ###
+
+# base conf
+PWD=`pwd`
+BUILD=${PWD}/build
+mkdir -p ${BUILD}
+
+# OpenResty ROOT
+OR=openresty
+TMP=${BUILD}/tmp
+OR_ROOT=$(${OR} -V &> ${TMP} && cat ${TMP} \
+	| grep prefix |sed  's/.*prefix\=\(.*\)\/nginx.*/\1/g')
+SITE_LUALIB_ROOT=${OR_ROOT}/site/lualib
+rm ${TMP}
+
+doRequire() {
+    DEPENDENCES='
+    https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz
+    https://github.com/idevz/lua-resty-timer/archive/v0.0.1.tar.gz
+    https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
+    '
+    REQUIRE=${PWD}/build/require
+    mkdir -p $REQUIRE/{src,resty}
+
+    for dep in ${DEPENDENCES}
+    do
+        if echo $dep| grep -q "\.git";then
+            cd $REQUIRE/src;
+            git clone $dep;
+            cp -fR lua-resty-timer/lib/resty/* $REQUIRE/resty/
+            cd -      
+        else
+            cd $REQUIRE/src
+            FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
+            # wget --no-check-certificate $dep -O $FILE_NAME
+            tar zxf $FILE_NAME
+            cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
+            cd -      
+        fi
+    done
+}
+
+doAppCreate() {
+    DAPP_NAME=motan-demo
+    DAPP_ROOT=${PWD}/app
+
+    APP_NAME=${APP_NAME=$DAPP_NAME}
+    APP_ROOT=${APP_ROOT=$DAPP_ROOT}
+
+    DEMO_APP_SRC=${PWD}/build/app
+    DEMO_APP_GIT="https://github.com/motan-ecosystem/motan-openresty-demo/archive/v0.0.1.tar.gz"
+
+    mkdir -p $DEMO_APP_SRC ${APP_ROOT}/${APP_NAME}
+    cd $DEMO_APP_SRC
+    wget --no-check-certificate $DEMO_APP_GIT -O $APP_NAME
+    tar zxf $APP_NAME
+    cp -fR ${DEMO_APP_SRC}/${APP_NAME}/* ${APP_ROOT}/${APP_NAME}/
+    cd -      
+}
+
+# dependence:
+echo "get motan dependences libs start."
+echo "get motan dependences libs."
+doRequire
+echo "motan dependences libs get done."
+
+# build:
+echo "build motan start."
+echo $PWD
+cp -fR ${PWD}/lib/motan ${SITE_LUALIB_ROOT}
+echo $PWD
+mkdir -p ${SITE_LUALIB_ROOT}/resty/
+cp ${BUILD}/require/resty/* ${SITE_LUALIB_ROOT}/resty/
+echo "build motan success."
+# rm -rf ${BUILD}
+echo "build clean success."
