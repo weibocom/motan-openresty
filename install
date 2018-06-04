@@ -38,7 +38,7 @@ doRequire() {
         else
             cd $REQUIRE/src
             FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
-            # wget --no-check-certificate $dep -O $FILE_NAME
+            wget --no-check-certificate $dep -O $FILE_NAME
             tar zxf $FILE_NAME
             cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
             cd -      
@@ -58,8 +58,11 @@ doAppCreate() {
 
     mkdir -p $DEMO_APP_SRC ${APP_ROOT}/${APP_NAME}
     cd $DEMO_APP_SRC
+    rm -rf $APP_NAME   #clean last mv result
     wget --no-check-certificate $DEMO_APP_GIT -O $APP_NAME
     tar zxf $APP_NAME
+    rm $APP_NAME       #rm tar.gz
+    mv ./motan-openresty-demo* $APP_NAME
     cp -fR ${DEMO_APP_SRC}/${APP_NAME}/* ${APP_ROOT}/${APP_NAME}/
     cd -      
 }
@@ -72,11 +75,18 @@ echo "motan dependences libs get done."
 
 # build:
 echo "build motan start."
-echo $PWD
 cp -fR ${PWD}/lib/motan ${SITE_LUALIB_ROOT}
-echo $PWD
 mkdir -p ${SITE_LUALIB_ROOT}/resty/
 cp ${BUILD}/require/resty/* ${SITE_LUALIB_ROOT}/resty/
 echo "build motan success."
-# rm -rf ${BUILD}
+
+# create:
+if [ -n "$APP_NAME" ]; then
+echo ${APP_NAME}
+echo "create motan demo start."
+doAppCreate
+echo "create app: "${APP_NAME}" success."
+fi
+
+rm -rf ${BUILD}
 echo "build clean success."
