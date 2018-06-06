@@ -2,7 +2,6 @@
 *.swp
 *.swo
 *.o
-*.so
 reindex
 *.html
 tags
@@ -19,6 +18,10 @@ nginx
 lj
 t/servroot
 .idea
+dev
+xdev
+dlua/
+.DS_Store
 
 
 .gdb_history
