@@ -401,4 +401,204 @@ fun:main
    Memcheck:Cond
    obj:*
 }
-
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:__memcmp_sse4_1
+   fun:lj_str_new
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:_mm_crc32_u32
+   fun:lj_str_hash_16_128
+   fun:lj_str_hash
+   fun:lj_str_new
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_http_lua_run_thread
+   fun:ngx_http_lua_socket_tcp_resume_helper
+   fun:ngx_http_lua_socket_handle_read_success
+   fun:ngx_http_lua_socket_tcp_read
+   fun:ngx_http_lua_socket_tcp_handler
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:strlen
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_http_lua_run_thread
+   fun:ngx_http_lua_socket_tcp_resume_helper
+   fun:ngx_http_lua_socket_handle_read_success
+   fun:ngx_http_lua_socket_tcp_read
+   fun:ngx_http_lua_socket_tcp_handler
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr2
+   fun:memcpy@@GLIBC_2.14
+   fun:lj_str_new
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:_mm_crc32_u32
+   fun:lj_str_hash_16_128
+   fun:lj_str_hash
+   fun:lj_str_new
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:strlen
+   fun:lj_cf_ffi_string
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:itoa
+   fun:get_request_id
+   fun:lj_vm_ffi_call
+   fun:lj_ccall_func
+   fun:lj_cf_ffi_meta___call
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:itoa
+   fun:get_request_id
+   fun:lj_vm_ffi_call
+   fun:lj_ccall_func
+   fun:lj_cf_ffi_meta___call
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:itoa
+   fun:get_request_id
+   fun:lj_vm_ffi_call
+   fun:lj_ccall_func
+   fun:lj_cf_ffi_meta___call
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:itoa
+   fun:get_request_id
+   fun:lj_vm_ffi_call
+   fun:lj_ccall_func
+   fun:lj_cf_ffi_meta___call
+   fun:lj_BC_FUNCC
+   fun:ngx_stream_lua_run_thread
+   fun:ngx_stream_lua_socket_tcp_resume_helper
+   fun:ngx_stream_lua_socket_handle_read_success
+   fun:ngx_stream_lua_socket_tcp_read
+   fun:ngx_epoll_process_events
+   fun:ngx_process_events_and_timers
+   fun:ngx_single_process_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:strlen
+   fun:get_local_ip
+   fun:lj_vm_ffi_call
+   fun:lj_ccall_func
+   fun:lj_cf_ffi_meta___call
+   fun:lj_BC_FUNCC
+   fun:lua_pcall
+   fun:ngx_stream_lua_do_call
+   fun:ngx_stream_lua_init_by_inline
+   fun:ngx_stream_lua_shared_memory_init
+   fun:ngx_init_cycle
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:memcpy@@GLIBC_2.14
+   fun:lj_cf_ffi_copy
+   fun:lj_BC_FUNCC
+   fun:lua_pcall
+   fun:ngx_stream_lua_do_call
+   fun:ngx_stream_lua_init_by_inline
+   fun:ngx_stream_lua_shared_memory_init
+   fun:ngx_init_cycle
+   fun:main
+}

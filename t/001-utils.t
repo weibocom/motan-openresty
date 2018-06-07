@@ -1,7 +1,9 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
 
 use Test::Nginx::Socket::Lua::Stream;
-our $MOTAN_P_ROOT="/media/psf/code/www/vanilla/framework";
+use FindBin qw($Bin);
+my $root_path = $Bin;
+our $MOTAN_P_ROOT=$root_path . "/../lib";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 log_level('warn');
@@ -24,7 +26,7 @@ __DATA__
     "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';"
 --- stream_server_config
     preread_by_lua_block {
-            local test_data = require "motan.t.lib.data"
+            local test_data = require "t.lib.data"
             local data = test_data.get_data()
             local utils = require "motan.utils"
             local bytes = utils.pack_request_id(data)
@@ -43,13 +45,14 @@ done
 --- no_error_log
 [error]
 --- timeout: 10
+--- ONLY
 
 === TEST 2: ffi pack_request_id
 --- stream_config eval
     "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';"
 --- stream_server_config
     preread_by_lua_block {
-            local test_data = require "motan.t.lib.data"
+            local test_data = require "t.lib.data"
             local data = test_data.get_data()
             local utils = require "motan.utils"
 
