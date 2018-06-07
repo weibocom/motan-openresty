@@ -13,10 +13,10 @@ log_level('warn');
 #master_on();
 #workers(2);
 
-repeat_each(1);
+repeat_each(2);
 
-# plan tests => repeat_each(2) * (blocks() * 3);
-plan tests => repeat_each() * (blocks() * 3 + 2);
+plan tests => repeat_each() * (blocks() * 3 + 3);
+# use Test::Nginx::Socket::Lua::Stream 'no_plan'
 
 # no_diff();
 #no_long_string();
@@ -70,6 +70,9 @@ __DATA__
             if err ~= nil then
                 res = err
             end
+            ngx.log(ngx.ERR, "Error idevz Test.")
+            ngx.log(ngx.ALERT, "Alert xxxx Test.")
+            print("idevz.....")
             ngx.say(res)
         }
     }
@@ -79,9 +82,8 @@ GET /motan_client_demo
 Content-Type: text/plain
 --- response_body
 motan_openresty_helloworld_test_ok
---- timeout: 10
---- error_log 
+--- no_error_log
+[warn]
+--- error_log
 [error]
-[alert] 
---- grep_error_log chop
-buffer
+[alert]
