@@ -8,6 +8,7 @@ our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 $ENV{MOTAN_ENV} = "development";
+# $ENV{LUA_PACKAGE_PATH} ||= $MOTAN_DEMO_PATH . "/?.lua;" . $MOTAN_DEMO_PATH . "/?/init.lua;" . $MOTAN_P_ROOT . "/?.lua;" . $MOTAN_P_ROOT . "/?/init.lua;./?.lua;/?.lua;/?/init.lua";
 log_level('warn');
 #worker_connections(1014);
 #master_on();
@@ -26,7 +27,7 @@ __DATA__
 
 === TEST 1: motan openresty hello world
 --- stream_config eval
-    "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';
+    "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_shared_dict motan 20m;
     init_by_lua_block {
         motan = require 'motan'
@@ -45,7 +46,7 @@ __DATA__
             motan.content_motan_server()
         }
 --- http_config eval
-    "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';
+    "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_shared_dict motan_http 20m;
 
     init_by_lua_block {
