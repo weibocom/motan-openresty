@@ -17,32 +17,35 @@ function _M.new(self, ref_url_obj)
     cluster_obj:init()
     local client = {
         url = ref_url_obj, 
-        cluster = cluster_obj, 
-        response = {},
-        request_meta = {}
+        cluster = cluster_obj
     }
     return setmetatable(client, mt)
 end
 
-function _M.add_metadata(self, key, value)
-    self.request_meta[key] = value
+function _M.call(self, fucname, metadata, ...)
+    local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
+    local req = protocol:make_motan_request(self.url, fucname, ...)
+    if not utils.is_empty(metadata) then
+        for k, v in pairs(metadata) do
+            req:set_attachment(k, v)
+        end
+    end
+    local resp = self.cluster:call(req)
+    if resp:get_exception() ~= nil then
+        return nil, resp:get_exception()
+    end
+    return resp.value
 end
 
--- @TODO check cur
 local _do_call
 _do_call = function(self, fucname, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     local req = protocol:make_motan_request(self.url, fucname, ...)
-    if not utils.is_empty(self.request_meta) then
-        for k, v in pairs(self.request_meta) do
-            req:set_attachment(k, v)
-        end
+    local resp = self.cluster:call(req)
+    if resp:get_exception() ~= nil then
+        return nil, resp:get_exception()
     end
-    self.response = self.cluster:call(req)
-    if self.response:get_exception() ~= nil then
-        return nil, self.response:get_exception()
-    end
-    return self.response.value
+    return resp.value
 end
 
 setmetatable(_M, {__index = function(self, fucname)

@@ -82,6 +82,39 @@ function _M.is_empty(t)
     return t == nil or next(t) == nil
 end
 
+function _M.deepcopy(object)
+    local lookup_table = {}
+    local function _copy(object)
+        if type(object) ~= "table" then
+            return object
+        end
+        local new_table = {}
+        lookup_table[object] = new_table
+        for index, value in pairs(object) do
+            new_table[_copy(index)] = _copy(value)
+        end
+        return setmetatable(new_table, getmetatable(object))
+    end
+
+    return _copy(object)
+end
+
+function _M.arr_keys(t)
+    local keys = {}
+    for k, _ in pairs(t) do
+        table.insert(keys, k)
+    end
+    return keys
+end
+
+function _M.arr_values(t)
+    local values = {}
+    for _, v in pairs(t) do
+        table.insert(values, v)
+    end
+    return values
+end
+
 function _M.explode(d, p)
     local t, ll, l
     t = {}
@@ -209,24 +242,6 @@ function _M.msb_numbertobytes(num, width)
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function _M.f(n)
     local floor = math.floor
     local function fn(t, n)
@@ -241,7 +256,6 @@ function _M.f(n)
 end
 
 
-
 function _M.amsb_numbertobytes(num, width)
     local bit = bit
     local rs = {}
@@ -252,7 +266,6 @@ function _M.amsb_numbertobytes(num, width)
     end
     return table.concat( rs )
 end
-
 
 
 -- Write an integer in MSB order using width bytes.

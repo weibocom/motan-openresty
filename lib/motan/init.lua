@@ -90,11 +90,9 @@ end
 function Motan.init_worker_motan_client()
     local client = require "motan.client"
     local referer_map = singletons.referer_map
-    local client_map = {}
     for k, ref_url_obj in pairs(referer_map) do
-        client_map[k] = client:new(ref_url_obj)
+        singletons.client_map[k] = client:new(ref_url_obj)
     end
-    singletons.client_map = client_map
 end
 
 function Motan.preread()
