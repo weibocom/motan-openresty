@@ -62,24 +62,27 @@ __DATA__
     location /motan_client_demo {
         content_by_lua_block {
             local singletons = require 'motan.singletons'
+            local utils = require 'motan.utils'
             local client_map = singletons.client_map
-            local res = ''
 
             local f = function(p1, p2, hk, hv)
                 ngx.log(ngx.ERR, "====do call====>" .. table.concat({p1, p2, hk, hv}, "-----"))
                 local p1, p2, hk, hv = p1, p2, hk, hv
                 local service_name = 'direct_helloworld_service'
                 local service = client_map[service_name]
-                -- local res, err = service:Hello(p1, p2)
-
-                local service_call_method_name = 'Hello'
-                local res, err = service:call(service_call_method_name, {hk = hv}, p1, p2)
+                local service_call_method_name = 'ConcurrentHello'
+                local meta_data = {}
+                meta_data[hk] = hv
+                local res, err = service:call(service_call_method_name, meta_data, p1, p2)
                 if err ~= nil then
                     res = err
                 end
+                return res
             end
             
-            for a=1, 2 do
+            local threads = {}
+            local run_time = 2
+            for a=1, run_time do
                 local ok, err = ngx.thread.spawn(f,
                 "p1-" .. a, "p2-".. a, 
                 "hk-" .. a, "hv-".. a)
@@ -87,12 +90,25 @@ __DATA__
                     ngx.say("failed to spawn writer thread: ", err)
                     return
                 end
+                threads[a] = ok
             end
-            ngx.log(ngx.ERR, "========>" .. res)
-            ngx.log(ngx.ERR, "Error idevz Test.")
+            local ok, res_or_err = ngx.thread.wait(threads[run_time])
+            if not ok then
+                ngx.say("fail to run, err:" .. res_or_err)
+            else
+                local check_rs = {}
+                for k, v in pairs(res_or_err) do
+                    local is_hk = ngx.re.find(k, "hk")
+                    if is_hk then
+                        table.insert(check_rs, k)
+                    end
+                end
+                ngx.say(sprint_r(check_rs))
+                ngx.log(ngx.ERR, sprint_r(check_rs))
+            end
+            ngx.log(ngx.ERR, "Error idevz Test.\n" .. sprint_r(res_or_err))
             ngx.log(ngx.ALERT, "Alert xxxx Test.")
             print("idevz.....")
-            ngx.say("run end.")
         }
     }
 --- request
@@ -100,7 +116,9 @@ GET /motan_client_demo
 --- response_headers
 Content-Type: text/plain
 --- response_body
-run end.
+{
+  "hk-2"
+}
 --- no_error_log
 [warn]
 --- error_log

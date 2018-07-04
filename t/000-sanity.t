@@ -62,17 +62,14 @@ __DATA__
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local client_map = singletons.client_map
-
+            
             local service_name = 'direct_helloworld_service'
-            local service_call_method_name = 'Hello'
             local service = client_map[service_name]
-            service:add_metadata('h_key', 'h_value')
-            local service_method = service[service_call_method_name]
-            local res, err = service_method(service, 'xxxx', 'dddddd')
+            local res, err = service:Hello('motan', '_openresty')
             if err ~= nil then
                 res = err
             end
-            ngx.log(ngx.ERR, "Error idevz Test.")
+            ngx.log(ngx.ERR, "Error idevz Test.\n" .. res)
             ngx.log(ngx.ALERT, "Alert xxxx Test.")
             print("idevz.....")
             ngx.say(res)
@@ -83,7 +80,7 @@ GET /motan_client_demo
 --- response_headers
 Content-Type: text/plain
 --- response_body
-motan_openresty_helloworld_test_ok
+motan_openresty_helloworld_test_Hello_ok_motan_openresty
 --- no_error_log
 [warn]
 --- error_log
