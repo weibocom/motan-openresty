@@ -87,10 +87,11 @@ function _M.call(self, req)
     local start_time = ngx.now()
     local value, exception = nil, nil
     local service = self:get_service_obj(self.url)
+    service.metadata = req:get_attachments()
     local resp_obj = {}
     local method = req:get_method()
     local ok, res_or_err
-    if req.args_num <= 2 then
+    if req.args_num < 2 then
         ok, res_or_err = pcall(service[method], service, req:get_arguments())
     else
         ok, res_or_err = pcall(service[method], service, unpack(req:get_arguments()))     

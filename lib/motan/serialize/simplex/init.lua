@@ -649,7 +649,7 @@ function _M.deserialize_multi(data, args_num)
     local ret, rv, err = {}, {}
     local buf = buf_lib:create_bytes_buff(data)
     if args_num ~= nil then
-        for i=1, args_num - 1 do
+        for i=1, args_num do
             rv, err = deserialize_buf(buf, nil)
             if err ~= nil then
                 return nil, err
