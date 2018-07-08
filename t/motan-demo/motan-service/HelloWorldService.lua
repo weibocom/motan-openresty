@@ -20,8 +20,6 @@ function _M.Hello(self, p1, p2)
 end
 
 function _M.ConcurrentHello(self, p1, p2)
-    
-    ngx.log(ngx.ERR, "=====request_header(motan_metadata)======" .. sprint_r(self.metadata)  .. sprint_r(p1) .. "\n" .. sprint_r(p2))
     return self.metadata
 end
 

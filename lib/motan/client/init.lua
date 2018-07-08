@@ -22,6 +22,7 @@ function _M.new(self, ref_url_obj)
     return setmetatable(client, mt)
 end
 
+-- for calling with metadata
 function _M.call(self, fucname, metadata, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     local req = protocol:make_motan_request(self.url, fucname, ...)
@@ -37,6 +38,7 @@ function _M.call(self, fucname, metadata, ...)
     return resp.value
 end
 
+-- for purge RPC call
 local _do_call
 _do_call = function(self, fucname, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
