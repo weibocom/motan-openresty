@@ -6,6 +6,8 @@ local setmetatable = setmetatable
 local rawget = rawget
 local singletons = require "motan.singletons"
 local consts = require "motan.consts"
+local utils = require "motan.utils"
+local json = require "cjson"
 
 local MAX_IDLE_TIMEOUT = 30*1000 -- 30s default timeout
 local POOL_SIZE        = 100
@@ -68,6 +70,29 @@ function _M.connect(self, ...)
     local sock = rawget(self, "_sock")
     if not sock then
         return nil, "not initialized"
+    end
+    local ok, err = sock:connect(self.url.host, self.url.port)
+    local use_weibo_mesh = false
+    if singletons.config.conf_set['WEIBO_MESH'] ~= nil
+        and singletons.config.conf_set['WEIBO_MESH'] == table.concat({self.url.host, self.url.port}, ":") then
+        use_weibo_mesh = true
+    end
+    if err ~= nil and use_weibo_mesh then
+        local res = ngx.location.capture('/snapshot/' .. self.url.group .. '_' .. self.url.path)
+        if res.status == 200 then
+            local working_nodes = {}
+            local mesh_snapshot_for_server_nodes = json.decode(res.body)['nodes']['working']
+            if not utils.is_empty(mesh_snapshot_for_server_nodes) then
+                for _, node in ipairs(mesh_snapshot_for_server_nodes) do
+                    table.insert(working_nodes, node)
+                end
+            end
+            local cnct_node = working_nodes[math.random(#working_nodes)]['host']
+            local node_info = utils.split(cnct_node, ":")
+            return sock:connect(node_info[1], node_info[2])
+        else
+            return nil, "motan endpoint failed connect to weibo mesh, and also couldn't get the snapshots."
+        end
     end
     return sock:connect(self.url.host, self.url.port)
 end

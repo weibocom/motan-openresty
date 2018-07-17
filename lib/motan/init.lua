@@ -39,6 +39,7 @@ init_env = function()
     motan_var["APP_ROOT"] = APP_ROOT
     motan_var["ENV_STR"]  = motan_env
     singletons.var = motan_var
+    math.randomseed(ngx.time())
 end
 
 function Motan.init(motan_ext_set)
