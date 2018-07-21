@@ -26,7 +26,6 @@ run_tests();
 __DATA__
 
 === TEST 1: motan openresty concurrent call
---- ONLY
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_shared_dict motan 20m;

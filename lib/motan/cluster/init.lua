@@ -1,6 +1,5 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local pairs = pairs
 local ipairs = ipairs
 local assert = assert
@@ -10,9 +9,8 @@ local consts = require "motan.consts"
 local singletons = require "motan.singletons"
 local table_insert = table.insert
 
-
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
@@ -38,7 +36,7 @@ end
 
 function _M.refresh(self)
     local refers = {}
-    for k, registry_refer in pairs(self.registry_refers) do
+    for _, registry_refer in pairs(self.registry_refers) do
         for _, ref_url_obj in ipairs(registry_refer) do
             table_insert(refers, ref_url_obj)
         end
@@ -48,48 +46,48 @@ function _M.refresh(self)
 end
 
 local _get_filter_endpoint
-_get_filter_endpoint = function(opts)
+_get_filter_endpoint = function(up_opts)
     local _res = {
-        _VERSION = '0.0.1'
+        _VERSION = "0.0.1"
     }
     local _mt = {__index = _res}
     function _res.new(_res_self, opts)
         local _filter_endpoint = {
-            url = opts.url, 
-            filter = opts.filter, 
-            caller = opts.caller, 
-            status_filters = opts.status_filters, 
+            url = opts.url,
+            filter = opts.filter,
+            caller = opts.caller,
+            status_filters = opts.status_filters,
             name = "filter_endpoint"
         }
         return setmetatable(_filter_endpoint, _mt)
     end
-    
+
     function _res.call(_res_self, req)
         return _res_self.filter:filter(_res_self.caller, req)
     end
-    
+
     function _res.get_url(_res_self)
         return _res_self.url
     end
-    
+
     function _res.set_url(_res_self, url)
         _res_self.url = url
     end
-    
+
     function _res.get_name(_res_self)
         return _res_self.name
     end
-    
+
     function _res.destroy(_res_self)
     end
-    
+    --luacheck:ignore
     function _res.set_proxy(_res_self, proxy)
     end
-    
+    --luacheck:ignore
     function _res.set_serialization(_res_self, serialization)
     end
-    
-    function _res.is_available(_res_self) 
+
+    function _res.is_available(_res_self)
         if not utils.is_empty(_res_self.status_filters) then
             for i = #_res_self.status_filters, 1, -1 do
                 local is_available = _res_self.status_filters[i]:is_available()
@@ -100,7 +98,7 @@ _get_filter_endpoint = function(opts)
         end
         return _res_self.caller:is_available()
     end
-    return _res:new(opts)
+    return _res:new(up_opts)
 end
 
 function _M._add_filter(self, endpoint)
@@ -114,10 +112,11 @@ function _M._add_filter(self, endpoint)
             table_insert(status_filters, nfilter)
         end
     end
-    local filter_endpoint = _get_filter_endpoint{
-        url = endpoint:get_url(), 
-        filter = last_filter, 
-        caller = endpoint, 
+    local filter_endpoint =
+        _get_filter_endpoint {
+        url = endpoint:get_url(),
+        filter = last_filter,
+        caller = endpoint,
         status_filters = status_filters
     }
     return filter_endpoint
@@ -139,17 +138,16 @@ function _M._notify(self, registry, ref_url_objs)
         end
     end
     for _, url in ipairs(ref_url_objs) do
-        if utils.is_empty(url) then
+        if not utils.is_empty(url) then
+            if not utils.is_empty(endpoints_map[url:get_identity()]) then
+                endpoints_map[url:get_identity()] = nil
+            end
+            local ep = self.ext:get_endpoint(url)
+            ep = self:_add_filter(ep)
+            table_insert(endpoints, ep)
+        else
             ngx.log(ngx.ERR, "Cluster notified an empty url\n")
-            goto continue
         end
-        if not utils.is_empty(endpoints_map[url:get_identity()]) then
-            endpoints_map[url:get_identity()] = nil
-        end
-        local ep = self.ext:get_endpoint(url)
-        ep = self:_add_filter(ep)
-        table_insert(endpoints, ep)
-        ::continue::
     end
     if #endpoints == 0 then
         if #self.registry_refers > 0 then
@@ -173,8 +171,8 @@ function _M._parse_registry(self)
     local registry_keys = self.url.params[consts.MOTAN_REGISTRY_KEY]
     local registry_arr = utils.split(registry_keys, ",")
     for _, registry_key in ipairs(registry_arr) do
-        local registry_url_obj = assert(singletons.client_regstry[registry_key]
-        , "Empty registry config: " .. registry_key)
+        local registry_url_obj =
+            assert(singletons.client_regstry[registry_key], "Empty registry config: " .. registry_key)
         local registry = self.ext:get_registry(registry_url_obj)
         assert(registry ~= nil, "_parse_registry got not registry obj")
         registry:subscribe(self.url, self)
@@ -184,18 +182,18 @@ end
 function _M.new(self, ref_url_obj)
     local ext = singletons.motan_ext
     local cluster = {
-        url = ref_url_obj, 
-        registries = {}, 
-        ha = {}, 
-        lb = {}, 
-        refers = {}, 
+        url = ref_url_obj,
+        registries = {},
+        ha = {},
+        lb = {},
+        refers = {},
         -- @TODO
-        filters = {}, 
-        cluster_filter = {}, 
-        ext = ext, 
-        registry_refers = {}, 
-        endpoint_map = {}, 
-        available = true, 
+        filters = {},
+        cluster_filter = {},
+        ext = ext,
+        registry_refers = {},
+        endpoint_map = {},
+        available = true,
         closed = false
     }
     return setmetatable(cluster, mt)

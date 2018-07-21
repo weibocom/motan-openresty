@@ -1,45 +1,42 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local type = type
-local str_sub = string.sub
-local setmetatable = setmetatable
 local utils = require "motan.utils"
 local consts = require "motan.consts"
 local buf_lib = require "motan.serialize.simplex.buf"
-local floor = require'math'.floor
+local floor = require "math".floor
 
 local ok, new_tab = pcall(require, "table.new")
 if not ok or type(new_tab) ~= "function" then
-    new_tab = function (narr, nrec) return {nil, [narr]=0} end
+    new_tab = function(narr, nrec) --luacheck:ignore
+        return {nil, [narr] = 0}
+    end
 end
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local motan_table_type
 motan_table_type = function(v)
-    local data_type, err = nil, nil
+    local err, data_type = nil
     local orgin_len = #v
     local add_one_len = 0
     local v_type = type(v)
-    local v_type_number = {byte=false, int=false}
-    v['check_if_is_a_array_or_a_hash'] = false
+    local v_type_number = {byte = false, int = false}
+    v["check_if_is_a_array_or_a_hash"] = false
     for k, value in pairs(v) do
         add_one_len = add_one_len + 1
-        if k == "check_if_is_a_array_or_a_hash" then
-            goto continue
-        end
-        v_type = type(value)
-        if v_type == "number" then
-            if value >= 0 and value <= 0xff then
-                v_type_number.byte = true
-            else
-                v_type_number.int = true
+        if k ~= "check_if_is_a_array_or_a_hash" then
+            v_type = type(value)
+            if v_type == "number" then
+                if value >= 0 and value <= 0xff then
+                    v_type_number.byte = true
+                else
+                    v_type_number.int = true
+                end
             end
         end
-        ::continue::
     end
     if orgin_len == 0 and add_one_len > 1 then
         if v_type == "string" then
@@ -48,9 +45,7 @@ motan_table_type = function(v)
             data_type = consts.DTYPE_MAP
         end
     elseif orgin_len == add_one_len - 1 then
-        if v_type == "number" 
-        and v_type_number.byte == true 
-        and v_type_number.int == false then
+        if v_type == "number" and v_type_number.byte == true and v_type_number.int == false then
             data_type = consts.DTYPE_BYTE_ARRAY
         elseif v_type == "string" then
             data_type = consts.DTYPE_STRING_ARRAY
@@ -61,13 +56,13 @@ motan_table_type = function(v)
         data_type = nil
         err = "UnSupport table type."
     end
-    v['check_if_is_a_array_or_a_hash'] = nil
+    v["check_if_is_a_array_or_a_hash"] = nil
     return data_type, err
 end
 
 local motan_number_type
 motan_number_type = function(n)
-    local data_type, err = nil, nil
+    local err, data_type = nil
     if floor(n) ~= n then
         return consts.DTYPE_FLOAT64, nil
     end
@@ -96,7 +91,7 @@ end
 local encode_string_no_tag
 encode_string_no_tag = function(s, buf)
     buf:write_uint32(#s)
-    buf:write({string.byte( s, 1, -1 )})
+    buf:write({string.byte(s, 1, -1)})
 end
 
 local encode_string
@@ -150,7 +145,7 @@ encode_string_array = function(string_array, buf)
     buf:write_byte(consts.DTYPE_STRING_ARRAY)
     local pos = buf:get_wpos()
     buf:set_wpos(pos + 4)
-    for i,v in ipairs(string_array) do
+    for _, v in ipairs(string_array) do
         encode_string_no_tag(v, buf)
     end
     local npos = buf:get_wpos()
@@ -172,8 +167,8 @@ encode_array = function(params, buf)
     buf:write_byte(consts.DTYPE_ARRAY)
     local pos = buf:get_wpos()
     buf:set_wpos(pos + 4)
-    local err = nil
-    for i,v in ipairs(params) do
+    local err
+    for _, v in ipairs(params) do
         err = serialize_buf(v, buf)
         if err ~= nil then
             return err
@@ -183,7 +178,7 @@ encode_array = function(params, buf)
     buf:set_wpos(pos)
     buf:insert_uint(npos - pos - 4)
     buf:set_wpos(npos)
-	return nil
+    return nil
 end
 
 local encode_string_map
@@ -191,16 +186,14 @@ encode_string_map = function(params, buf)
     buf:write_byte(consts.DTYPE_STRING_MAP)
     local pos = buf:get_wpos()
     buf:set_wpos(pos + 4)
-    for k,v in pairs(params) do
-        if type(v) == "table" then
-            goto continue
+    for k, v in pairs(params) do
+        if type(v) ~= "table" then
+            if type(v) == "boolean" then
+                v = tostring(v)
+            end
+            encode_string_no_tag(k, buf)
+            encode_string_no_tag(v, buf)
         end
-        if type(v) == "boolean" then
-            v = tostring(v)
-        end
-        encode_string_no_tag(k, buf)
-        encode_string_no_tag(v, buf)
-        ::continue::
     end
     local npos = buf:get_wpos()
     buf:set_wpos(pos)
@@ -214,7 +207,7 @@ encode_map = function(params, buf)
     local pos = buf:get_wpos()
     buf:set_wpos(pos + 4)
     local err = nil
-    for k,v in pairs(params) do
+    for k, v in pairs(params) do
         err = serialize_buf(k, buf)
         if err ~= nil then
             return err
@@ -228,11 +221,10 @@ encode_map = function(params, buf)
     buf:set_wpos(pos)
     buf:insert_uint(npos - pos - 4)
     buf:set_wpos(npos)
-	return err
+    return err
 end
 
 serialize_buf = function(params, buf)
-    local err = nil
     local p_type = type(params)
     if p_type == "string" then
         encode_string(params, buf)
@@ -290,8 +282,8 @@ function _M.serialize_multi(params)
     end
     local err
     local buf = buf_lib:new_bytes_buff(consts.DEFAULT_BUFFER_SIZE)
-    for _,v in ipairs(params) do
-        if type(v) == 'table' and utils.is_empty(v) then
+    for _, v in ipairs(params) do
+        if type(v) == "table" and utils.is_empty(v) then
             v = nil
         end
         err = serialize_buf(v, buf)
@@ -305,24 +297,23 @@ end
 -- consts.MOTAN_DATA_PACK_INT32_BYTE - 1
 -- obj = str_sub(data, pos) not any body_len
 local decode_string
-decode_string = function(buf, v)
-    local size, err = buf:read_int()
-    if err ~= nil then
-        return "", err
+decode_string = function(buf)
+    local size, read_i_err = buf:read_int()
+    if read_i_err ~= nil then
+        return "", read_i_err
     end
-    local str_byte_array, err = buf:next(size)
-    if err ~= nil then
+    local str_byte_array, bf_err = buf:next(size)
+    if bf_err ~= nil then
         return "", "ErrNotEnough"
     end
-    local str = string.char(unpack(str_byte_array))
-    if v ~= nil then
-        v = str -- @TODO check this reference value
-    end
-    return str, nil
+    -- if v ~= nil then
+    -- v = str -- @TODO check this reference value
+    -- end
+    return string.char(unpack(str_byte_array)), nil
 end
 
 local decode_string_map
-decode_string_map = function(buf, v)
+decode_string_map = function(buf)
     local total, err = buf:read_int()
     if err ~= nil then
         return nil, err
@@ -332,9 +323,8 @@ decode_string_map = function(buf, v)
     end
     local m = new_tab(32, 0)
     local pos = buf:get_rpos()
-    local k, tv = "", ""
-    while( buf:get_rpos() - pos < total )
-    do
+    local k, tv
+    while (buf:get_rpos() - pos < total) do
         k, err = decode_string(buf, nil)
         if err ~= nil then
             return nil, err
@@ -351,10 +341,7 @@ decode_string_map = function(buf, v)
         end
         m[k] = tv
     end
-    if v ~= nil then
-        v = m
-    end
-	return m, nil
+    return m, nil
 end
 
 local decode_bytes_array
@@ -363,18 +350,15 @@ decode_bytes_array = function(buf)
     if err ~= nil then
         return nil, err
     end
-    local b, err = buf:next(size)
-    if err ~= nil then
+    local b, bf_err = buf:next(size)
+    if bf_err ~= nil then
         return nil, "ErrNotEnough"
     end
-    if v ~= nil then
-        v = b
-    end
-	return b, nil
+    return b, nil
 end
 
 local decode_string_array
-decode_string_array = function(buf, v)
+decode_string_array = function(buf)
     local total, err = buf:read_int()
     if err ~= nil then
         return nil, err
@@ -384,9 +368,8 @@ decode_string_array = function(buf, v)
     end
     local a = new_tab(32, 0)
     local pos = buf:get_rpos()
-    local tv = ""
-    while (buf:get_rpos() - pos < total)
-    do
+    local tv
+    while (buf:get_rpos() - pos < total) do
         tv, err = decode_string(buf, nil)
         if err ~= nil then
             return nil, err
@@ -396,14 +379,11 @@ decode_string_array = function(buf, v)
     if buf:get_rpos() - pos ~= total then
         return nil, "ErrWrongSize"
     end
-    if v ~= nil then
-        v = a
-    end
-	return a, nil
+    return a, nil
 end
 
 local decode_bool
-decode_bool = function(buf, v)
+decode_bool = function(buf)
     local b, err = buf:read_byte()
     if err ~= nil then
         return false, err
@@ -412,93 +392,68 @@ decode_bool = function(buf, v)
     if b == 1 then
         ret = true
     end
-    if v ~= nil then
-        v = ret
-    end
-	return ret, nil
+    return ret, nil
 end
 
 local decode_byte
-decode_byte = function(buf, v)
+decode_byte = function(buf)
     local b, err = buf:read_byte()
     if err ~= nil then
         return 0, err
-    end
-    if v ~= nil then
-        v = b
     end
     return b, nil
 end
 
 local decode_int16
-decode_int16 = function(buf, v)
+decode_int16 = function(buf)
     local i, err = buf:read_uint16()
     if err ~= nil then
         return 0, err
     end
-    if v ~= nil then
-        v = i
-    end
-	return i, nil
+    return i, nil
 end
 
 local decode_int32
-decode_int32 = function(buf, v)
+decode_int32 = function(buf)
     local i, err = buf:read_zigzag32()
     if err ~= nil then
         return 0, err
     end
-    if v ~= nil then
-        v = i
-    end
-	return i, nil
+    return i, nil
 end
 
 local decode_int64
-decode_int64 = function(buf, v)
+decode_int64 = function(buf)
     local i, err = buf:read_zigzag64()
     if err ~= nil then
         return 0, err
     end
-    if v ~= nil then
-        v = i
-    end
-	return i, nil
+    return i, nil
 end
 
 local decode_float32
-decode_float32 = function(buf, v)
+decode_float32 = function(buf)
     local i, err = buf:read_uint32()
     if err ~= nil then
         return 0, err
     end
-	-- f := math.Float32frombits(i)    
-    if v ~= nil then
-        -- v = f
-        v = i
-    end
-	-- return f, nil
-	return i, nil
+    -- f := math.Float32frombits(i)
+    return i, nil
 end
 
 local decode_float64
-decode_float64 = function(buf, v)
+decode_float64 = function(buf)
     local i, err = buf:read_uint64()
     if err ~= nil then
         return 0, err
     end
-	-- f := math.Float64frombits(i)    
-    if v ~= nil then
-        -- v = f
-        v = i
-    end
-	-- return f, nil
-	return i, nil
+    -- f := math.Float64frombits(i)
+    return i, nil
 end
 
 local deserialize_buf
 local decode_map
-decode_map = function(buf, v)
+decode_map = function(buf)
     local total, err = buf:read_int()
     if err ~= nil then
         return nil, err
@@ -509,8 +464,7 @@ decode_map = function(buf, v)
     local m = new_tab(32, 0)
     local k, tv
     local pos = buf:get_rpos()
-    while(buf:get_rpos() - pos < total)
-    do
+    while (buf:get_rpos() - pos < total) do
         k, err = deserialize_buf(buf, nil)
         if err ~= nil then
             return nil, err
@@ -527,14 +481,11 @@ decode_map = function(buf, v)
         end
         m[k] = tv
     end
-    if v ~= nil then
-        v = m
-    end
-	return m, nil
+    return m, nil
 end
 
 local decode_array
-decode_array = function(buf, v)
+decode_array = function(buf)
     local total, err = buf:read_int()
     if err ~= nil then
         return nil, err
@@ -545,22 +496,19 @@ decode_array = function(buf, v)
     local a = new_tab(32, 0)
     local pos = buf:get_rpos()
     local tv
-    while(buf:get_rpos() - pos < total)
-    do
+    while (buf:get_rpos() - pos < total) do
         tv, err = deserialize_buf(buf, nil)
         if err ~= nil then
             return nil, err
         end
-        table.insert( a, tv)
+        table.insert(a, tv)
     end
     if buf:get_rpos() - pos ~= total then
         return nil, "ErrWrongSize"
     end
-    if v ~= nil then
-        v = a
-    end
-	return a, nil
+    return a, nil
 end
+--
 
 --[[
 // serialize type
@@ -598,9 +546,8 @@ DTYPE_FLOAT64 = 11
 
 DTYPE_MAP = 20
 DTYPE_ARRAY = 21
-]]--
-
-deserialize_buf = function(buf)
+]] deserialize_buf = function(
+    buf)
     local buf_type, err = buf:read_byte()
     if err ~= nil then
         return nil, err
@@ -635,8 +582,7 @@ deserialize_buf = function(buf)
     elseif buf_type == consts.DTYPE_ARRAY then
         return decode_array(buf)
     end
-    ngx.log(ngx.ERR
-    , "Fail to Decode response body, got a no support type!")
+    ngx.log(ngx.ERR, "Fail to Decode response body, got a no support type!")
     return nil, "ErrNotSupport"
 end
 
@@ -646,10 +592,10 @@ function _M.deserialize(data)
 end
 
 function _M.deserialize_multi(data, args_num)
-    local ret, rv, err = {}, {}
+    local ret, rv, err = {}
     local buf = buf_lib:create_bytes_buff(data)
     if args_num ~= nil then
-        for i=1, args_num do
+        for i = 1, args_num do --luacheck:ignore
             rv, err = deserialize_buf(buf, nil)
             if err ~= nil then
                 return nil, err
@@ -657,12 +603,11 @@ function _M.deserialize_multi(data, args_num)
             table.insert(ret, rv)
         end
     else
-        while(buf:remain() > 0)
-        do
+        while (buf:remain() > 0) do
             rv, err = deserialize_buf(buf, nil)
             if err ~= nil then
                 if err == "io.EOF" then
-                    break;
+                    break
                 else
                     return nil, err
                 end

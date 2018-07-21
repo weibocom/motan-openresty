@@ -1,16 +1,12 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local pairs = pairs
-local assert = assert
 local setmetatable = setmetatable
-local motan_consul = require "motan.registry.consul"
 local singletons = require "motan.singletons"
-local consts = require "motan.consts"
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
@@ -25,13 +21,11 @@ end
 function _M:export()
     local service_map = singletons.service_map
     local server_regstry = singletons.server_regstry
-    for service_key, service_obj in pairs(service_map) do
+    for _, service_obj in pairs(service_map) do
         local service_url_obj = service_obj.url
         local registry_keys = service_url_obj.params.registry or nil
         if registry_keys == nil then
-            ngx.log(ngx.ERR, 
-            "Empty registry configure error: \n Error service:", 
-            service_url_obj:get_identity())
+            ngx.log(ngx.ERR, "Empty registry configure error: \n Error service:", service_url_obj:get_identity())
             return
         end
         local registry_arr = utils.split(registry_keys, ",")

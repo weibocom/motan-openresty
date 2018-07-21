@@ -1,6 +1,5 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 -- local utils = require 'motan.utils'
 -- local client_map = setmetatable({raw_client_map={}}, {
 --     __newindex = function(self, key, value)
@@ -14,16 +13,16 @@
 -- })
 
 local _M = {
-    _VERSION = '0.0.1', 
+    _VERSION = "0.0.1",
     is_dev = false,
-    config = {}, 
-    var = {}, 
-    motan_ext = {}, 
-    referer_map = {}, 
-    -- client_map = client_map, 
-    client_map = {}, 
-    client_regstry = {}, 
-    service_map = {}, 
+    config = {},
+    var = {},
+    motan_ext = {},
+    referer_map = {},
+    -- client_map = client_map,
+    client_map = {},
+    client_regstry = {},
+    service_map = {},
     server_regstry = {}
 }
 

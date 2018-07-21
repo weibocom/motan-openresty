@@ -1,20 +1,19 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local setmetatable = setmetatable
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self, url)
     local accessLog = {
-        name = "accessLog", 
-        url = url or {}, 
+        name = "accessLog",
+        url = url or {},
         next = {}
     }
     return setmetatable(accessLog, mt)
@@ -33,7 +32,7 @@ function _M.new_filter(self, url)
 end
 
 function _M.filter(self, caller, req)
-    local resp = self:get_next():filter(caller, req)    
+    local resp = self:get_next():filter(caller, req)
     return resp
 end
 

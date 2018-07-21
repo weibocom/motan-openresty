@@ -1,6 +1,5 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local singletons = require "motan.singletons"
 local response = require "motan.core.response"
 local utils = require "motan.utils"
@@ -8,15 +7,15 @@ local setmetatable = setmetatable
 local math = math
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self, url)
     local motan_provider = {
-        url = url, 
-        service_obj_arr = {}, 
+        url = url,
+        service_obj_arr = {},
         service = {}
     }
     return setmetatable(motan_provider, mt)
@@ -49,7 +48,6 @@ function _M.destroy(self)
 end
 
 function _M.get_service_obj(self, url)
-    local url = url
     local service_obj_key = url:get_identity()
     local service_obj = self.service_obj_arr[service_obj_key] or {}
     if not utils.is_empty(service_obj) then
@@ -60,62 +58,58 @@ function _M.get_service_obj(self, url)
         ngx.log(ngx.ERR, "SERVICE_PATH didn't set.\n")
         return
     end
-    local service_file = ""
+    local service_file
     local service_prefix
     service_prefix = singletons.config.conf_set["MOTAN_LUA_SERVICE_PERFIX"]
     if service_prefix ~= nil then
         local ss = url.path
         local s, e = string.find(ss, service_prefix)
         if not s then
-            return nil
-            , "build service Err: service path didn't contain service_prefix."
+            return nil, "build service Err: service path didn't contain service_prefix."
         end
         service_file = service_path_conf .. "/" .. string.sub(ss, e + 1)
     else
         service_file = service_path_conf .. "/" .. url.path
     end
-    
-    local service_pkg = assert(require(service_file)
-    , "Load service package err. File:\n" .. service_file)
-    local service_obj = assert(service_pkg:new()
-    , "Init Service object err. File:\n" .. service_file)
+
+    local service_pkg = assert(require(service_file), "Load service package err. File:\n" .. service_file)
+    service_obj = assert(service_pkg:new(), "Init Service object err. File:\n" .. service_file)
     self.service_obj_arr[service_obj_key] = service_obj
     return service_obj
 end
 
 function _M.call(self, req)
     local start_time = ngx.now()
-    local value, exception = nil, nil
+    local exception, value = nil
     local service = self:get_service_obj(self.url)
     service.metadata = req:get_attachments()
-    local resp_obj = {}
     local method = req:get_method()
     local ok, res_or_err
     if req.args_num < 2 then
         ok, res_or_err = pcall(service[method], service, req:get_arguments())
     else
-        ok, res_or_err = pcall(service[method], service, unpack(req:get_arguments()))     
+        ok, res_or_err = pcall(service[method], service, unpack(req:get_arguments()))
     end
     local request_id = req:get_request_id()
-    
+
     if ok then
         value = res_or_err
     else
         ngx.log(ngx.ERR, "Provider Call Err", res_or_err)
         exception = "Provider Call Err "
-        return response:new{
-            request_id = request_id, 
-            exception = exception, 
+        return response:new {
+            request_id = request_id,
+            exception = exception
         }
     end
     local process_time = ngx.now() - start_time
     local attachment = req:get_attachments()
-    
-    return response:new{
-        request_id = request_id, 
-        value = value, 
-        exception = exception, 
-        process_time = math.floor((process_time * 100) + 0.5) * 0.01, 
+
+    return response:new {
+        request_id = request_id,
+        value = value,
+        exception = exception,
+        process_time = math.floor((process_time * 100) + 0.5) * 0.01,
         attachment = attachment
     }
 end

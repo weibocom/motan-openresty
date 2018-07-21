@@ -1,13 +1,11 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 -- @TODO check LuaJIT bit 32
 -- rlwrap /usr/local/bin/v-console-0.1.0.rc7
 -- openresty-1.13.6.1-gdb/build/LuaJIT-2.1-20171103/src
 local setmetatable = setmetatable
 local utils = require "motan.utils"
 local consts = require "motan.consts"
-local str_len = string.len
 local ngx_re_find = ngx.re.find
 local bit = require "bit"
 local maxn = table.maxn
@@ -17,21 +15,25 @@ local bor = bit.bor
 local bxor = bit.bxor
 local band = bit.band
 
-local ok, new_tab = pcall(require, "table.new")
-if not ok or type(new_tab) ~= "function" then
-    new_tab = function (narr, nrec) return {nil, [narr]=0} end
+local new_tb_ok, new_tab = pcall(require, "table.new")
+if not new_tb_ok or type(new_tab) ~= "function" then
+    new_tab = function(narr, nrec) --luacheck:ignore
+        return {nil, [narr] = 0}
+    end
 end
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new_bytes_buff(self, initsize)
-    return self:new({
-        byte_arr_buf = new_tab(initsize, 0)
-    })
+    return self:new(
+        {
+            byte_arr_buf = new_tab(initsize, 0)
+        }
+    )
 end
 
 function _M.create_bytes_buff(self, data)
@@ -39,10 +41,12 @@ function _M.create_bytes_buff(self, data)
     if data ~= nil then
         wpos = #data
     end
-    return self:new({
-        byte_str_buf = data,
-        wpos = wpos
-    })
+    return self:new(
+        {
+            byte_str_buf = data,
+            wpos = wpos
+        }
+    )
 end
 
 function _M.new(self, opts)
@@ -82,22 +86,8 @@ function _M.get_rpos(self)
     return self.rpos
 end
 
-local copy
-copy = function(byte_arr_buf, old_byte_arr_buf)
-    local b_wpos = #byte_arr_buf
-    local old_wpos = #old_byte_arr_buf
-    local num = 0
-    for i=1,old_wpos do
-        byte_arr_buf[b_wpos + i] = old_byte_arr_buf[i]
-        num = num + 1
-    end
-    return num
-end
-
---[[
-if is a byte array, when use table.concat it 
-will got a number string, which won't contain any alphabet.
-]]--
+-- if is a byte array, when use table.concat it will got a number string,
+-- which won't contain any alphabet.
 local check_byte_arr
 check_byte_arr = function(byte_arr)
     local ok, byte_concat_str = pcall(table.concat, byte_arr, "")
@@ -116,10 +106,9 @@ function _M.write_byte(self, c)
         ngx.log(ngx.ERR, "write_byte paramete err, it's not a number.\n")
         error("write_byte paramete err, it's not a number.\n")
     end
-    
+
     table.insert(self.byte_arr_buf, self.wpos, c)
     self.wpos = self.wpos + 1
-
 end
 
 function _M.write(self, bytes)
@@ -130,16 +119,14 @@ function _M.write(self, bytes)
     end
     local l = #bytes
 
-    
     local i = 1
     local from = self.wpos
-    for from = self.wpos, from + l + 1 do
-        table.insert(self.byte_arr_buf, from, bytes[i])
+    for ifrom = self.wpos, from + l + 1 do
+        table.insert(self.byte_arr_buf, ifrom, bytes[i])
         i = i + 1
     end
 
     self.wpos = self.wpos + l
-
 end
 
 -- for length
@@ -148,20 +135,19 @@ function _M.insert_uint(self, u)
         ngx.log(ngx.ERR, "write_uint paramete err, it's not a number.\n")
         error("write_uint paramete err, it's not a number.\n")
     end
-    
+
     local num_byte_str = self.numbertobytes(u, 4)
-    self.temp = {string.byte( num_byte_str, 1, -1 )}
+    self.temp = {string.byte(num_byte_str, 1, -1)}
 
     local l = #self.temp
 
     local i = 1
     local from = self.wpos
-    for from = self.wpos, from + l - 1 do
-        self.byte_arr_buf[from] = self.temp[i]
+    for ifrom = self.wpos, from + l - 1 do
+        self.byte_arr_buf[ifrom] = self.temp[i]
         i = i + 1
     end
     self.wpos = self.wpos + l
-
 end
 
 local write_uint
@@ -172,7 +158,7 @@ write_uint = function(self, u, width)
     end
 
     local num_byte_str = self.numbertobytes(u, width)
-    self.temp = {string.byte( num_byte_str, 1, -1 )}
+    self.temp = {string.byte(num_byte_str, 1, -1)}
 
     local l = #self.temp
     if l ~= width then
@@ -182,12 +168,11 @@ write_uint = function(self, u, width)
 
     local i = 1
     local from = self.wpos
-    for from = self.wpos, from + l + 1 do
-        table.insert(self.byte_arr_buf, from, self.temp[i])
+    for ifrom = self.wpos, from + l + 1 do
+        table.insert(self.byte_arr_buf, ifrom, self.temp[i])
         i = i + 1
     end
     self.wpos = self.wpos + l
-
 end
 
 function _M.write_uint16(self, u)
@@ -212,7 +197,7 @@ end
 
 function _M.write_varint(self, u)
     local l = 0
-    while u >= lshift(1,7) do
+    while u >= lshift(1, 7) do
         self:write_byte((bor(band(u, 0x7f), 0x80)))
         u = rshift(u, 7)
         l = l + 1
@@ -230,7 +215,7 @@ function _M.read(self, p)
     if self.rpos >= #self.byte_str_buf then
         return 0, "io.EOF"
     end
-    p = {string.sub( self.byte_str_buf, self.rpos, self.rpos + #p - 1 ):byte(1, -1)}
+    p = {string.sub(self.byte_str_buf, self.rpos, self.rpos + #p - 1):byte(1, -1)}
     self.rpos = self.rpos + #p
     return #p, nil
 end
@@ -239,7 +224,7 @@ function _M.read_full(self, p)
     if self:remain() < #p then
         return "ErrNotEnough"
     end
-    p = {string.sub( self.byte_str_buf, self.rpos ):byte(1, -1)}
+    p = {string.sub(self.byte_str_buf, self.rpos):byte(1, -1)}
     self.rpos = self.rpos + #p
     return nil
 end
@@ -249,7 +234,7 @@ read_uint = function(self, width)
     if self:remain() < width then
         return 0, "ErrNotEnough"
     end
-    local n = self.stringtonumber(string.sub( self.byte_str_buf, self.rpos, self.rpos + width -1 ))
+    local n = self.stringtonumber(string.sub(self.byte_str_buf, self.rpos, self.rpos + width - 1))
     self.rpos = self.rpos + width
     return n, nil
 end
@@ -290,12 +275,11 @@ end
 
 -- @TODO check read_varint
 function _M.read_varint(self)
-    local temp = 0
+    local temp, err
     local x = 0
     local offset = 0
-    while (offset < 30)
-    do
-        local temp, err = self:read_byte()
+    while (offset < 30) do
+        temp, err = self:read_byte()
         if err ~= nil then
             return 0, err
         end
@@ -314,7 +298,7 @@ function _M.next(self, n)
     if n > m then
         return nil, "ErrNotEnough"
     end
-    local data = {string.sub( self.byte_str_buf, self.rpos, self.rpos + n - 1 ):byte(1, -1)}
+    local data = {string.sub(self.byte_str_buf, self.rpos, self.rpos + n - 1):byte(1, -1)}
     self.rpos = self.rpos + n
     return data, nil
 end
@@ -323,7 +307,7 @@ function _M.read_byte(self)
     if self.rpos > #self.byte_str_buf then
         return 0, "io.EOF"
     end
-    local data = string.sub( self.byte_str_buf, self.rpos, self.rpos ):byte()
+    local data = string.sub(self.byte_str_buf, self.rpos, self.rpos):byte()
     self.rpos = self.rpos + 1
     return data, nil
 end

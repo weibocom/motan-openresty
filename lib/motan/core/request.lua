@@ -1,21 +1,20 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self, opts)
     local request = {
-        request_id = opts.request_id or nil, 
-        service_name = opts.service_name or nil, 
-        method = opts.method or nil, 
-        method_desc = opts.method_desc or nil, 
-        arguments = opts.arguments or nil, 
+        request_id = opts.request_id or nil,
+        service_name = opts.service_name or nil,
+        method = opts.method or nil,
+        method_desc = opts.method_desc or nil,
+        arguments = opts.arguments or nil,
         args_num = opts.args_num or 0,
-        attachment = opts.attachment or {}, 
+        attachment = opts.attachment or {}
     }
     return setmetatable(request, mt)
 end
@@ -61,6 +60,5 @@ end
 
 -- function _M.process_deserializable(self, toTypes)
 -- end
-
 
 return _M

@@ -1,19 +1,18 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local setmetatable = setmetatable
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self)
     local metrics = {
-        name = "metrics", 
+        name = "metrics",
         next = {}
     }
     return setmetatable(metrics, mt)
@@ -27,7 +26,7 @@ function _M.get_name(self)
     return self.name
 end
 
-function _M.new_filter(self, url)
+function _M.new_filter(self, url) --luacheck:ignore
     return self:new()
 end
 

@@ -1,13 +1,12 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local setmetatable = setmetatable
 local cluster = require "motan.cluster"
 local singletons = require "motan.singletons"
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
@@ -16,7 +15,7 @@ function _M.new(self, ref_url_obj)
     local cluster_obj = cluster:new(ref_url_obj)
     cluster_obj:init()
     local client = {
-        url = ref_url_obj, 
+        url = ref_url_obj,
         cluster = cluster_obj
     }
     return setmetatable(client, mt)
@@ -50,13 +49,17 @@ _do_call = function(self, fucname, ...)
     return resp.value
 end
 
-setmetatable(_M, {__index = function(self, fucname)
-    local method = 
-    function (self, ...)
-        return _do_call(self, fucname, ...)
-    end
-    _M[fucname] = method
-    return method
-end})
+setmetatable(
+    _M,
+    {
+        __index = function(self, fucname)
+            local method = function(self, ...)
+                return _do_call(self, fucname, ...)
+            end
+            _M[fucname] = method
+            return method
+        end
+    }
+)
 
 return _M

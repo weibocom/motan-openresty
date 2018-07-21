@@ -1,15 +1,13 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local consts = require "motan.consts"
 local null = ngx.null
-local escape_uri = ngx.escape_uri
 local setmetatable = setmetatable
 local tab_concat = table.concat
 local tab_insert = table.insert
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
@@ -19,15 +17,15 @@ function _M.new(self, opts)
     local opt_type = type(opts)
     if opt_type == "table" then
         url = {
-            protocol = opts.protocol or "", 
-            host = opts.host or "", 
-            port = opts.port or 0, 
-            path = opts.path or "", 
-            group = opts.group or "", 
-            params = opts.params or {}, 
+            protocol = opts.protocol or "",
+            host = opts.host or "",
+            port = opts.port or 0,
+            path = opts.path or "",
+            group = opts.group or "",
+            params = opts.params or {}
         }
-    elseif opt_type == "string" then
-        -- @TODO
+    elseif opt_type == "string" then -- luacheck:ignore
+    -- @TODO
     end
     return setmetatable(url, mt)
 end
@@ -39,16 +37,16 @@ end
 
 function _M.get_urlinfo(self, with_params_str)
     local url_info = {
-        self.protocol, 
-        consts.PROTOCOL_SEPARATOR, 
-        self.host, 
-        consts.COLON_SEPARATOR, 
-        self.port, 
-        consts.PATH_SEPARATOR, 
-        self.path, 
-        consts.QMARK_SEPARATOR, 
-        "group=", 
-        self.group, 
+        self.protocol,
+        consts.PROTOCOL_SEPARATOR,
+        self.host,
+        consts.COLON_SEPARATOR,
+        self.port,
+        consts.PATH_SEPARATOR,
+        self.path,
+        consts.QMARK_SEPARATOR,
+        "group=",
+        self.group
     }
     if with_params_str then
         local params_arr = {}
@@ -64,7 +62,6 @@ function _M.get_urlinfo(self, with_params_str)
     end
     return url_info
 end
-
 
 function _M.to_extinfo(self)
     return tab_concat(self:get_urlinfo(true))

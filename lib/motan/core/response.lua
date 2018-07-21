@@ -1,18 +1,17 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self, opts)
     local response = {
-        request_id = opts.request_id or nil, 
-        value = opts.value or nil, 
-        exception = opts.exception or nil, 
-        process_time = opts.process_time or nil, 
+        request_id = opts.request_id or nil,
+        value = opts.value or nil,
+        exception = opts.exception or nil,
+        process_time = opts.process_time or nil,
         attachment = opts.attachment or {}
         -- RpcContext = opts.RpcContext or nil,
     }
@@ -56,7 +55,5 @@ end
 
 -- function _M.grocessDeserializable(self, toType)
 -- end
-
-
 
 return _M

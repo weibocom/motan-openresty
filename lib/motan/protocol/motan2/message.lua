@@ -1,26 +1,22 @@
 -- Copyright (C) idevz (idevz.org)
 
-
-local consts = require "motan.consts"
 local setmetatable = setmetatable
-local tab_concat = table.concat
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
 
 function _M.new(self, opts)
     local msg = {
-        header = opts.header or {}, 
-        metadata = opts.metadata or {}, 
-        body = opts.body or nil, 
+        header = opts.header or {},
+        metadata = opts.metadata or {},
+        body = opts.body or nil
     }
     return setmetatable(msg, mt)
 end
-
 
 function _M.get_header(self)
     return self.header
