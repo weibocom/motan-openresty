@@ -285,18 +285,16 @@ function _M.motan_table_type(v)
     v["check_if_is_a_array_or_a_hash"] = false
     for k, value in pairs(v) do
         add_one_len = add_one_len + 1
-        if k == "check_if_is_a_array_or_a_hash" then
-            goto continue
-        end
-        v_type = type(value)
-        if v_type == "number" then
-            if value >= 0 and value <= 0xff then
-                v_type_number.byte = true
-            else
-                v_type_number.int = true
+        if k ~= "check_if_is_a_array_or_a_hash" then
+            v_type = type(value)
+            if v_type == "number" then
+                if value >= 0 and value <= 0xff then
+                    v_type_number.byte = true
+                else
+                    v_type_number.int = true
+                end
             end
         end
-        ::continue::
     end
     if orgin_len == 0 and add_one_len > 1 then
         if v_type == "string" then
