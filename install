@@ -6,7 +6,7 @@
 # Description:       Motan OpenResty installation
 ### END ###
 
-set -x -e
+set -ex
 # base conf
 MOTAN_SRC_ROOT=$(realpath ./)
 BUILD=${MOTAN_SRC_ROOT}/build
@@ -15,61 +15,65 @@ mkdir -p ${BUILD}
 # OpenResty ROOT
 OR=openresty
 TMP=${BUILD}/tmp
-OR_ROOT=$(${OR} -V &> ${TMP} && cat ${TMP} \
-	| grep prefix |sed  's/.*prefix\=\(.*\)\/nginx.*/\1/g')
+OR_ROOT=$(${OR} -V &>${TMP} && cat ${TMP} |
+	grep prefix | sed 's/.*prefix\=\(.*\)\/nginx.*/\1/g')
 SITE_LUALIB_ROOT=${OR_ROOT}/site/lualib
 rm ${TMP}
 
-doRequire() {
-    DEPENDENCES='
+do_require() {
+	DEPENDENCES='
     https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz
     https://github.com/idevz/lua-resty-timer/archive/v0.0.1.tar.gz
     https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
     '
-    REQUIRE=${MOTAN_SRC_ROOT}/build/require
-    mkdir -p $REQUIRE/src
-    mkdir -p $REQUIRE/resty
+	REQUIRE=${MOTAN_SRC_ROOT}/build/require
+	mkdir -p $REQUIRE/src
+	mkdir -p $REQUIRE/resty
 
-    for dep in ${DEPENDENCES}
-    do
-        if echo $dep| grep -q "\.git";then
-            cd $REQUIRE/src;
-            git clone $dep;
-            cp -fR lua-resty-timer/lib/resty/* $REQUIRE/resty/
-        else
-            cd $REQUIRE/src
-            FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
-            wget --no-check-certificate $dep -O $FILE_NAME
-            tar zxf $FILE_NAME
-            cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
-        fi
-    done
+	for dep in ${DEPENDENCES}; do
+		cd $REQUIRE/src
+		FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
+		# wget --no-check-certificate $dep -O $FILE_NAME
+		curl -fSL $dep -o $FILE_NAME
+		tar zxf $FILE_NAME
+		cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
+	done
 }
 
-doAppCreate() {
-    DAPP_NAME=motan-demo
-    DAPP_ROOT=${MOTAN_SRC_ROOT}/app
+do_app_create() {
+	DAPP_NAME=motan-demo
+	DAPP_ROOT=${MOTAN_SRC_ROOT}/app
 
-    APP_NAME=${APP_NAME=$DAPP_NAME}
-    APP_ROOT=${APP_ROOT=$DAPP_ROOT}
+	APP_NAME=${APP_NAME=$DAPP_NAME}
+	APP_ROOT=${APP_ROOT=$DAPP_ROOT}
 
-    DEMO_APP_SRC=${MOTAN_SRC_ROOT}/build/app
-    DEMO_APP_GIT="https://github.com/motan-ecosystem/motan-openresty-demo/archive/v0.0.1.tar.gz"
+	DEMO_APP_SRC=${MOTAN_SRC_ROOT}/build/app
+	DEMO_APP_GIT="https://github.com/motan-ecosystem/motan-openresty-demo/archive/v0.0.1.tar.gz"
 
-    mkdir -p $DEMO_APP_SRC ${APP_ROOT}/${APP_NAME}
-    cd $DEMO_APP_SRC
-    rm -rf $APP_NAME   #clean last mv result
-    wget --no-check-certificate $DEMO_APP_GIT -O $APP_NAME
-    tar zxf $APP_NAME
-    rm $APP_NAME       #rm tar.gz
-    mv ./motan-openresty-demo* $APP_NAME
-    cp -fR ${DEMO_APP_SRC}/${APP_NAME}/* ${APP_ROOT}/${APP_NAME}/
+	mkdir -p $DEMO_APP_SRC ${APP_ROOT}/${APP_NAME}
+	cd $DEMO_APP_SRC
+	rm -rf $APP_NAME #clean last mv result
+	wget --no-check-certificate $DEMO_APP_GIT -O $APP_NAME
+	tar zxf $APP_NAME
+	rm $APP_NAME #rm tar.gz
+	mv ./motan-openresty-demo* $APP_NAME
+	cp -fR ${DEMO_APP_SRC}/${APP_NAME}/* ${APP_ROOT}/${APP_NAME}/
+}
+
+build_motan_libs() {
+	cd ${SITE_LUALIB_ROOT}/motan/libs &&
+		gcc -g -o libmotan_tools.so -fpic -shared motan_tools.c &&
+		[ ! -z libmotan_tools.so ] &&
+		LIB_MOTAN_TOOLS_SO_FILE=libmotan_tools.so &&
+		LIB_MOTAN_TOOLS_SO=/lib/libmotan_tools.so &&
+		ln -sf ${SITE_LUALIB_ROOT}/motan/libs/${LIB_MOTAN_TOOLS_SO_FILE} ${LIB_MOTAN_TOOLS_SO} &&
+		ldconfig
 }
 
 # dependence:
 echo "get motan dependences libs start."
 echo "get motan dependences libs."
-doRequire
+do_require
 echo "motan dependences libs get done."
 
 # build:
@@ -78,14 +82,15 @@ mkdir -p ${SITE_LUALIB_ROOT}/motan/
 cp -fR ${MOTAN_SRC_ROOT}/lib/motan/* ${SITE_LUALIB_ROOT}/motan/
 mkdir -p ${SITE_LUALIB_ROOT}/resty/
 cp ${BUILD}/require/resty/* ${SITE_LUALIB_ROOT}/resty/
+build_motan_libs
 echo "build motan success."
 
 # create:
 if [ -n "$APP_NAME" ]; then
-echo ${APP_NAME}
-echo "create motan demo start."
-doAppCreate
-echo "create app: "${APP_NAME}" success."
+	echo ${APP_NAME}
+	echo "create motan demo start."
+	do_app_create
+	echo "create app: "${APP_NAME}" success."
 fi
 
 rm -rf ${BUILD}
