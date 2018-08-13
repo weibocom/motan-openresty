@@ -8,7 +8,7 @@
 
 set -ex
 # base conf
-MOTAN_SRC_ROOT=$(realpath ./)
+MOTAN_SRC_ROOT=$(dirname $(cd $(dirname "$0") && pwd -P)/$(basename "$0"))
 BUILD=${MOTAN_SRC_ROOT}/build
 mkdir -p ${BUILD}
 
@@ -16,7 +16,7 @@ mkdir -p ${BUILD}
 OR=openresty
 TMP=${BUILD}/tmp
 OR_ROOT=$(${OR} -V &>${TMP} && cat ${TMP} |
-	grep prefix | sed 's/.*prefix\=\(.*\)\/nginx.*/\1/g')
+	grep prefix | grep -Eo 'prefix=(.*?)/nginx' | grep -Eo '/.*/')
 SITE_LUALIB_ROOT=${OR_ROOT}/site/lualib
 rm ${TMP}
 

@@ -8,42 +8,41 @@
 
 set -x -e
 # base conf
-MOTAN_SRC_ROOT=$(realpath ./)
+MOTAN_SRC_ROOT=$(dirname $(cd $(dirname "$0") && pwd -P)/$(basename "$0"))
 BUILD=${MOTAN_SRC_ROOT}/build
 mkdir -p ${BUILD}
 
 # OpenResty ROOT
 OR=openresty
 TMP=${BUILD}/tmp
-OR_ROOT=$(${OR} -V &> ${TMP} && cat ${TMP} \
-	| grep prefix |sed  's/.*prefix\=\(.*\)\/nginx.*/\1/g')
+OR_ROOT=$(${OR} -V &>${TMP} && cat ${TMP} |
+	grep prefix | grep -Eo 'prefix=(.*?)/nginx' | grep -Eo '/.*/')
 SITE_LUALIB_ROOT=${OR_ROOT}/site/lualib
 rm ${TMP}
 
 doRequire() {
-    DEPENDENCES='
+	DEPENDENCES='
     https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz
     https://github.com/idevz/lua-resty-timer/archive/v0.0.1.tar.gz
     https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
     '
-    REQUIRE=${MOTAN_SRC_ROOT}/build/require
-    mkdir -p $REQUIRE/src
-    mkdir -p $REQUIRE/resty
+	REQUIRE=${MOTAN_SRC_ROOT}/build/require
+	mkdir -p $REQUIRE/src
+	mkdir -p $REQUIRE/resty
 
-    for dep in ${DEPENDENCES}
-    do
-        if echo $dep| grep -q "\.git";then
-            cd $REQUIRE/src;
-            git clone $dep;
-            cp -fR lua-resty-timer/lib/resty/* $REQUIRE/resty/
-        else
-            cd $REQUIRE/src
-            FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
-            wget --no-check-certificate $dep -O $FILE_NAME
-            tar zxf $FILE_NAME
-            cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
-        fi
-    done
+	for dep in ${DEPENDENCES}; do
+		if echo $dep | grep -q "\.git"; then
+			cd $REQUIRE/src
+			git clone $dep
+			cp -fR lua-resty-timer/lib/resty/* $REQUIRE/resty/
+		else
+			cd $REQUIRE/src
+			FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
+			wget --no-check-certificate $dep -O $FILE_NAME
+			tar zxf $FILE_NAME
+			cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
+		fi
+	done
 }
 
 # dependence:
@@ -52,7 +51,7 @@ echo "get motan dependences libs."
 doRequire
 
 for lua_file in $(ls ${MOTAN_SRC_ROOT}/build/require/resty); do
-[[ $(cat ${SITE_LUALIB_ROOT}/resty/${lua_file} | sha1sum) = $(cat ${MOTAN_SRC_ROOT}/build/require/resty/${lua_file} |sha1sum) ]] && $(rm ${SITE_LUALIB_ROOT}/resty/${lua_file})
+	[[ $(cat ${SITE_LUALIB_ROOT}/resty/${lua_file} | sha1sum) == $(cat ${MOTAN_SRC_ROOT}/build/require/resty/${lua_file} | sha1sum) ]] && $(rm ${SITE_LUALIB_ROOT}/resty/${lua_file})
 done
 
 echo "uninstall motan dependences libs get done."
