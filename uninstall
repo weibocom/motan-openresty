@@ -3,7 +3,7 @@
 ### BEGIN ###
 # Author: idevz
 # Since: 2018/03/12
-# Description:       Motan OpenResty installation
+# Description:       Motan OpenResty uninstallation
 ### END ###
 
 set -x -e

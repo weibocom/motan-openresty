@@ -19,6 +19,34 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
+function _M.str_2_byte_arr(s)
+    local str_len = #s
+    -- if(size>8000||(L->top-L->base+size)>8000)
+    if str_len < 7000 then
+        return {string.byte(s, 1, -1)}
+    end
+    local req_str = ffi.new("uint8_t[" .. str_len .. "]", s)
+    local i = 1
+    byte_arr = {}
+    while (i <= str_len) do
+        byte_arr[i] = req_str[i - 1]
+        i = i + 1
+    end
+    return byte_arr
+end
+
+function _M.byte_arr_2_str(buf)
+    local len = #buf
+    -- if(size>8000||(L->top-L->base+size)>8000)
+    -- if len < 7000 then
+    --     return string.char(unpack(str_byte_array))
+    -- end
+    local str_arr = ffi.new("uint8_t[" .. len .. "]", buf)
+    local res_str = ffi.new("char[?]", len)
+    ffi.copy(res_str, str_arr, len)
+    return ffi.string(res_str, len)
+end
+
 function _M.pack_request_id(rid_str)
     local rid_num_str = ffi.new("const char *", rid_str)
     local rid_bytes_arr = ffi.new("char[8]")

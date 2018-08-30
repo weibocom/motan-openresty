@@ -5,6 +5,7 @@ local utils = require "motan.utils"
 local consts = require "motan.consts"
 local buf_lib = require "motan.serialize.simplex.buf"
 local floor = require "math".floor
+local ffi = require("ffi")
 
 local ok, new_tab = pcall(require, "table.new")
 if not ok or type(new_tab) ~= "function" then
@@ -91,7 +92,8 @@ end
 local encode_string_no_tag
 encode_string_no_tag = function(s, buf)
     buf:write_uint32(#s)
-    buf:write({string.byte(s, 1, -1)})
+    -- buf:write({string.byte(s, 1, -1)})
+    buf:write(utils.str_2_byte_arr(s))
 end
 
 local encode_string
@@ -273,7 +275,7 @@ end
 function _M.serialize(params)
     local buf = buf_lib:new_bytes_buff(consts.DEFAULT_BUFFER_SIZE)
     local err = serialize_buf(params, buf)
-    return string.char(unpack(buf.byte_arr_buf)), err
+    return utils.byte_arr_2_str(buf.byte_arr_buf), err
 end
 
 function _M.serialize_multi(params)
@@ -291,7 +293,7 @@ function _M.serialize_multi(params)
             return nil, err
         end
     end
-    return string.char(unpack(buf.byte_arr_buf)), err
+    return utils.byte_arr_2_str(buf.byte_arr_buf), err
 end
 
 -- consts.MOTAN_DATA_PACK_INT32_BYTE - 1
@@ -309,7 +311,7 @@ decode_string = function(buf)
     -- if v ~= nil then
     -- v = str -- @TODO check this reference value
     -- end
-    return string.char(unpack(str_byte_array)), nil
+    return utils.byte_arr_2_str(str_byte_array), nil
 end
 
 local decode_string_map

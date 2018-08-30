@@ -215,7 +215,8 @@ function _M.read(self, p)
     if self.rpos >= #self.byte_str_buf then
         return 0, "io.EOF"
     end
-    p = {string.sub(self.byte_str_buf, self.rpos, self.rpos + #p - 1):byte(1, -1)}
+    local str_temp = string.sub(self.byte_str_buf, self.rpos, self.rpos + #p - 1)
+    p = utils.str_2_byte_arr(str_temp)
     self.rpos = self.rpos + #p
     return #p, nil
 end
@@ -224,7 +225,8 @@ function _M.read_full(self, p)
     if self:remain() < #p then
         return "ErrNotEnough"
     end
-    p = {string.sub(self.byte_str_buf, self.rpos):byte(1, -1)}
+    local str_temp = string.sub(self.byte_str_buf, self.rpos)
+    p = utils.str_2_byte_arr(str_temp)
     self.rpos = self.rpos + #p
     return nil
 end
@@ -298,7 +300,8 @@ function _M.next(self, n)
     if n > m then
         return nil, "ErrNotEnough"
     end
-    local data = {string.sub(self.byte_str_buf, self.rpos, self.rpos + n - 1):byte(1, -1)}
+    local str_temp = string.sub(self.byte_str_buf, self.rpos, self.rpos + n - 1)
+    local data = utils.str_2_byte_arr(str_temp)
     self.rpos = self.rpos + n
     return data, nil
 end

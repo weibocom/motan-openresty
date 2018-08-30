@@ -1,8 +1,7 @@
 -- Copyright (C) idevz (idevz.org)
 
-
 local _M = {
-    _VERSION = '0.0.1'
+    _VERSION = "0.0.1"
 }
 
 local mt = {__index = _M}
@@ -16,6 +15,7 @@ function _M.new(self, opts)
 end
 
 function _M.Hello(self, p1, p2)
+    ngx.log(ngx.ERR, sprint_r({p1, p2}))
     return "motan_openresty_helloworld_test_Hello_ok_" .. p1 .. p2
 end
 
