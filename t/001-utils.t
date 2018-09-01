@@ -45,7 +45,6 @@ done
 --- no_error_log
 [error]
 --- timeout: 10
---- ONLY
 
 === TEST 2: ffi pack_request_id
 --- stream_config eval
