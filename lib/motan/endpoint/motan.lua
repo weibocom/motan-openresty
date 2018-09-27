@@ -95,7 +95,7 @@ function _M.connect(self)
             return nil, "motan endpoint failed connect to weibo mesh, and also couldn't get the snapshots."
         end
     end
-    return sock:connect(self.url.host, self.url.port)
+    return ok, err
 end
 
 function _M.call(self, req)
