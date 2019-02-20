@@ -22,10 +22,12 @@ dev
 xdev
 dlua/
 .DS_Store
-
+docker_build/
+cmake-build-debug/
 
 .gdb_history
 .DS_Store
 build
 app
 docker
+
