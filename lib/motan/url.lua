@@ -111,9 +111,14 @@ function _M.to_extinfo(self)
 end
 
 function _M.get_filters(self)
+    local filter_str
+    if self.params[consts.MOTAN_FILTER_KEY] ~= nil then
+        filter_str = self.params[consts.MOTAN_FILTER_KEY]
+    else
+        return nil, nil
+    end
     local filter_keys
-    filter_keys =
-        assert(utils.split(self.params[consts.MOTAN_FILTER_KEY], consts.COMMA_SEPARATOR), "Error parse filter conf.")
+    filter_keys = assert(utils.split(filter_str, consts.COMMA_SEPARATOR), "Error parse filter conf.")
     local cluster_filters = {}
     local endpoint_filters = {}
     local cluster_filter = {}
