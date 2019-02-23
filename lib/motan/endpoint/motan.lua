@@ -70,6 +70,8 @@ function _M.connect(self)
     local ok, err = sock:connect(self.url.host, self.url.port)
     if err ~= nil then
         ngx.log(ngx.ERR, "socket connection error")
+    else
+        return ok, err
     end
     local use_weibo_mesh = false
     if
