@@ -23,7 +23,12 @@ function _M.on_refresh(self, endpoints)
 end
 
 function _M.select(self, req) --luacheck:ignore
-    for _, endpoint in ipairs(self.endpoints) do
+    local endpoints_temp = self.endpoints
+    local endpoints_length = #endpoints_temp
+    local ran = math.random(1, endpoints_length)
+    for i = 1, endpoints_length do
+        local index = (ran + i) % endpoints_length + 1
+        local endpoint = endpoints_temp[index]
         if endpoint:is_available() then
             return endpoint
         end
