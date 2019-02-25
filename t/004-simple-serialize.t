@@ -4,10 +4,12 @@ use Test::Nginx::Socket::Lua::Stream;
 use FindBin qw($Bin);
 my $root_path = $Bin;
 our $MOTAN_P_ROOT=$root_path . "/../lib/";
+our $MOTAN_CPATH=$root_path . "/../lib/motan/libs/";
 our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
 
 our $http_config=<<"_EOC_";
     lua_package_path '$MOTAN_DEMO_PATH/?.lua;$MOTAN_DEMO_PATH/?/init.lua;$MOTAN_P_ROOT/?.lua;$MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
+    lua_package_cpath '$MOTAN_CPATH/?.so;;';
     init_by_lua_block {
         motan = require 'motan'
         motan.init()
@@ -24,7 +26,7 @@ log_level('warn');
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 2);
-# use Test::Nginx::Socket::Lua::Stream 'no_plan'
+# use Test::Nginx::Socket::Lua::Stream 'no_plan';
 
 # no_diff();
 #no_long_string();
@@ -50,6 +52,9 @@ __DATA__
 
 === TEST 1: motan openresty simple serialize - Null
 --- http_config eval: $::http_config
+--- TODO 
+check NULL support
+--- SKIP
 --- config
     location /t {
         content_by_lua_block {
@@ -161,7 +166,7 @@ GET /t
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local serialize_lib = singletons.motan_ext:get_serialization('simple')
-            local t_data = {1, 2, 3, 123, 255}
+            local t_data = 'there is no bytearray in lua.'
             local bytes = serialize_lib.serialize(t_data)
             ngx.log(ngx.ERR, sprint_r({string.byte(bytes, 1, -1)}))
 
@@ -171,19 +176,8 @@ GET /t
     }
 --- request
 GET /t
---- response_body
-{
-  3,
-  0,
-  0,
-  0,
-  5,
-  1,
-  2,
-  3,
-  123,
-  255
-}
+--- no_error_log
+[warn]
 
 === TEST 5: motan openresty simple serialize - StringArray
 --- http_config eval: $::http_config
@@ -281,8 +275,8 @@ GET /t
 GET /t
 --- response_body
 {
-  6,
-  1
+  9,
+  2
 }
 
 === TEST 8: motan openresty simple serialize - Int16
@@ -304,9 +298,10 @@ GET /t
 GET /t
 --- response_body
 {
-  7,
+  9,
+  254,
   255,
-  255
+  7
 }
 
 === TEST 9: motan openresty simple serialize - Int32
@@ -328,7 +323,7 @@ GET /t
 GET /t
 --- response_body
 {
-  8,
+  9,
   178,
   230,
   204,
@@ -343,8 +338,7 @@ GET /t
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local serialize_lib = singletons.motan_ext:get_serialization('simple')
-            -- local t_data = 72057594037927935
-            local t_data = 429496729
+            local t_data = 7205759403792793
             local bytes = serialize_lib.serialize(t_data)
             ngx.log(ngx.ERR, sprint_r({string.byte(bytes, 1, -1)}))
 
@@ -356,12 +350,15 @@ GET /t
 GET /t
 --- response_body
 {
-  8,
+  9,
   178,
   230,
   204,
   153,
-  3
+  179,
+  230,
+  204,
+  25
 }
 
 === TEST 11: motan openresty simple serialize - Float32
@@ -384,14 +381,14 @@ GET /t
 --- response_body
 {
   11,
-  0,
-  0,
-  0,
-  0,
-  25,
+  65,
+  185,
   153,
   153,
-  153
+  153,
+  85,
+  85,
+  80
 }
 
 === TEST 12: motan openresty simple serialize - Float64
@@ -401,7 +398,7 @@ GET /t
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local serialize_lib = singletons.motan_ext:get_serialization('simple')
-            local t_data = 429496729.333333
+            local t_data = 72057594037927.333333
             local bytes = serialize_lib.serialize(t_data)
             ngx.log(ngx.ERR, sprint_r({string.byte(bytes, 1, -1)}))
 
@@ -414,14 +411,14 @@ GET /t
 --- response_body
 {
   11,
-  0,
-  0,
-  0,
-  0,
-  25,
-  153,
-  153,
-  153
+  66,
+  208,
+  98,
+  77,
+  210,
+  241,
+  169,
+  213
 }
 
 === TEST 13: motan openresty simple serialize - Map

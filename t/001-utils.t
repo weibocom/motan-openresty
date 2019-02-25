@@ -3,6 +3,7 @@
 use Test::Nginx::Socket::Lua::Stream;
 use FindBin qw($Bin);
 my $root_path = $Bin;
+our $MOTAN_CPATH=$root_path . "/../lib/motan/libs/";
 our $MOTAN_P_ROOT=$root_path . "/../lib";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
@@ -23,7 +24,9 @@ __DATA__
 
 === TEST 1: pack_request_id
 --- stream_config eval
-    "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';"
+    "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';
+    lua_package_cpath '$::MOTAN_CPATH/?.so;;';
+    "
 --- stream_server_config
     preread_by_lua_block {
             local test_data = require "t.lib.data"
@@ -48,7 +51,9 @@ done
 
 === TEST 2: ffi pack_request_id
 --- stream_config eval
-    "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';"
+    "lua_package_path '$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua';
+    lua_package_cpath '$::MOTAN_CPATH/?.so;;';
+    "
 --- stream_server_config
     preread_by_lua_block {
             local test_data = require "t.lib.data"

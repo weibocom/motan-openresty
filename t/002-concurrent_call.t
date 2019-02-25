@@ -4,6 +4,7 @@ use Test::Nginx::Socket::Lua::Stream;
 use FindBin qw($Bin);
 my $root_path = $Bin;
 our $MOTAN_P_ROOT=$root_path . "/../lib/";
+our $MOTAN_CPATH=$root_path . "/../lib/motan/libs/";
 our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
@@ -16,8 +17,8 @@ log_level('warn');
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3 + 3);
-# use Test::Nginx::Socket::Lua::Stream 'no_plan'
+# plan tests => repeat_each() * (blocks() * 3 + 3);
+use Test::Nginx::Socket::Lua::Stream 'no_plan';
 
 # no_diff();
 #no_long_string();
@@ -28,6 +29,7 @@ __DATA__
 === TEST 1: motan openresty concurrent call
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
+    lua_package_cpath '$::MOTAN_CPATH/?.so;;';
     lua_shared_dict motan 20m;
     init_by_lua_block {
         motan = require 'motan'
@@ -47,6 +49,7 @@ __DATA__
         }
 --- http_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
+    lua_package_cpath '$::MOTAN_CPATH/?.so;;';
     lua_shared_dict motan_http 20m;
 
     init_by_lua_block {
@@ -120,6 +123,3 @@ Content-Type: text/plain
 }
 --- no_error_log
 [warn]
---- error_log
-[error]
-[alert]

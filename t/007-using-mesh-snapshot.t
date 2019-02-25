@@ -6,7 +6,7 @@ our $MOTAN_CPATH=$root_path . "/../lib/motan/libs/";
 our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
-$ENV{MOTAN_ENV} = "development";
+$ENV{MOTAN_ENV} = "using-mesh";
 # $ENV{LUA_PACKAGE_PATH} ||= $MOTAN_DEMO_PATH . "/?.lua;" . $MOTAN_DEMO_PATH . "/?/init.lua;" . $MOTAN_P_ROOT . "/?.lua;" . $MOTAN_P_ROOT . "/?/init.lua;./?.lua;/?.lua;/?/init.lua";
 log_level('warn');
 #worker_connections(1014);
@@ -24,7 +24,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: motan openresty hello world
+=== TEST 1: using Mesh but when Mesh down, Client will using the Mesh snapshot to connect the server directly.
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_package_cpath '$::MOTAN_CPATH/?.so;;';
@@ -59,14 +59,16 @@ __DATA__
         motan.init_worker_motan_client()
     }"
 --- config
+    location /snapshot/ {
+        root 
+    }
     location /motan_client_demo {
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local client_map = singletons.client_map
-            
             local service_name = 'direct_helloworld_service'
             local service = client_map[service_name]
-            local res, err = service:Hello('motan', '_openresty')
+            local res, err = service:Hello('dd')
             if err ~= nil then
                 res = err
             end
@@ -81,7 +83,7 @@ GET /motan_client_demo
 --- response_headers
 Content-Type: text/plain
 --- response_body
-motan_openresty_helloworld_test_Hello_ok_motan_openresty
+http server provider by golang.
 --- no_error_log
 [warn]
 
