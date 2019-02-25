@@ -10,6 +10,8 @@ local json = require "cjson"
 
 local MAX_IDLE_TIMEOUT = 30 * 1000 -- 30s default timeout
 local POOL_SIZE = 100
+local DEFAULT_CONNECT_TIMEOUT = 1000
+local DEFAULT_REQUEST_TIMEOUT = 1000
 
 local _M = {
     _VERSION = "0.0.1"
@@ -107,8 +109,9 @@ function _M.call(self, req)
     if not sock then
         return nil, err
     end
-    local request_timeout = self.url.params["requestTimeout"]
-    sock:settimeouts(self.url.params["connectTimeout"], request_timeout, request_timeout)
+    local connect_timeout = self.url.params["connectTimeout"] or DEFAULT_CONNECT_TIMEOUT
+    local request_timeout = self.url.params["requestTimeout"] or DEFAULT_REQUEST_TIMEOUT
+    sock:settimeouts(connect_timeout, request_timeout, request_timeout)
     rawset(self, "_sock", sock)
     local ok, conn_err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
