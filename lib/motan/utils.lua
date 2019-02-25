@@ -71,8 +71,13 @@ function _M.get_local_ip()
     return ffi.string(ip)
 end
 
+local next_index = 0
 function _M.generate_request_id()
-    return string.format("%14d%04d%d%d", ngx.now() * 10000, ngx.worker.pid(), ngx.worker.id(), math.random(1, 9))
+    next_index = next_index + 1
+    if next_index > 999 then
+        next_index = 0
+    end
+    return string.format("%d%13d%03d%03d", 1, ngx.now() * 1000, ngx.worker.id(), next_index)
 end
 
 function _M.build_service_key(group, version, protocol, path)

@@ -206,7 +206,8 @@ function _M.make_motan_request(self, url, fucname, ...)
         M_s = url.params["application"],
         M_m = fucname,
         M_g = url.group,
-        M_pp = url.protocol
+        M_pp = url.protocol,
+        M_s = url.params.application
     }
     local request_id = utils.generate_request_id()
     local service_name = url.path
