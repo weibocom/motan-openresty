@@ -107,9 +107,8 @@ function _M.call(self, req)
     if not sock then
         return nil, err
     end
-    local send_timeout = self.url.params["requestTimeout"] / 2
-    local read_timeout = send_timeout
-    sock:settimeouts(self.url.params["connectTimeout"], send_timeout, read_timeout)
+    local request_timeout = self.url.params["requestTimeout"]
+    sock:settimeouts(self.url.params["connectTimeout"], request_timeout, request_timeout)
     rawset(self, "_sock", sock)
     local ok, conn_err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
