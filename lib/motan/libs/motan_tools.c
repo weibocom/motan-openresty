@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// gcc -g -o libmotan_tools.so -fpic -shared motan_tools.c
+// gcc -g -o libmotan_tools.so -fPIC -shared motan_tools.c
 
 // gcc -c -g  motan_tools.c -o motan_tools.o
 // gcc motan_tools.o -dynamiclib -o libmotan_tools.dylib

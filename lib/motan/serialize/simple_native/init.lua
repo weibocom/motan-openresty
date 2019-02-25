@@ -3,8 +3,8 @@ local _M = {
     _VERSION = "0.0.1"
 }
 
-local _serialize = function(params) 
-   if #params == 0 then
+local _serialize = function(params)
+    if #params == 0 and params[0] ~= nil then
         return nil, nil
     end
     local stat, result = pcall(cmotan.simple_serialize, params)
