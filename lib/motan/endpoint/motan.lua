@@ -68,8 +68,8 @@ function _M.connect(self)
         return nil, "not initialized"
     end
     local ok, err = sock:connect(self.url.host, self.url.port)
-    if err ~= nil then
-        ngx.log(ngx.ERR, "socket connection error")
+    if err == nil then
+        return ok, nil
     end
     local use_weibo_mesh = false
     if
@@ -78,7 +78,9 @@ function _M.connect(self)
      then
         use_weibo_mesh = true
     end
+    -- when connect fail to mesh, we need retry though snapshot nodes.
     if not ok and use_weibo_mesh then
+        ngx.log(ngx.ERR, "Motan endpoint connect err: " .. err)
         local res = ngx.location.capture("/snapshot/" .. self.url.group .. "_" .. self.url.path)
         if res.status == 200 then
             local working_nodes = {}
@@ -95,6 +97,7 @@ function _M.connect(self)
             return nil, "motan endpoint failed connect to weibo mesh, and also couldn't get the snapshots."
         end
     end
+    -- when connect fail to the nodes return by registy, we need retry connect to the node.
     return sock:connect(self.url.host, self.url.port)
 end
 
@@ -104,6 +107,9 @@ function _M.call(self, req)
     if not sock then
         return nil, err
     end
+    local send_timeout = self.url.params["requestTimeout"] / 2
+    local read_timeout = send_timeout
+    sock:settimeouts(self.url.params["connectTimeout"], send_timeout, read_timeout)
     rawset(self, "_sock", sock)
     local ok, conn_err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
