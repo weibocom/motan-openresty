@@ -26,7 +26,7 @@ local Motan = {
 
 local init_env
 init_env = function()
-    local APP_ROOT = string.sub(package.path, 1, string.find(package.path, [[//]]))
+    local APP_ROOT = os.getenv("APP_ROOT") or string.sub(package.path, 1, string.find(package.path, [[//]]))
     local motan_env = os.getenv("MOTAN_ENV") or "production"
     if motan_env == "development" then
         singletons.is_dev = true
