@@ -73,6 +73,7 @@ function _M.connect(self)
     if err == nil then
         return ok, nil
     end
+    ngx.log(ngx.ERR, "Motan endpoint connect err to: " .. self.url:get_identity() .. " err: " .. err)
     local use_weibo_mesh = false
     if
         singletons.config.conf_set["WEIBO_MESH"] ~= nil and
@@ -82,17 +83,17 @@ function _M.connect(self)
     end
     -- when connect fail to mesh, we need retry though snapshot nodes.
     if not ok and use_weibo_mesh then
-        ngx.log(ngx.ERR, "Motan endpoint connect err: " .. err)
         local res = ngx.location.capture("/snapshot/" .. self.url.group .. "_" .. self.url.path)
+        ngx.log(ngx.ERR, sprint_r(res))
         if res.status == 200 then
             local working_nodes = {}
-            local mesh_snapshot_for_server_nodes = json.decode(res.body)["nodes"]["working"]
+            local mesh_snapshot_for_server_nodes = json.decode(res.body)["nodes"]
             if not utils.is_empty(mesh_snapshot_for_server_nodes) then
                 for _, node in ipairs(mesh_snapshot_for_server_nodes) do
                     table.insert(working_nodes, node)
                 end
             end
-            local cnct_node = working_nodes[math.random(#working_nodes)]["host"]
+            local cnct_node = working_nodes[math.random(#working_nodes)]["address"]
             local node_info = utils.split(cnct_node, ":")
             return sock:connect(node_info[1], node_info[2])
         else
