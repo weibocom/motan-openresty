@@ -1,12 +1,14 @@
 use Test::Nginx::Socket::Lua::Stream;
 use FindBin qw($Bin);
-my $root_path = $Bin;
+my $root_path = $Bin . "/../";
 our $MOTAN_P_ROOT=$root_path . "/../lib/";
 our $MOTAN_CPATH=$root_path . "/../lib/motan/libs/";
 our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
+our $WEIBO_MESH_RUNPATH=$root_path . "/weibo-mesh-runpath/";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 $ENV{MOTAN_ENV} = "using-mesh";
+$ENV{APP_ROOT} = $MOTAN_DEMO_PATH;
 # $ENV{LUA_PACKAGE_PATH} ||= $MOTAN_DEMO_PATH . "/?.lua;" . $MOTAN_DEMO_PATH . "/?/init.lua;" . $MOTAN_P_ROOT . "/?.lua;" . $MOTAN_P_ROOT . "/?/init.lua;./?.lua;/?.lua;/?/init.lua";
 log_level('warn');
 #worker_connections(1014);
@@ -24,7 +26,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: motan openresty hello world
+=== TEST 1: using Mesh but when Mesh down, Client will using the Mesh snapshot to connect the server directly.
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_package_cpath '$::MOTAN_CPATH/?.so;;';
@@ -58,7 +60,11 @@ __DATA__
     init_worker_by_lua_block {
         motan.init_worker_motan_client()
     }"
---- config
+--- config eval
+    "location /snapshot/ {
+        internal;
+        root $::WEIBO_MESH_RUNPATH;
+    }
     location /motan_client_demo {
         content_by_lua_block {
             local singletons = require 'motan.singletons'
@@ -69,12 +75,9 @@ __DATA__
             if err ~= nil then
                 res = err
             end
-            ngx.log(ngx.ERR, "Error idevz Test.\n" .. res)
-            ngx.log(ngx.ALERT, "Alert xxxx Test.")
-            print("idevz.....")
             ngx.say(res)
         }
-    }
+    }"
 --- request
 GET /motan_client_demo
 --- response_headers

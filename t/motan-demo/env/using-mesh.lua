@@ -8,7 +8,7 @@ local sys_conf = {
     MOTAN_SERVICE_PROTOCOL = "motan2",
     MOTAN_LUA_SERVICE_PERFIX = "com.weibo.motan.",
     SERVICE_PATH = APP_ROOT .. "motan-service",
-    WEIBO_MESH = "10.211.55.2:9981"
+    WEIBO_MESH = "10.211.55.100:9981"
 }
 
 return sys_conf
