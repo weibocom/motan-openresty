@@ -15,7 +15,7 @@ if not ok or type(new_tab) ~= "function" then
 end
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local motan_table_type

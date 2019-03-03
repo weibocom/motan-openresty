@@ -3,7 +3,7 @@
 local setmetatable = setmetatable
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local mt = {__index = _M}

@@ -5,7 +5,7 @@ local singletons = require "motan.singletons"
 local utils = require "motan.utils"
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local mt = {__index = _M}
@@ -13,7 +13,7 @@ local mt = {__index = _M}
 local _get_default_msg_handler
 _get_default_msg_handler = function()
     local _res = {
-        _VERSION = "0.0.1"
+        _VERSION = "0.1.0"
     }
     local _mt = {__index = _res}
     function _res.new(_res_self)
@@ -53,7 +53,7 @@ local _get_filter_provider_warper
 -- up_provider means is a upvalue
 _get_filter_provider_warper = function(up_provider, up_filter)
     local _res = {
-        _VERSION = "0.0.1"
+        _VERSION = "0.1.0"
     }
     local _mt = {__index = _res}
     function _res.new(_res_self, provider, filter)

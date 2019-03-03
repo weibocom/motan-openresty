@@ -4,7 +4,7 @@ local utils = require "motan.utils"
 local consts = require "motan.consts"
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local mt = {__index = _M}
@@ -159,7 +159,7 @@ end
 --+-------------------------------------------------------------------+--
 function _M.get_last_cluster_filter(self)
     local _res = {
-        _VERSION = "0.0.1"
+        _VERSION = "0.1.0"
     }
 
     local in_mt = {__index = _res}
@@ -208,7 +208,7 @@ end
 --+-------------------------------------------------------------------+--
 function _M.get_last_endpoint_filter(self)
     local _res = {
-        _VERSION = "0.0.1"
+        _VERSION = "0.1.0"
     }
 
     local in_mt = {__index = _res}

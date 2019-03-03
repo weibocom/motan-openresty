@@ -1,7 +1,7 @@
 -- Copyright (C) idevz (idevz.org)
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 if setfenv then -- for lua5.1 and luajit

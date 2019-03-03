@@ -1,7 +1,8 @@
 -- Copyright (C) idevz (idevz.org)
 
-
-local _M = {}
+local _M = {
+    _VERSION = "0.1.0"
+}
 
 function _M.ini(lines, name)
     local t = {}
@@ -15,9 +16,15 @@ function _M.ini(lines, name)
         end
         local key, value = line:match("^(%w+)%s-=%s-(.+)$")
         if key and value then
-            if tonumber(value) then value = tonumber(value) end
-            if value == "true" then value = true end
-            if value == "false" then value = false end
+            if tonumber(value) then
+                value = tonumber(value)
+            end
+            if value == "true" then
+                value = true
+            end
+            if value == "false" then
+                value = false
+            end
             t[section][key] = value
         end
         ::CONTINUE::

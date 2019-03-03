@@ -6,7 +6,7 @@ local utils = require "motan.utils"
 local consts = require "motan.consts"
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 function _M.serialize(params)

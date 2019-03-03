@@ -10,7 +10,7 @@ local singletons = require "motan.singletons"
 local table_insert = table.insert
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local mt = {__index = _M}
@@ -48,7 +48,7 @@ end
 local _get_filter_endpoint
 _get_filter_endpoint = function(up_opts)
     local _res = {
-        _VERSION = "0.0.1"
+        _VERSION = "0.1.0"
     }
     local _mt = {__index = _res}
     function _res.new(_res_self, opts)

@@ -16,7 +16,7 @@ int get_request_id_bytes(const char *, char *);
 local BIGINT_DIVIDER = 0xffffffff + 1
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 function _M.str_2_byte_arr(s)

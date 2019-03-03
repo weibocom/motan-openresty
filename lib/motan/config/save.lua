@@ -1,7 +1,8 @@
 -- Copyright (C) idevz (idevz.org)
 
-
-local _M = {}
+local _M = {
+    _VERSION = "0.1.0"
+}
 
 function _M.ini(write, name, t)
     local contents = ""

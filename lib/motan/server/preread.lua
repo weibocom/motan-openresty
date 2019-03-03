@@ -5,7 +5,7 @@ local utils = require "motan.utils"
 local sprint_r = utils.sprint_r
 
 local _M = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local mt = {__index = _M}

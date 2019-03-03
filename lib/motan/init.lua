@@ -21,7 +21,7 @@ local utils = require "motan.utils"
 local singletons = require "motan.singletons"
 
 local Motan = {
-    _VERSION = "0.0.1"
+    _VERSION = "0.1.0"
 }
 
 local init_env
