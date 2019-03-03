@@ -1,5 +1,6 @@
 # Motan-OpenResty
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/weibocom/motan/blob/master/LICENSE)
+[![https://travis-ci.org/weibocom/motan-openresty.svg?branch=master](https://travis-ci.org/weibocom/motan-openresty.svg?branch=master)](https://travis-ci.org/weibocom/motan-openresty)
 
 
 # Overview 
