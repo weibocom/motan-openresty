@@ -30,7 +30,7 @@ test_sanity() {
     # -v ${MOTAN_SRC_DIR}/lib/motan:/usr/local/openresty/site/lualib/motan \
     sudo docker run --rm --name ${CONTAINER_NAME} \
         -e TZ=Asia/Shanghai \
-        -v ${BASE_DIR}/resty:${OR_ROOT}/site/lualib/resty \
+        -v ${BASE_DIR}/t/resty:${OR_ROOT}/site/lualib/resty \
         -v ${MOTAN_SRC_DIR}/libs/libmotan_tools.so:/lib64/libmotan_tools.so \
         -v ${MOTAN_SRC_DIR}/libs/cmotan.so:${OR_ROOT}/lualib/cmotan.so \
         -v ${BASE_DIR}:/runX/run-test \
@@ -94,7 +94,7 @@ test_using_mesh() {
 
     sudo docker run --rm --network host --name ${CONTAINER_NAME} \
         -e TZ=Asia/Shanghai \
-        -v ${BASE_DIR}/resty:${OR_ROOT}/site/lualib/resty \
+        -v ${BASE_DIR}/t/resty:${OR_ROOT}/site/lualib/resty \
         -v ${MOTAN_SRC_DIR}/libs/libmotan_tools.so:/lib64/libmotan_tools.so \
         -v ${MOTAN_SRC_DIR}/libs/cmotan.so:${OR_ROOT}/lualib/cmotan.so \
         -v ${BASE_DIR}:/runX/run-test \
@@ -105,7 +105,7 @@ test_using_mesh() {
 
     sudo docker run --rm --network host --name ${CONTAINER_NAME} \
         -e TZ=Asia/Shanghai \
-        -v ${BASE_DIR}/resty:${OR_ROOT}/site/lualib/resty \
+        -v ${BASE_DIR}/t/resty:${OR_ROOT}/site/lualib/resty \
         -v ${MOTAN_SRC_DIR}/libs/libmotan_tools.so:/lib64/libmotan_tools.so \
         -v ${MOTAN_SRC_DIR}/libs/cmotan.so:${OR_ROOT}/lualib/cmotan.so \
         -v ${BASE_DIR}:/runX/run-test \
