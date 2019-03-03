@@ -9,12 +9,12 @@ $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 $ENV{MOTAN_ENV} = "using-mesh";
 $ENV{APP_ROOT} = $MOTAN_DEMO_PATH;
 # $ENV{LUA_PACKAGE_PATH} ||= $MOTAN_DEMO_PATH . "/?.lua;" . $MOTAN_DEMO_PATH . "/?/init.lua;" . $MOTAN_P_ROOT . "/?.lua;" . $MOTAN_P_ROOT . "/?/init.lua;./?.lua;/?.lua;/?/init.lua";
-log_level('warn');
+log_level('info');
 #worker_connections(1014);
 #master_on();
 #workers(2);
 
-repeat_each(2);
+# repeat_each(2);
 
 # plan tests => repeat_each() * (blocks() * 3 + 3);
 use Test::Nginx::Socket::Lua::Stream 'no_plan';
@@ -25,7 +25,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: motan openresty hello world
+=== TEST 1: motan openresty hello world using mesh
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_package_cpath '$::MOTAN_CPATH/?.so;;';
@@ -68,9 +68,9 @@ __DATA__
             local service = client_map[service_name]
             local res, err = service:Hello('dd')
             if err ~= nil then
-                res = err
+                ngx.log(ngx.ERR, "Error Test.\n" .. sprint_r(err))
             end
-            ngx.log(ngx.ERR, "Error idevz Test.\n" .. res)
+            ngx.log(ngx.ERR, "Error idevz Test.\n" .. sprint_r(res))
             ngx.log(ngx.ALERT, "Alert xxxx Test.")
             print("idevz.....")
             ngx.say(res)

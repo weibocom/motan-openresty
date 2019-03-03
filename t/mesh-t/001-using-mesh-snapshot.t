@@ -26,7 +26,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: using Mesh but when Mesh down, Client will using the Mesh snapshot to connect the server directly.
+=== TEST 1: using mesh snapshot.
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_package_cpath '$::MOTAN_CPATH/?.so;;';
