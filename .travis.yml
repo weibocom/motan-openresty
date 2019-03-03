@@ -1,0 +1,31 @@
+sudo: required
+dist: trusty
+
+os: linux
+
+language: c
+
+compiler:
+  - gcc
+  - clang
+
+services:
+ - docker
+
+cache:
+  directories:
+  - download-cache
+
+env:
+  global:
+    # - LUA_INCLUDE_DIR=$LUAJIT_INC
+    # - LD_LIBRARY_PATH=$LUAJIT_LIB:$LD_LIBRARY_PATH
+    - TEST_NGINX_SLEEP=0.006
+  matrix:
+    # - NGINX_VERSION=1.10.0
+
+install:
+  # - if [ ! -d download-cache ]; then mkdir download-cache; fi
+
+script:
+  - ./run.sh test

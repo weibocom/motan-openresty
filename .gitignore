@@ -30,4 +30,4 @@ cmake-build-debug/
 build
 app
 docker
-
+t/weibo-mesh-runpath/*
