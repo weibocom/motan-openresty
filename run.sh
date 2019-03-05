@@ -16,10 +16,10 @@ MOTAN_SRC_DIR="${BASE_DIR}/lib/motan"
 OR_VERSION=${LV:-"openresty-1.15.6.1rc0"}
 OR_ROOT="/usr/local/${OR_VERSION}-debug"
 
-OR_IMAGE=${ORIMG:-"zhoujing/idevz-runx-openresty:1.0.0"}
+OR_IMAGE=${ORIMG:-"zhoujing/idevz-runx-openresty:1.15.6.1rc0"}
 CONTAINER_NAME=${CTNAME:-"motan-openresty-dev"}
 
-MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper-server"}
+MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper:1.0.0"}
 MESH_CONTAINER_NAME=${MCTNAME:-"mesh-testhelper"}
 MEHS_RUN_PATH=${MRUN_PATH:-"${BASE_DIR}/t/weibo-mesh-runpath"}
 
@@ -121,9 +121,15 @@ test)
     test_using_mesh
     ;;
 
-?)
+*)
     echo "
-fk
+Usage:
+
+	./run.sh options [arguments]
+
+The options are:
+
+    ./run.sh test             run tests
 "
     ;;
 esac
