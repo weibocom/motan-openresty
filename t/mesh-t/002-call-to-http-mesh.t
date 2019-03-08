@@ -14,7 +14,7 @@ log_level('info');
 #master_on();
 #workers(2);
 
-# repeat_each(2);
+repeat_each(2);
 
 # plan tests => repeat_each() * (blocks() * 3 + 3);
 use Test::Nginx::Socket::Lua::Stream 'no_plan';
@@ -22,10 +22,11 @@ use Test::Nginx::Socket::Lua::Stream 'no_plan';
 # no_diff();
 #no_long_string();
 run_tests();
+# curl -x http://127.0.0.1:9983 localhost:8080/
 
 __DATA__
 
-=== TEST 1: motan openresty hello world using mesh
+=== TEST 1: motan openresty hello world calling http mesh
 --- stream_config eval
     "lua_package_path '$::MOTAN_DEMO_PATH/?.lua;$::MOTAN_DEMO_PATH/?/init.lua;$::MOTAN_P_ROOT/?.lua;$::MOTAN_P_ROOT/?/init.lua;./?.lua;/?.lua;/?/init.lua;;';
     lua_package_cpath '$::MOTAN_CPATH/?.so;;';
