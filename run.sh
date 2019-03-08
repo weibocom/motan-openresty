@@ -120,7 +120,6 @@ test)
     test_sanity
     test_using_mesh
     ;;
-
 *)
     echo "
 Usage:
