@@ -326,17 +326,12 @@ static int _read_string(lua_State *L, motan_bytes_buffer_t *mb) {
     if (err != MOTAN_OK) {
         return err;
     }
-    uint8_t *bs = (uint8_t *) malloc(len);
-    if (bs == NULL) {
-        die("Out of memory");
+    if ((uint32_t) mb_remain(mb) < len) {
+        return E_MOTAN_BUFFER_NOT_ENOUGH;
     }
-    err = mb_read_bytes(mb, bs, len);
-    if (err != MOTAN_OK) {
-        free(bs);
-        return err;
-    }
-    lua_pushlstring(L, (const char *) bs, len);
-    free(bs);
+    // use original buffer directly avoid memory allocation
+    lua_pushlstring(L, (const char *) (mb->buffer + mb->read_pos), len);
+    mb_set_read_pos(mb, mb->read_pos + len);
     return MOTAN_OK;
 }
 
