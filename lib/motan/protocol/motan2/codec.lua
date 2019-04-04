@@ -6,6 +6,8 @@ local message = require "motan.protocol.motan2.message"
 local utils = require "motan.utils"
 local setmetatable = setmetatable
 local tab_concat = table.concat
+local tab_insert = table.insert
+local newtab = require "table.new"
 local bit = require "bit"
 local band = bit.band
 
@@ -122,27 +124,36 @@ function _M.decode(self, sock)
         return nil, b_err
     end
     local body_size = utils.msb_stringtonumber(bodysize_buffer)
-
-    local buffer, body_buffer, bf_err
+    local buffer_arr = newtab(body_size / 4096 - body_size / 4096 % 1 + 100, 0)
+    local recv_size = 4096
     if body_size > 0 then
-        body_buffer = ""
-        local remaining = body_size - #body_buffer
+        local remaining = body_size
         while remaining > 0 do
-            buffer, bf_err = sock:receive(remaining)
+            if recv_size > remaining then
+                recv_size = remaining
+            end
+            local buffer, bf_err = sock:receive(recv_size)
             if not buffer then
-                ngx.log(ngx.ERR, bf_err)
+                ngx.log(ngx.ERR, "receive fail from peer, error:", bf_err)
                 return nil, bf_err
             end
-            body_buffer = body_buffer .. buffer
-            remaining = body_size - #body_buffer
+            tab_insert(buffer_arr, buffer)
+            remaining = remaining - #buffer
         end
     end
+
     local msg =
         message:new {
         header = header_obj,
         metadata = metadata,
-        body = body_buffer
+        body = tab_concat(buffer_arr)
     }
+    buffer_arr = nil
+
+    -- when body size bigger then 5M, collectgarbage will run once.
+    if body_size > 5 * 1024 * 1024 then
+        collectgarbage("collect")
+    end
     return msg, nil
 end
 
