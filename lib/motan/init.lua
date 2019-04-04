@@ -31,6 +31,7 @@ init_env = function()
     if motan_env == "development" then
         singletons.is_dev = true
     end
+    ngx.log(ngx.NOTICE, "motan openresty is running under:", motan_env, ", APP_ROOT is:", APP_ROOT)
 
     local motan_var = {}
     motan_var["LOCAL_IP"] = utils.get_local_ip()
