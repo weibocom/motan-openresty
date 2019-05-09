@@ -85,6 +85,7 @@ M2_PROXY_PROTOCOL = "M_pp"
 M2_INFO_SIGN = "M_is"
 M2_ERROR = "M_e"
 M2_PROCESS_TIME = "M_pt"
+M2_DESERIALIZE_BODY_ERROR = "M_DES_ERR"
 
 ---------------- motan 2 endpoints constants -----------------
 MOTAN2_EP_MAX_IDLE_TIMEOUT = 30 * 1000 -- 30s default timeout
