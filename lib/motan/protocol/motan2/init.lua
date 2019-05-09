@@ -30,16 +30,7 @@ function _M.new(self)
 end
 
 function _M.read_msg(self, sock)
-    local msg, err = self.codec_obj:decode(sock)
-    if err == "closed" then
-        ngx.log(ngx.NOTICE, err)
-        return nil, err
-    end
-    if not msg then
-        ngx.log(ngx.ERR, "Server handler read_msg err:\n", sprint_r(err))
-        return nil, err
-    end
-    return msg
+    return self.codec_obj:decode(sock)
 end
 
 function _M.buildHeader(self, msg_type, proxy, serialize, request_id, msg_status)
@@ -98,7 +89,9 @@ function _M.convert_to_err_response_msg(self, request_id, err)
         message:new {
         header = self:buildResponseHeader(request_id, consts.MOTAN_MSG_STATUS_EXCEPTION),
         metadata = {
-            M_e = cjson.encode({errcode = 1, errmsg = ngx.re.gsub(err, "(\n)", "", "i"), errtype = 1})
+            M_e = cjson.encode(
+                {errcode = 1, errmsg = ngx.re.gsub(err, "(\n)", "", "i"), errtype = 1}
+            )
         },
         body = nil
     }
@@ -125,7 +118,7 @@ function _M.convert_to_request(self, msg, serialization, args_num)
     local service_name = msg.metadata["M_p"]
     local method = msg.metadata["M_m"]
     local method_desc = msg.metadata["M_md"]
-    local arguments
+    local arguments, arg_err
     local attachment = msg.metadata
     -- @TODO check if need raw_msg
     -- local is_proxy = msg.header:is_proxy()
@@ -140,9 +133,19 @@ function _M.convert_to_request(self, msg, serialization, args_num)
     -- msg.header:set_gzip(false)
     end
     if args_num <= 1 then
-        arguments = serialization.deserialize(msg:get_body())
+        arguments, arg_err = serialization.deserialize(msg:get_body())
+        if arg_err ~= nil then
+            ngx.log(ngx.ERR, "deserialize error, error:", arg_err)
+            collectgarbage("collect")
+            return nil, arg_err
+        end
     else
-        arguments = serialization.deserialize_multi(msg:get_body(), args_num)
+        arguments, arg_err = serialization.deserialize_multi(msg:get_body(), args_num)
+        if arg_err ~= nil then
+            ngx.log(ngx.ERR, "deserialize error, error:", arg_err)
+            collectgarbage("collect")
+            return nil, arg_err
+        end
     end
 
     local motan_req = {

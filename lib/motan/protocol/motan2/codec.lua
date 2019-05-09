@@ -146,9 +146,24 @@ function _M.decode(self, sock)
         message:new {
         header = header_obj,
         metadata = metadata,
-        body = tab_concat(buffer_arr)
+        body = nil
     }
+    local sucess
+    -- error info is in the meta consts.M2_DESERIALIZE_BODY_ERROR
+    sucess, msg.body = pcall(tab_concat, buffer_arr)
     buffer_arr = nil
+    if not sucess then
+        msg.metadata[consts.M2_DESERIALIZE_BODY_ERROR] = msg.body
+        ngx.log(
+            ngx.ERR,
+            "motan deserialize error, table concat body buffer array fail, error:",
+            msg.body,
+            ", request_id:",
+            msg.header.request_id
+        )
+        msg.body = nil
+        collectgarbage("collect")
+    end
 
     -- when body size bigger then 5M, collectgarbage will run once.
     if body_size > 5 * 1024 * 1024 then
