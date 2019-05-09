@@ -1,6 +1,7 @@
 -- Copyright (C) idevz (idevz.org)
 
 local helpers = require "motan.utils"
+local setmetatable = setmetatable
 
 function sprint_r(...)
     return helpers.sprint_r(...)
@@ -16,6 +17,24 @@ function print_r(...)
     ngx.say(rs)
 end
 
+motan_ctx = function()
+    local current_co = coroutine.running()
+    if ngx.ctx[current_co] == nil then
+        ngx.ctx[current_co] = {}
+    end
+    return ngx.ctx[current_co]
+end
+
+clean_motan_ctx = function()
+    local current_co = coroutine.running()
+    if ngx.ctx[current_co] ~= nil then
+        local request_id = ngx.ctx[current_co].request_id or "--"
+        ngx.ctx[current_co] = nil
+        ngx.log(ngx.INFO, "clean motan ctx for request id:", request_id, ", ", tostring(current_co))
+    end
+    return true
+end
+
 local ngx = ngx
 local utils = require "motan.utils"
 local singletons = require "motan.singletons"
@@ -25,24 +44,25 @@ local Motan = {
 }
 
 local init_env
-init_env = function()
-    local APP_ROOT = os.getenv("APP_ROOT") or string.sub(package.path, 1, string.find(package.path, [[//]]))
-    local motan_env = os.getenv("MOTAN_ENV") or "production"
+init_env = function(default_env_setting)
+    local app_root = default_env_setting.APP_ROOT or os.getenv("APP_ROOT") or nil
+    local motan_env = default_env_setting.MOTAN_ENV or os.getenv("MOTAN_ENV") or "production"
+    assert(app_root ~= nil, "APP_ROOT should not be nil")
     if motan_env == "development" then
         singletons.is_dev = true
     end
-    ngx.log(ngx.NOTICE, "motan openresty is running under:", motan_env, ", APP_ROOT is:", APP_ROOT)
+    ngx.log(ngx.NOTICE, "motan openresty is running under:", motan_env, ", APP_ROOT is:", app_root)
 
     local motan_var = {}
     motan_var["LOCAL_IP"] = utils.get_local_ip()
-    motan_var["APP_ROOT"] = APP_ROOT
+    motan_var["APP_ROOT"] = app_root
     motan_var["ENV_STR"] = motan_env
     singletons.var = motan_var
     math.randomseed(ngx.time())
 end
 
-function Motan.init(motan_ext_set)
-    init_env()
+function Motan.init(motan_ext_set, default_env_setting)
+    init_env(default_env_setting)
     local sys_conf = require("env." .. singletons.var["ENV_STR"])
     local conf = require "motan.core.sysconf"
     local service = require "motan.server.service"
@@ -68,7 +88,8 @@ function Motan.init(motan_ext_set)
     local service_map = {}
     local service_key
     for _, info in pairs(service_map_tmp) do
-        service_key = utils.build_service_key(info.group, info.params["version"], info.protocol, info.path)
+        service_key =
+            utils.build_service_key(info.group, info.params["version"], info.protocol, info.path)
         service_map[service_key] = service:new(info)
     end
     singletons.service_map = service_map
@@ -76,7 +97,7 @@ end
 
 function Motan.init_worker_motan_server()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, "caution: Server Could only use under stream subsystem.")
         return
     end
     local exporter = require "motan.server.exporter"
@@ -95,14 +116,14 @@ end
 
 function Motan.preread()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: preread Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, "caution: preread Could only use under stream subsystem.")
         return
     end
 end
 
 function Motan.content_motan_server()
     if ngx.config.subsystem ~= "stream" then
-        ngx.log(ngx.ERR, "Caution: Server Could only use under stream subsystem.")
+        ngx.log(ngx.ERR, "caution: Server Could only use under stream subsystem.")
         return
     end
     local server = require "motan.server"
@@ -137,6 +158,8 @@ function Motan.content_motan_client_test()
     -- local client2 = client_map["rpc_test_java"]
     -- local res2 = client2:hello("<-----Motan")
     -- print_r(serialize.deserialize(res2.body))
+    -- motan_ctx().request_id_a =
+    --     ngx.now() .. "---" .. ngx.worker.pid() .. "---" .. math.random(11111111, 99999999)
 end
 
 return Motan

@@ -82,7 +82,9 @@ function _M.call(self, req)
     local start_time = ngx.now()
     local exception, value = nil
     local service = self:get_service_obj(self.url)
-    service.metadata = req:get_attachments()
+    motan_ctx().metadata = req:get_attachments()
+    motan_ctx().request_id = req:get_request_id()
+
     local method = req:get_method()
     local ok, res_or_err
     if req.args_num < 2 then
