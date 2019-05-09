@@ -18,6 +18,7 @@ _EOC_
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 $ENV{MOTAN_ENV} = "development";
+$ENV{APP_ROOT} = $MOTAN_DEMO_PATH;
 log_level('warn');
 #worker_connections(1014);
 #master_on();

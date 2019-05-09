@@ -45,6 +45,7 @@ local Motan = {
 
 local init_env
 init_env = function(default_env_setting)
+    local default_env_setting = default_env_setting or {}
     local app_root = default_env_setting.APP_ROOT or os.getenv("APP_ROOT") or nil
     local motan_env = default_env_setting.MOTAN_ENV or os.getenv("MOTAN_ENV") or "production"
     assert(app_root ~= nil, "APP_ROOT should not be nil")
