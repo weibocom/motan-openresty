@@ -19,7 +19,7 @@ OR_ROOT="/usr/local/${OR_VERSION}-debug"
 OR_IMAGE=${ORIMG:-"zhoujing/idevz-runx-openresty:1.15.6.1rc0"}
 CONTAINER_NAME=${CTNAME:-"motan-openresty-dev"}
 
-MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper:1.0.0"}
+MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper:1.0.1"}
 MESH_CONTAINER_NAME=${MCTNAME:-"mesh-testhelper"}
 MEHS_RUN_PATH=${MRUN_PATH:-"${BASE_DIR}/t/weibo-mesh-runpath"}
 
