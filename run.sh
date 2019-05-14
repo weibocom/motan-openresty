@@ -43,9 +43,9 @@ prepare_mesh() {
         -v ${MEHS_RUN_PATH}/snapshot:/snapshot \
         -v ${MEHS_RUN_PATH}/mesh-logs:/mesh-logs \
         ${MESH_TESTHELPER_IMAGE}
-    sleep 3
+    sleep 30
     curl 127.0.0.1:8082/200
-    sleep 3
+    sleep 30
 }
 
 check_if_stop_container() {
@@ -81,14 +81,14 @@ do_require() {
 test_using_mesh() {
     check_if_stop_container "${ZK_CONTAINER_NAME},${MESH_CONTAINER_NAME}"
     sudo docker run -d --rm --network host --name "${ZK_CONTAINER_NAME}" "${ZK_TMAGE}"
-    sleep 3
+    sleep 30
     prepare_mesh
 
     # @TODO check zk bug when first time
     # there is no /motan/motan-demo-rpc/com.weibo.HelloWorldService/server node in zk
     # make zk subscrib fail.
     sudo docker stop ${MESH_CONTAINER_NAME}
-    sleep 3
+    sleep 30
     prepare_mesh
     sleep 5
 
