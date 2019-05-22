@@ -75,9 +75,13 @@ function _M.buildResponseHeader(self, request_id, msg_status)
 end
 
 function _M.convert_to_heartbeat_response_msg(self, req)
+    local header =
+        self:buildResponseHeader(req.header.request_id, consts.MOTAN_MSG_STATUS_NORMAL):set_heartbeat(
+        true
+    )
     local msg =
         message:new {
-        header = self:buildResponseHeader(req.header.request_id, consts.MOTAN_MSG_STATUS_NORMAL),
+        header = header,
         metadata = req.metadata,
         body = nil
     }

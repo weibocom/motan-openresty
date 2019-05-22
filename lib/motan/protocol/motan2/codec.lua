@@ -24,25 +24,27 @@ end
 function _M.encode(self, msg)
     local buffer = msg.header:pack_header()
     local mt = {}
-    local mt_index = 1
+    local build_buf = {buffer}
     for k, v in pairs(msg.metadata) do
         if type(v) ~= "table" then
-            mt[mt_index] = k .. "\n" .. v
-            mt_index = mt_index + 1
+            mt[#mt+1] = k
+            mt[#mt+1] = "\n"
+            mt[#mt+1] = v
+            mt[#mt+1] = "\n"
         end
     end
-    local mt_str = tab_concat(mt, "\n")
-    buffer = buffer .. utils.msb_numbertobytes(#mt_str, 4)
-    buffer = buffer .. mt_str
+    local mt_str = tab_concat(mt)
+    build_buf[#build_buf+1] = utils.msb_numbertobytes(#mt_str, 4)
+    build_buf[#build_buf+1] = mt_str
     local b_len, b = 0, ""
     if msg.body ~= nil then
         b_len = #msg.body
         b = msg.body
     end
-    buffer = buffer .. utils.msb_numbertobytes(b_len, 4)
-    buffer = buffer .. b
+    build_buf[#build_buf+1] = utils.msb_numbertobytes(b_len, 4)
+    build_buf[#build_buf+1] = b
 
-    return buffer
+    return tab_concat(build_buf)
 end
 
 function _M.decode(self, sock)

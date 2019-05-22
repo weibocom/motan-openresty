@@ -130,6 +130,7 @@ function _M.motan_server_do_request(self, sock)
         return nil, ERROR_TO_CLOSE_SOCK.READ_MSG_FROM_PEER_ERR .. err
     end
 
+    do return service_calling(self, sock, msg) end
     local co, err = thread.spawn(service_calling, self, sock, msg)
     if not co then
         self.err_count = self.err_count + 1

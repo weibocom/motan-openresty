@@ -11,7 +11,7 @@
 ### END ###
 
 set -ex
-BASE_DIR=${BASE_DIR:-"$(readlink -f "$(dirname "$0")")"}
+BASE_DIR=$(dirname $(cd $(dirname "$0") && pwd -P)/$(basename "$0"))
 MOTAN_SRC_DIR="${BASE_DIR}/lib/motan"
 OR_VERSION=${LV:-"openresty-1.15.6.1rc0"}
 OR_ROOT="/usr/local/${OR_VERSION}-debug"
