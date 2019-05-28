@@ -11,6 +11,7 @@ ffi.cdef [[
 int get_local_ip(char *, char *);
 int get_request_id(uint8_t[8], char *);
 int get_request_id_bytes(const char *, char *);
+int get_local_ip_from_host_and_port(const char *, int, char *);
 ]]
 
 local BIGINT_DIVIDER = 0xffffffff + 1
@@ -59,6 +60,14 @@ function _M.unpack_request_id(rid_bytes)
     local rid_str = ffi.new("char[18]")
     motan_tools.get_request_id(rid_bytes_arr, rid_str)
     return ffi.string(rid_str)
+end
+
+function _M.get_local_ip_from_host_and_port(host, port)
+    local c_host = ffi.new("const char *", host)
+    local c_port = ffi.new("int", port)
+    local ip = ffi.new("char[32]")
+    motan_tools.get_local_ip_from_host_and_port(c_host, c_port, ip)
+    return ffi.string(ip)
 end
 
 function _M.get_local_ip()
