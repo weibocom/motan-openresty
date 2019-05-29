@@ -56,7 +56,8 @@ init_env = function(default_env_setting)
 
     local motan_var = {}
     local local_ip = ""
-    local local_host_resolve_addr = os.getenv("MOTAN_LOCAL_IP_RESOLVE_ADDR")
+    local local_host_resolve_addr =
+        os.getenv("MOTAN_LOCAL_IP_RESOLVE_ADDR") or _G.MOTAN_LOCAL_IP_RESOLVE_ADDR
     if local_host_resolve_addr ~= nil then
         local host_and_port = utils.split(local_host_resolve_addr, ":")
         if #host_and_port > 1 then
@@ -68,6 +69,7 @@ init_env = function(default_env_setting)
     if local_ip == "" then
         local_ip = utils.get_local_ip()
     end
+    ngx.log(ngx.NOTICE, "get local ip is:", local_ip)
     motan_var["LOCAL_IP"] = local_ip
     motan_var["APP_ROOT"] = app_root
     motan_var["ENV_STR"] = motan_env
