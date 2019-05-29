@@ -55,7 +55,20 @@ init_env = function(default_env_setting)
     ngx.log(ngx.NOTICE, "motan openresty is running under:", motan_env, ", APP_ROOT is:", app_root)
 
     local motan_var = {}
-    motan_var["LOCAL_IP"] = utils.get_local_ip()
+    local local_ip = ""
+    local local_host_resolve_addr = os.getenv("MOTAN_LOCAL_IP_RESOLVE_ADDR")
+    if local_host_resolve_addr ~= nil then
+        local host_and_port = utils.split(local_host_resolve_addr, ":")
+        if #host_and_port > 1 then
+            local host = host_and_port[1]
+            local port = tonumber(host_and_port[2])
+            local_ip = utils.get_local_ip_from_host_and_port(host, port)
+        end
+    end
+    if local_ip == "" then
+        local_ip = utils.get_local_ip()
+    end
+    motan_var["LOCAL_IP"] = local_ip
     motan_var["APP_ROOT"] = app_root
     motan_var["ENV_STR"] = motan_env
     singletons.var = motan_var
