@@ -7,6 +7,7 @@ our $MOTAN_DEMO_PATH=$root_path . "/motan-demo/";
 
 $ENV{TEST_NGINX_SERVER_PORT} = 1990;
 $ENV{MOTAN_ENV} = "development";
+$ENV{APP_ROOT} = $MOTAN_DEMO_PATH;
 # $ENV{LUA_PACKAGE_PATH} ||= $MOTAN_DEMO_PATH . "/?.lua;" . $MOTAN_DEMO_PATH . "/?/init.lua;" . $MOTAN_P_ROOT . "/?.lua;" . $MOTAN_P_ROOT . "/?/init.lua;./?.lua;/?.lua;/?/init.lua";
 log_level('warn');
 #worker_connections(1014);
