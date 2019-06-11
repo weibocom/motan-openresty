@@ -40,8 +40,8 @@ function _M.error_resp(self, request_id, err)
     return self.protocol:convert_to_err_response_msg(request_id, err)
 end
 
-function _M.resp(self, response, serialization)
-    return self.protocol:convert_to_response_msg(response, serialization)
+function _M.resp(self, response)
+    return self.protocol:convert_to_response_msg(response)
 end
 
 -- @TODO heartbeat
@@ -61,7 +61,7 @@ get_service_method_args_num = function(handler, msg)
 end
 
 local invoker
-invoker = function(self, sock, msg)
+invoker = function(self, msg)
     if msg.header:is_heartbeat() then
         ngx.log(ngx.INFO, "----------------<<heartbeat>>----------------")
         return self:heartbeat_resp(msg)
@@ -73,12 +73,9 @@ invoker = function(self, sock, msg)
     local service = self.service_map[service_key]
     if not utils.is_empty(service) then
         local handler = service.handler
-        local serialize_num = msg.header:get_serialize()
-        local serialization =
-            singletons.motan_ext:get_serialization(consts.MOTAN_SERIALIZE_ARR[serialize_num])
         local args_num = get_service_method_args_num(handler, msg)
         local motan_request, err
-        motan_request, err = self.protocol:convert_to_request(msg, serialization, args_num)
+        motan_request, err = self.protocol:convert_to_request(msg, args_num)
         if err ~= nil then
             ngx.log(
                 ngx.ERR,
@@ -93,7 +90,7 @@ invoker = function(self, sock, msg)
         if resp_obj:get_exception() ~= nil then
             return self:error_resp(msg.header.request_id, resp_obj:get_exception())
         end
-        return self:resp(resp_obj, serialization)
+        return self:resp(resp_obj)
     end
     return self:error_resp(
         msg.header.request_id,
@@ -103,7 +100,7 @@ end
 
 local service_calling
 service_calling = function(self, sock, msg)
-    local buf, err = invoker(self, sock, msg)
+    local buf, err = invoker(self, msg)
     if not buf then
         ngx.log(ngx.ERR, "invoker motan service error, ", err)
         return nil, err
@@ -130,7 +127,9 @@ function _M.motan_server_do_request(self, sock)
         return nil, ERROR_TO_CLOSE_SOCK.READ_MSG_FROM_PEER_ERR .. err
     end
 
-    do return service_calling(self, sock, msg) end
+    do
+        return service_calling(self, sock, msg)
+    end
     local co, err = thread.spawn(service_calling, self, sock, msg)
     if not co then
         self.err_count = self.err_count + 1

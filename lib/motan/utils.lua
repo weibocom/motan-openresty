@@ -596,4 +596,8 @@ function _M.sprint_r(o)
     return _M.write(o)
 end
 
+function _M.access_log(...)
+    ngx.log(ngx.STDERR, ...)
+end
+
 return _M

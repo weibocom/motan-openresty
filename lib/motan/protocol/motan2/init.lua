@@ -2,7 +2,8 @@
 
 local ngx = ngx
 local consts = require "motan.consts"
-local utils = require("motan.utils")
+local utils = require "motan.utils"
+local singletons = require "motan.singletons"
 local motan_request = require "motan.core.request"
 local motan_response = require "motan.core.response"
 local codec = require "motan.protocol.motan2.codec"
@@ -102,7 +103,7 @@ function _M.convert_to_err_response_msg(self, request_id, err)
     return self.codec_obj:encode(err_msg)
 end
 
-function _M.convert_to_response_msg(self, response, serialization)
+function _M.convert_to_response_msg(self, response)
     local exception = response:get_exception()
     if exception ~= nil then
         return self:convert_to_err_response_msg(response:get_request_id(), exception)
@@ -111,19 +112,24 @@ function _M.convert_to_response_msg(self, response, serialization)
         message:new {
         header = self:buildResponseHeader(response:get_request_id(), consts.MOTAN_MSG_STATUS_NORMAL),
         metadata = response:get_attachments(),
-        body = serialization.serialize(response:get_value())
+        body = response:get_value()
     }
     return self.codec_obj:encode(msg)
 end
 
 -- deal with a request msg called to motan server
-function _M.convert_to_request(self, msg, serialization, args_num)
+function _M.convert_to_request(self, msg, args_num)
     local request_id = msg.header.request_id
     local service_name = msg.metadata["M_p"]
     local method = msg.metadata["M_m"]
     local method_desc = msg.metadata["M_md"]
     local arguments, arg_err
-    local attachment = msg.metadata
+    local attachments = msg.metadata
+    local request_body = msg:get_body()
+    local serialize_num = msg.header:get_serialize()
+
+    local serialization =
+    singletons.motan_ext:get_serialization(consts.MOTAN_SERIALIZE_ARR[serialize_num])
     -- @TODO check if need raw_msg
     -- local is_proxy = msg.header:is_proxy()
     -- local req_ctx = {
@@ -137,14 +143,14 @@ function _M.convert_to_request(self, msg, serialization, args_num)
     -- msg.header:set_gzip(false)
     end
     if args_num <= 1 then
-        arguments, arg_err = serialization.deserialize(msg:get_body())
+        arguments, arg_err = serialization.deserialize(request_body)
         if arg_err ~= nil then
             ngx.log(ngx.ERR, "deserialize error, error:", arg_err)
             collectgarbage("collect")
             return nil, arg_err
         end
     else
-        arguments, arg_err = serialization.deserialize_multi(msg:get_body(), args_num)
+        arguments, arg_err = serialization.deserialize_multi(request_body, args_num)
         if arg_err ~= nil then
             ngx.log(ngx.ERR, "deserialize error, error:", arg_err)
             collectgarbage("collect")
@@ -154,12 +160,14 @@ function _M.convert_to_request(self, msg, serialization, args_num)
 
     local motan_req = {
         request_id = request_id,
+        serialize_num = serialize_num,
         service_name = service_name,
         method = method,
         method_desc = method_desc,
         arguments = arguments,
         args_num = args_num,
-        attachment = attachment
+        request_body_size = #request_body,
+        attachments = attachments
     }
     return motan_request:new(motan_req)
 end
