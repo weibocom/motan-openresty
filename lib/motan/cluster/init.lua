@@ -172,7 +172,7 @@ function _M._parse_registry(self)
     local registry_arr = utils.split(registry_keys, ",")
     for _, registry_key in ipairs(registry_arr) do
         local registry_url_obj =
-            assert(singletons.client_regstry[registry_key], "Empty registry config: " .. registry_key)
+            assert(singletons.client_registry[registry_key], "Empty registry config: " .. registry_key)
         local registry = self.ext:get_registry(registry_url_obj)
         assert(registry ~= nil, "_parse_registry got not registry obj")
         registry:subscribe(self.url, self)

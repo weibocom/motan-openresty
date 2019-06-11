@@ -42,23 +42,27 @@ int get_local_ip_from_host_and_port(const char *host, int port, char *ip)
 {
     int udp_sock = -1;
     struct hostent *hp = gethostbyname(host);
-    if (hp == NULL) {
+    if (hp == NULL)
+    {
         return -1;
     }
     int i = 0;
-    for (; hp->h_addr_list[i] != NULL; i++) {
-        struct in_addr *addr = (struct in_addr *) hp->h_addr_list[i];
+    for (; hp->h_addr_list[i] != NULL; i++)
+    {
+        struct in_addr *addr = (struct in_addr *)hp->h_addr_list[i];
         struct sockaddr_in server_addr;
         memset(&server_addr, 0x00, sizeof(server_addr));
         server_addr.sin_family = hp->h_addrtype;
         server_addr.sin_port = htons(port);
         memcpy(&server_addr.sin_addr, hp->h_addr_list[i], hp->h_length);
         udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-        if (udp_sock < 0) {
+        if (udp_sock < 0)
+        {
             perror("create socket");
             continue;
         }
-        if (connect(udp_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        if (connect(udp_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+        {
             perror("connect");
             close(udp_sock);
             udp_sock = -1;
@@ -67,7 +71,8 @@ int get_local_ip_from_host_and_port(const char *host, int port, char *ip)
         struct sockaddr_in local_addr;
         socklen_t addr_len = sizeof(local_addr);
         memset(&local_addr, 0x00, sizeof(local_addr));
-        if (getsockname(udp_sock, (struct sockaddr*)&local_addr, &addr_len) < 0) {
+        if (getsockname(udp_sock, (struct sockaddr *)&local_addr, &addr_len) < 0)
+        {
             perror("get socket address");
             close(udp_sock);
             udp_sock = -1;
@@ -77,7 +82,8 @@ int get_local_ip_from_host_and_port(const char *host, int port, char *ip)
         close(udp_sock);
         break;
     }
-    if (udp_sock < 0) {
+    if (udp_sock < 0)
+    {
         return -1;
     }
     return 0;

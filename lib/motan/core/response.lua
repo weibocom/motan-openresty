@@ -12,18 +12,18 @@ function _M.new(self, opts)
         value = opts.value or nil,
         exception = opts.exception or nil,
         process_time = opts.process_time or nil,
-        attachment = opts.attachment or {}
+        attachments = opts.attachments or {}
         -- RpcContext = opts.RpcContext or nil,
     }
     return setmetatable(response, mt)
 end
 
 function _M.get_attachment(self, key)
-    return self.attachment[key] or nil
+    return self.attachments[key] or nil
 end
 
 function _M.set_attachment(self, key, value)
-    self.attachment[key] = value
+    self.attachments[key] = value
 end
 
 function _M.get_value(self)
@@ -43,7 +43,7 @@ function _M.get_process_time(self)
 end
 
 function _M.get_attachments(self)
-    return self.attachment
+    return self.attachments
 end
 
 -- function _M.getRpcContext(self, canCreate)
