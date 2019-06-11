@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 use Test::Nginx::Socket::Lua::Stream;
 use FindBin qw($Bin);
 my $root_path = $Bin;
@@ -64,6 +66,7 @@ __DATA__
         content_by_lua_block {
             local singletons = require 'motan.singletons'
             local client_map = singletons.client_map
+            ngx.log(ngx.ERR, sprint_r(client_map))
             
             local service_name = 'direct_helloworld_service'
             local service = client_map[service_name]

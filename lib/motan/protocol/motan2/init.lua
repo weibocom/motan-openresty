@@ -174,13 +174,13 @@ end
 
 function _M.build_error_resp(self, err, request)
     local request_id = request:get_request_id()
-    local attachment = request:get_attachments()
+    local attachments = request:get_attachments()
     return motan_response:new {
         request_id = request_id,
         value = nil,
         exception = err,
         process_time = nil,
-        attachment = attachment
+        attachments = attachments
     }
 end
 
@@ -191,7 +191,7 @@ function _M.read_reply(self, sock, serialization)
         return nil, resp_err
     end
 
-    local request_id, value, attachment, exception =
+    local request_id, value, attachments, exception =
         resp_ok.header.request_id or nil,
         serialization.deserialize(resp_ok.body) or nil,
         resp_ok.metadata or {},
@@ -201,7 +201,7 @@ function _M.read_reply(self, sock, serialization)
         value = value,
         exception = exception,
         process_time = nil,
-        attachment = attachment
+        attachments = attachments
     }
 end
 
@@ -226,14 +226,14 @@ function _M.make_motan_request(self, url, fucname, ...)
     local request_id = utils.generate_request_id()
     local service_name = url.path
     local method_desc = nil
-    local attachment = metadata
+    local attachments = metadata
     return motan_request:new {
         request_id = request_id,
         service_name = service_name,
         method = fucname,
         method_desc = method_desc,
         arguments = {...},
-        attachment = attachment
+        attachments = attachments
     }
 end
 

@@ -30,11 +30,11 @@ function _M.get_request_body_size(self)
 end
 
 function _M.get_attachment(self, key)
-    return self.attachment[key]
+    return self.attachments[key]
 end
 
 function _M.set_attachment(self, key, value)
-    self.attachment[key] = value
+    self.attachments[key] = value
 end
 
 function _M.get_service_name(self)

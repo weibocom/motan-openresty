@@ -22,6 +22,9 @@ switcher_set[consts.MOTAN_SWITCHER_503] = consts.MOTAN_SWITCHER_503
 switcher_set[consts.MOTAN_SWITCHER_200] = consts.MOTAN_SWITCHER_200
 
 local switch_handler = function(switcher, switcher_value)
+    if switch_shm == nil then
+        return
+    end
     switch_shm:set(switcher, switcher_value)
     ngx.log(ngx.NOTICE, "switch set ", switcher, " to:", switcher_value)
 end
@@ -46,7 +49,7 @@ function _M.run(self)
         end
         ngx.log(ngx.NOTICE, "get switch_content: ", switch_content)
         local switcher_value, _, switcher = unpack(utils.split(switch_content, consts.MOTAN_SWITCHER_SEPERATOR))
-        ngx.log(ngx.NOTICE, "switch ", switcher, " value is ", switcher_value)
+        ngx.log(ngx.NOTICE, "switch ", switcher, " try to be set value is ", switcher_value)
         if switcher_set[switcher] ~= nil then
             switch_handler(switcher, switcher_value)
         else
@@ -86,6 +89,12 @@ local function _do_check(exporter_obj)
 end
 
 function _M:start_check(exporter_obj)
+    -- if there is no switch_shm set, then it means no need to check the switchers
+    -- the ngx config like: lua_shared_dict motan_switch 20m;
+    if switch_shm == nil then
+        return
+    end
+    ngx.log(ngx.NOTICE, "start switch checker.")
     local check_timer = timer:new(true)
     check_timer:tick(check_timer.NO_RES, DEFAULT_CHECK_INTERVAL, _do_check, exporter_obj)
 end
