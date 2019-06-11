@@ -11,6 +11,7 @@ ffi.cdef [[
 int get_local_ip(char *, char *);
 int get_request_id(uint8_t[8], char *);
 int get_request_id_bytes(const char *, char *);
+int get_local_ip_from_host_and_port(const char *, int, char *);
 ]]
 
 local BIGINT_DIVIDER = 0xffffffff + 1
@@ -61,9 +62,18 @@ function _M.unpack_request_id(rid_bytes)
     return ffi.string(rid_str)
 end
 
+function _M.get_local_ip_from_host_and_port(host, port)
+    local c_host = ffi.new("const char *", host)
+    local c_port = ffi.new("int", port)
+    local ip = ffi.new("char[32]")
+    motan_tools.get_local_ip_from_host_and_port(c_host, c_port, ip)
+    return ffi.string(ip)
+end
+
 function _M.get_local_ip()
     local c_str_t = ffi.typeof("char[4]")
     local if_name = ffi.new(c_str_t)
+    -- ffi.copy(if_name, "en0")
     ffi.copy(if_name, "eth0")
 
     local ip = ffi.new("char[32]")
@@ -584,6 +594,10 @@ end
 
 function _M.sprint_r(o)
     return _M.write(o)
+end
+
+function _M.access_log(...)
+    ngx.log(ngx.STDERR, ...)
 end
 
 return _M

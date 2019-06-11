@@ -11,7 +11,7 @@
 ### END ###
 
 set -ex
-BASE_DIR=${BASE_DIR:-"$(readlink -f "$(dirname "$0")")"}
+BASE_DIR=$(dirname $(cd $(dirname "$0") && pwd -P)/$(basename "$0"))
 MOTAN_SRC_DIR="${BASE_DIR}/lib/motan"
 OR_VERSION=${LV:-"openresty-1.15.6.1rc0"}
 OR_ROOT="/usr/local/${OR_VERSION}-debug"
@@ -19,7 +19,7 @@ OR_ROOT="/usr/local/${OR_VERSION}-debug"
 OR_IMAGE=${ORIMG:-"zhoujing/idevz-runx-openresty:1.15.6.1rc0"}
 CONTAINER_NAME=${CTNAME:-"motan-openresty-dev"}
 
-MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper:1.0.0"}
+MESH_TESTHELPER_IMAGE=${MIMG:-"zhoujing/wm-testhelper:1.0.1"}
 MESH_CONTAINER_NAME=${MCTNAME:-"mesh-testhelper"}
 MEHS_RUN_PATH=${MRUN_PATH:-"${BASE_DIR}/t/weibo-mesh-runpath"}
 
@@ -43,9 +43,9 @@ prepare_mesh() {
         -v ${MEHS_RUN_PATH}/snapshot:/snapshot \
         -v ${MEHS_RUN_PATH}/mesh-logs:/mesh-logs \
         ${MESH_TESTHELPER_IMAGE}
-    sleep 1
+    sleep 30
     curl 127.0.0.1:8082/200
-    sleep 1
+    sleep 30
 }
 
 check_if_stop_container() {
@@ -81,14 +81,14 @@ do_require() {
 test_using_mesh() {
     check_if_stop_container "${ZK_CONTAINER_NAME},${MESH_CONTAINER_NAME}"
     sudo docker run -d --rm --network host --name "${ZK_CONTAINER_NAME}" "${ZK_TMAGE}"
-    sleep 1
+    sleep 30
     prepare_mesh
 
     # @TODO check zk bug when first time
     # there is no /motan/motan-demo-rpc/com.weibo.HelloWorldService/server node in zk
     # make zk subscrib fail.
     sudo docker stop ${MESH_CONTAINER_NAME}
-    sleep 1
+    sleep 30
     prepare_mesh
     sleep 5
 
@@ -118,7 +118,7 @@ test_using_mesh() {
 case ${1} in
 test)
     test_sanity
-    test_using_mesh
+#    test_using_mesh
     ;;
 *)
     echo "

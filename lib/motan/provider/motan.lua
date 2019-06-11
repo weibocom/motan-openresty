@@ -3,6 +3,7 @@
 local singletons = require "motan.singletons"
 local response = require "motan.core.response"
 local utils = require "motan.utils"
+local consts = require "motan.consts"
 local setmetatable = setmetatable
 local math = math
 
@@ -82,7 +83,9 @@ function _M.call(self, req)
     local start_time = ngx.now()
     local exception, value = nil
     local service = self:get_service_obj(self.url)
-    service.metadata = req:get_attachments()
+    motan_ctx().metadata = req:get_attachments()
+    motan_ctx().request_id = req:get_request_id()
+
     local method = req:get_method()
     local ok, res_or_err
     if req.args_num < 2 then
@@ -91,27 +94,29 @@ function _M.call(self, req)
         ok, res_or_err = pcall(service[method], service, unpack(req:get_arguments()))
     end
     local request_id = req:get_request_id()
+    local process_time = ngx.now() - start_time
+    local attachments = req:get_attachments()
 
     if ok then
-        value = res_or_err
+        local serialization =
+        singletons.motan_ext:get_serialization(consts.MOTAN_SERIALIZE_ARR[req:get_serialize_num()])
+        value = serialization.serialize(res_or_err)
+
+        return response:new {
+            request_id = request_id,
+            value = value,
+            exception = exception,
+            process_time = math.floor((process_time * 100) + 0.5) * 0.01,
+            attachments = attachments
+        }
     else
-        ngx.log(ngx.ERR, "Provider Call Err", res_or_err)
-        exception = "Provider Call Err "
+        ngx.log(ngx.ERR, "provider call error", res_or_err)
+        exception = "provider call error"
         return response:new {
             request_id = request_id,
             exception = exception
         }
     end
-    local process_time = ngx.now() - start_time
-    local attachment = req:get_attachments()
-
-    return response:new {
-        request_id = request_id,
-        value = value,
-        exception = exception,
-        process_time = math.floor((process_time * 100) + 0.5) * 0.01,
-        attachment = attachment
-    }
 end
 
 return _M

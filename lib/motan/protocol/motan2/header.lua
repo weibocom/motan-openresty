@@ -60,6 +60,7 @@ function _M.set_heartbeat(self, is_heartbeat)
     else
         self.msg_type = band(self.msg_type, 0xef)
     end
+    return self
 end
 
 function _M.is_heartbeat(self)

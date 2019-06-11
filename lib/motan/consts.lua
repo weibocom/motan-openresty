@@ -72,6 +72,12 @@ REGISTRY_HEARTBEAT_SWITCHER = "feature.configserver.heartbeat"
 
 DEFAULT_CONSISTENT_HASH_BASE_LOOP = 1000
 
+---------------- motan Switch constants -----------------
+MOTAN_SWITCHER_503 = "feature.motanrpc.vintage.service.503"
+MOTAN_SWITCHER_200 = "feature.motanrpc.vintage.service.200"
+MOTAN_SWITCHER_SHM_KEY = "motan_switch"
+MOTAN_SWITCHER_SEPERATOR = " "
+
 ---------------- motan 2 protocol constants -----------------
 M2_GROUP = "M_g"
 M2_VERSION = "M_v"
@@ -85,6 +91,7 @@ M2_PROXY_PROTOCOL = "M_pp"
 M2_INFO_SIGN = "M_is"
 M2_ERROR = "M_e"
 M2_PROCESS_TIME = "M_pt"
+M2_DESERIALIZE_BODY_ERROR = "M_DES_ERR"
 
 ---------------- motan 2 endpoints constants -----------------
 MOTAN2_EP_MAX_IDLE_TIMEOUT = 30 * 1000 -- 30s default timeout
@@ -173,7 +180,8 @@ MOTAN_CONSUL_HEARTBEAT_CIRCLE = (MOTAN_CONSUL_TTL * 1000 * 2) / 3
 -- * 连续检测开关变更的最大次数，超过这个次数就发送一次心跳
 MOTAN_CONSUL_MAX_SWITCHER_CHECK_TIMES = 10
 -- * 检测开关变更的频率，连续检测MAX_SWITCHER_CHECK_TIMES次必须发送一次心跳。
-MOTAN_CONSUL_SWITCHER_CHECK_CIRCLE = MOTAN_CONSUL_HEARTBEAT_CIRCLE / MOTAN_CONSUL_MAX_SWITCHER_CHECK_TIMES
+MOTAN_CONSUL_SWITCHER_CHECK_CIRCLE =
+    MOTAN_CONSUL_HEARTBEAT_CIRCLE / MOTAN_CONSUL_MAX_SWITCHER_CHECK_TIMES
 -- * consul服务查询默认间隔时间。单位毫秒
 MOTAN_CONSUL_DEFAULT_LOOKUP_INTERVAL = 30000
 -- * consul心跳检测开关。

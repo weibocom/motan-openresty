@@ -19,11 +19,10 @@ local _M = {
     var = {},
     motan_ext = {},
     referer_map = {},
-    -- client_map = client_map,
     client_map = {},
-    client_regstry = {},
+    client_registry = {},
     service_map = {},
-    server_regstry = {}
+    server_registry = {}
 }
 
 return _M
