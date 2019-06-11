@@ -118,7 +118,7 @@ test_using_mesh() {
 case ${1} in
 test)
     test_sanity
-    test_using_mesh
+#    test_using_mesh
     ;;
 *)
     echo "
