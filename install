@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 ### BEGIN ###
 # Author: idevz
@@ -20,23 +20,28 @@ OR_ROOT=$(${OR} -V &>${TMP} && cat ${TMP} |
 SITE_LUALIB_ROOT=${OR_ROOT}/site/lualib
 rm ${TMP}
 
-do_require() {
-	DEPENDENCES='
-    https://github.com/pintsized/lua-resty-http/archive/v0.12.tar.gz
-    https://github.com/idevz/lua-resty-timer/archive/v0.0.1.tar.gz
-    https://github.com/hamishforbes/lua-resty-consul/archive/v0.2.tar.gz
-    '
-	REQUIRE=${MOTAN_SRC_ROOT}/build/require
-	mkdir -p $REQUIRE/src
-	mkdir -p $REQUIRE/resty
+RESTY_TIMEER_VERSION="v0.0.2"
+RESTY_HTTP_VERSION="v0.12"
+RESTY_CONSUL_VERSION="v0.2"
 
-	for dep in ${DEPENDENCES}; do
-		cd $REQUIRE/src
+do_require() {
+	local dependence="
+    https://github.com/pintsized/lua-resty-http/archive/${RESTY_HTTP_VERSION}.tar.gz
+    https://github.com/idevz/lua-resty-timer/archive/${RESTY_TIMEER_VERSION}.tar.gz
+    https://github.com/hamishforbes/lua-resty-consul/archive/${RESTY_CONSUL_VERSION}.tar.gz
+	"
+
+	local require=${MOTAN_SRC_ROOT}/build/require
+	mkdir -p "$require/src"
+	mkdir -p "$require/resty"
+
+	for dep in ${dependence}; do
+		cd "$require/src"
 		FILE_NAME=$(echo $dep | sed 's/.*\(lua-resty[^\/]*\)\/.*/\1/g')
 		# wget --no-check-certificate $dep -O $FILE_NAME
-		curl -fSL $dep -o $FILE_NAME
-		tar zxf $FILE_NAME
-		cp -fR $FILE_NAME*/lib/resty/* $REQUIRE/resty/
+		curl -fSL "$dep" -o "$FILE_NAME"
+		tar zxf "$FILE_NAME"
+		cp -fR $FILE_NAME*/lib/resty/* $require/resty/
 	done
 }
 
@@ -68,6 +73,7 @@ build_motan_libs() {
 		LIB_MOTAN_TOOLS_SO=/lib/libmotan_tools.so &&
 		ln -sf ${SITE_LUALIB_ROOT}/motan/libs/${LIB_MOTAN_TOOLS_SO_FILE} ${LIB_MOTAN_TOOLS_SO} &&
 		ldconfig
+	cp cmotan.so ${SITE_LUALIB_ROOT}/
 }
 
 # dependence:
