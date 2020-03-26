@@ -41,4 +41,8 @@ function _M.deserialize_multi(data, args_num)
     return result, nil
 end
 
+function _M.get_serialize_num()
+    return consts.MOTAN_SERIALIZE_SIMPLE
+end
+
 return _M

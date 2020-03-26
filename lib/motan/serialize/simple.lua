@@ -90,4 +90,8 @@ function _M.deserialize(data)
     return obj
 end
 
+function _M.get_serialize_num()
+    return consts.MOTAN_SERIALIZE_SIMPLE
+end
+
 return _M

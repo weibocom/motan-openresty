@@ -25,7 +25,8 @@ local mt = {__index = _M}
 function _M.new(self)
     local codec_obj = codec:new()
     local motan2 = {
-        codec_obj = codec_obj
+        codec_obj = codec_obj,
+        serialize = consts.MOTAN_SERIALIZE_SIMPLE
     }
     return setmetatable(motan2, mt)
 end
@@ -59,7 +60,7 @@ function _M.buildRequestHeader(self, request_id)
     return self:buildHeader(
         consts.MOTAN_MSG_TYPE_REQUEST,
         false,
-        consts.MOTAN_SERIALIZE_SIMPLE,
+        self.serialize,
         request_id,
         consts.MOTAN_MSG_STATUS_NORMAL
     )
@@ -69,7 +70,7 @@ function _M.buildResponseHeader(self, request_id, msg_status)
     return self:buildHeader(
         consts.MOTAN_MSG_TYPE_RESPONSE,
         false,
-        consts.MOTAN_SERIALIZE_SIMPLE,
+        self.serialize,
         request_id,
         msg_status
     )
@@ -206,6 +207,7 @@ function _M.read_reply(self, sock, serialization)
 end
 
 function _M.convert_to_request_msg(self, request, serialization)
+    self.serialize = serialization.get_serialize_num()
     local req_msg =
         message:new {
         header = self:buildRequestHeader(request:get_request_id()),
