@@ -74,6 +74,7 @@ function _M.get_local_ip()
     local c_str_t = ffi.typeof("char[4]")
     local if_name = ffi.new(c_str_t)
     -- ffi.copy(if_name, "en0")
+    -- ffi.copy(if_name, "enp0s5")
     ffi.copy(if_name, "eth0")
 
     local ip = ffi.new("char[32]")
