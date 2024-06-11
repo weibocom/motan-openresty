@@ -142,7 +142,8 @@ end
 
 function _M.run(self)
     local sock = assert(ngx.req.socket(true))
-    sock:settimeout(DEFAULT_TIME_OUT)
+    local timeout = singletons.config.conf_set["SERVER_SOCK_TIMEOUT"] or DEFAULT_TIME_OUT
+    sock:settimeout(timeout)
     while not ngx.worker.exiting() do
         local ok, err = self:motan_server_do_request(sock)
         if not ok then
