@@ -3,6 +3,7 @@
 local consts = require "motan.consts"
 local utils = require "motan.utils"
 local timer = require "resty.timer"
+local singletons = require "motan.singletons"
 local switch_shm = ngx.shared[consts.MOTAN_SWITCHER_SHM_KEY]
 local setmetatable = setmetatable
 
@@ -41,7 +42,8 @@ end
 
 function _M.run(self)
     local sock = assert(ngx.req.socket(true))
-    sock:settimeout(DEFAULT_TIME_OUT)
+    local timeout = singletons.config.conf_set["SERVER_SOCK_TIMEOUT"] or DEFAULT_TIME_OUT
+    sock:settimeout(timeout)
     while not ngx.worker.exiting() do
         local switch_content = sock:receive([[*l]])
         if not switch_content or switch_content == "" then
