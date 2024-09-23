@@ -23,6 +23,7 @@ function _M.new(self, opts)
             host = opts.host or singletons.var.LOCAL_IP,
             port = opts.port or 0,
             path = opts.path or "",
+            unixSock = opts.unixSock or "",
             group = opts.group or "",
             params = opts.params or {}
         }
@@ -30,6 +31,7 @@ function _M.new(self, opts)
             "protocol",
             "host",
             "port",
+            "unixSock",
             "path",
             "group",
             "params"
@@ -46,12 +48,22 @@ function _M.new(self, opts)
 end
 
 function _M.get_addr(self)
+    local addr = {
+        self.host,
+        consts.COLON_SEPARATOR,
+        self.port
+    }
+
+    if self.unixSock ~= "" then
+        addr = {
+            self.unixSock
+        }
+    end
+
     local addr_info = {
         self.protocol,
         consts.PROTOCOL_SEPARATOR,
-        self.host,
-        consts.COLON_SEPARATOR,
-        self.port,
+        tab_concat(addr),
         consts.PATH_SEPARATOR
     }
     return tab_concat(addr_info)
@@ -63,10 +75,11 @@ function _M.copy(self)
     for k, v in pairs(self.params) do
         params[k] = v
     end
-    url.protocol, url.host, url.port, url.path, url.group, url.params =
+    url.protocol, url.host, url.port, url.unixSock, url.path, url.group, url.params =
         self.protocol,
         self.host,
         self.port,
+        self.unixSock,
         self.path,
         self.group,
         params
@@ -79,12 +92,22 @@ function _M.get_identity(self)
 end
 
 function _M.get_urlinfo(self, with_params_str)
+    local addr = {
+        self.host,
+        consts.COLON_SEPARATOR,
+        self.port
+    }
+
+    if self.unixSock ~= "" then
+        addr = {
+            self.unixSock
+        }
+    end
+
     local url_info = {
         self.protocol,
         consts.PROTOCOL_SEPARATOR,
-        self.host,
-        consts.COLON_SEPARATOR,
-        self.port,
+        tab_concat(addr),
         consts.PATH_SEPARATOR,
         self.path,
         consts.QMARK_SEPARATOR,

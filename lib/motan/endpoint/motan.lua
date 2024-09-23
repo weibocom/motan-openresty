@@ -69,7 +69,12 @@ function _M.connect(self)
     if not sock then
         return nil, "not initialized"
     end
-    local ok, err = sock:connect(self.url.host, self.url.port)
+    local ok, err
+    if self.url.unixSock ~= "" then
+        ok, err = sock:connect("unix:" .. self.url.unixSock)
+    else
+        ok, err = sock:connect(self.url.host, self.url.port)
+    end
     if err == nil then
         return ok, nil
     end
@@ -78,7 +83,7 @@ function _M.connect(self)
     if
         singletons.config.conf_set["WEIBO_MESH"] ~= nil and
             singletons.config.conf_set["WEIBO_MESH"] == table.concat({self.url.host, self.url.port}, ":")
-     then
+    then
         use_weibo_mesh = true
     end
     -- when connect fail to mesh, we need retry though snapshot nodes.
@@ -117,22 +122,28 @@ function _M.call(self, req)
     local ok, conn_err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     if ok then
+        local reused_times, _ = sock:getreusedtimes()
         local serialization
         serialization = singletons.motan_ext:get_serialization(self.url.params["serialization"])
         local req_buf = protocol:convert_to_request_msg(req, serialization)
         local bytes, send_err = sock:send(req_buf)
         if not bytes then
             ngx.log(ngx.ERR, "motan endpoint send RPC Call err: ", send_err)
-            return protocol:build_error_resp(send_err, req)
+            local resp_err = protocol:build_error_resp(send_err, req)
+            resp_err:set_reused_times(reused_times)
+            return resp_err
         end
         local resp_ok, resp_err = protocol:read_reply(sock, serialization)
         if not resp_ok then
             ngx.log(ngx.ERR, "motan endpoint receive RPC resp err: ", resp_err)
-            return protocol:build_error_resp(resp_err, req)
+            local resp_err = protocol:build_error_resp(resp_err, req)
+            resp_err:set_reused_times(reused_times)
+            return resp_err
         end
         sock:setkeepalive(self.max_idle_timeout, self.pool_size)
         local process_time = ngx.now() - start_time
         resp_ok:set_process_time(math.floor((process_time * 100) + 0.5) * 0.01)
+        resp_ok:set_reused_times(reused_times)
         return resp_ok
     else
         ngx.log(ngx.ERR, "motan endpoint failed connect to peer: ", conn_err)

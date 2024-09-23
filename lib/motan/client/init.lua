@@ -23,6 +23,15 @@ end
 
 -- for calling with metadata
 function _M.call(self, fucname, metadata, ...)
+    local resp, err = self:fcall(fucname, metadata, ...)
+
+    if err ~= nil then
+        return nil, err
+    end
+    return resp.value
+end
+
+function _M.fcall(self, fucname, metadata, ...)
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     local req = protocol:make_motan_request(self.url, fucname, ...)
     if not utils.is_empty(metadata) then
@@ -31,10 +40,7 @@ function _M.call(self, fucname, metadata, ...)
         end
     end
     local resp = self.cluster:call(req)
-    if resp:get_exception() ~= nil then
-        return nil, resp:get_exception()
-    end
-    return resp.value
+    return resp, resp:get_exception()
 end
 
 -- for purge RPC call
