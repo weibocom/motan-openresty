@@ -15,7 +15,8 @@ local mt = {__index = _M}
 function _M:new(opts)
     local direct = {
         host = opts.host,
-        port = opts.port
+        port = opts.port,
+        unixSock = opts.unixSock
     }
     return setmetatable(direct, mt)
 end
@@ -44,6 +45,7 @@ function _M:discover(url)
         protocol = url.protocol,
         host = self.host,
         port = self.port,
+        unixSock = self.unixSock,
         path = url.path,
         group = url.group,
         params = url.params

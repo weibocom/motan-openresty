@@ -69,7 +69,12 @@ function _M.connect(self)
     if not sock then
         return nil, "not initialized"
     end
-    local ok, err = sock:connect(self.url.host, self.url.port)
+    local ok, err
+    if self.url.unixSock ~= "" then
+        ok, err = sock:connect("unix:" .. self.url.unixSock)
+    else
+        ok, err = sock:connect(self.url.host, self.url.port)
+    end
     if err == nil then
         return ok, nil
     end
@@ -78,7 +83,7 @@ function _M.connect(self)
     if
         singletons.config.conf_set["WEIBO_MESH"] ~= nil and
             singletons.config.conf_set["WEIBO_MESH"] == table.concat({self.url.host, self.url.port}, ":")
-     then
+    then
         use_weibo_mesh = true
     end
     -- when connect fail to mesh, we need retry though snapshot nodes.
