@@ -12,7 +12,8 @@ function _M.new(self, opts)
         value = opts.value or nil,
         exception = opts.exception or nil,
         process_time = opts.process_time or nil,
-        attachments = opts.attachments or {}
+        attachments = opts.attachments or {},
+        reused_times = opts.reused_times or nil
         -- RpcContext = opts.RpcContext or nil,
     }
     return setmetatable(response, mt)
@@ -55,5 +56,13 @@ end
 
 -- function _M.grocessDeserializable(self, toType)
 -- end
+
+function _M.get_reused_times(self)
+    return self.reused_times
+end
+
+function _M.set_reused_times(self, times)
+    self.reused_times = times
+end
 
 return _M

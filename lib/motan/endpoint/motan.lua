@@ -122,22 +122,28 @@ function _M.call(self, req)
     local ok, conn_err = self:connect()
     local protocol = singletons.motan_ext:get_protocol(self.url.protocol)
     if ok then
+        local reused_times, _ = sock:getreusedtimes()
         local serialization
         serialization = singletons.motan_ext:get_serialization(self.url.params["serialization"])
         local req_buf = protocol:convert_to_request_msg(req, serialization)
         local bytes, send_err = sock:send(req_buf)
         if not bytes then
             ngx.log(ngx.ERR, "motan endpoint send RPC Call err: ", send_err)
-            return protocol:build_error_resp(send_err, req)
+            local resp_err = protocol:build_error_resp(send_err, req)
+            resp_err:set_reused_times(reused_times)
+            return resp_err
         end
         local resp_ok, resp_err = protocol:read_reply(sock, serialization)
         if not resp_ok then
             ngx.log(ngx.ERR, "motan endpoint receive RPC resp err: ", resp_err)
-            return protocol:build_error_resp(resp_err, req)
+            local resp_err = protocol:build_error_resp(resp_err, req)
+            resp_err:set_reused_times(reused_times)
+            return resp_err
         end
         sock:setkeepalive(self.max_idle_timeout, self.pool_size)
         local process_time = ngx.now() - start_time
         resp_ok:set_process_time(math.floor((process_time * 100) + 0.5) * 0.01)
+        resp_ok:set_reused_times(reused_times)
         return resp_ok
     else
         ngx.log(ngx.ERR, "motan endpoint failed connect to peer: ", conn_err)
