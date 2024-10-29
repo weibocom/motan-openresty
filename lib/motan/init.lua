@@ -17,7 +17,9 @@ function print_r(...)
 end
 
 motan_ctx = function()
-    do return ngx.ctx end
+    do
+        return ngx.ctx
+    end
     local current_co = coroutine.running()
     if ngx.ctx[current_co] == nil then
         ngx.ctx[current_co] = {}
@@ -26,7 +28,9 @@ motan_ctx = function()
 end
 
 clean_motan_ctx = function()
-    do return true end
+    do
+        return true
+    end
     local current_co = coroutine.running()
     if ngx.ctx[current_co] ~= nil then
         local request_id = ngx.ctx[current_co].request_id or "--"
@@ -56,19 +60,20 @@ init_env = function(default_env_setting)
     ngx.log(ngx.NOTICE, "motan openresty is running under:", motan_env, ", APP_ROOT is:", app_root)
 
     local motan_var = {}
-    local local_ip = ""
-    local local_host_resolve_addr =
-        os.getenv("MOTAN_LOCAL_IP_RESOLVE_ADDR") or _G.MOTAN_LOCAL_IP_RESOLVE_ADDR
-    if local_host_resolve_addr ~= nil then
-        local host_and_port = utils.split(local_host_resolve_addr, ":")
-        if #host_and_port > 1 then
-            local host = host_and_port[1]
-            local port = tonumber(host_and_port[2])
-            local_ip = utils.get_local_ip_from_host_and_port(host, port)
+    local local_ip = os.getenv("MOTAN_LOCAL_IP") or _G.MOTAN_LOCAL_IP
+    if local_ip == nil then
+        local local_host_resolve_addr = os.getenv("MOTAN_LOCAL_IP_RESOLVE_ADDR") or _G.MOTAN_LOCAL_IP_RESOLVE_ADDR
+        if local_host_resolve_addr ~= nil then
+            local host_and_port = utils.split(local_host_resolve_addr, ":")
+            if #host_and_port > 1 then
+                local host = host_and_port[1]
+                local port = tonumber(host_and_port[2])
+                local_ip = utils.get_local_ip_from_host_and_port(host, port)
+            end
         end
-    end
-    if local_ip == "" then
-        local_ip = utils.get_local_ip()
+        if local_ip == nil or local_ip == "" then
+            local_ip = utils.get_local_ip()
+        end
     end
     ngx.log(ngx.NOTICE, "get local ip is:", local_ip)
     motan_var["LOCAL_IP"] = local_ip
@@ -105,8 +110,7 @@ function Motan.init(motan_ext_set, default_env_setting)
     local service_map = {}
     local service_key
     for _, url in pairs(service_map_tmp) do
-        service_key =
-            utils.build_service_key(url.group, url.params["version"], url.protocol, url.path)
+        service_key = utils.build_service_key(url.group, url.params["version"], url.protocol, url.path)
         service_map[service_key] = service:new(url)
     end
     singletons.service_map = service_map
