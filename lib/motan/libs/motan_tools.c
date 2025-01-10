@@ -142,7 +142,7 @@ int get_request_id_bytes(const char *request_id_str, char *rs_bytes)
 int get_request_id(uint8_t bytes[8], char *request_id_str);
 int get_request_id(uint8_t bytes[8], char *request_id_str)
 {
-    int bytes_len = sizeof(bytes);
+    int bytes_len = 8; // request_id is fixed to 8 bytes
     u_int64_t r_id = (u_int64_t)bytes[0] << (bytes_len - 1) * 8;
     int i = 0;
     for (i = 1; i < bytes_len; i++)
